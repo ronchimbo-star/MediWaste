@@ -1,0 +1,205 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.article-content {
+  @apply text-gray-800 leading-relaxed;
+}
+
+.article-content h2 {
+  @apply text-3xl font-bold text-gray-900 mt-12 mb-6;
+}
+
+.article-content h3 {
+  @apply text-2xl font-bold text-gray-900 mt-10 mb-4;
+}
+
+.article-content h4 {
+  @apply text-xl font-semibold text-gray-900 mt-8 mb-3;
+}
+
+.article-content h5 {
+  @apply text-lg font-semibold text-gray-900 mt-6 mb-3;
+}
+
+.article-content p {
+  @apply mb-6 text-base leading-relaxed;
+}
+
+.article-content ul {
+  @apply mb-6 pl-6 space-y-2;
+}
+
+.article-content ul li {
+  @apply list-disc text-base leading-relaxed;
+}
+
+.article-content ol {
+  @apply mb-6 pl-6 space-y-2;
+}
+
+.article-content ol li {
+  @apply list-decimal text-base leading-relaxed;
+}
+
+.article-content a {
+  @apply text-red-600 hover:text-red-700 underline;
+}
+
+.article-content strong {
+  @apply font-semibold text-gray-900;
+}
+
+.article-content em {
+  @apply italic;
+}
+
+.article-content blockquote {
+  @apply border-l-4 border-gray-300 pl-4 py-2 my-6 italic text-gray-700;
+}
+
+.article-content table {
+  @apply w-full border-collapse my-8 shadow-sm;
+}
+
+.article-content table thead {
+  @apply bg-gray-100;
+}
+
+.article-content table th {
+  @apply border border-gray-300 px-4 py-3 text-left font-semibold text-gray-900;
+}
+
+.article-content table td {
+  @apply border border-gray-300 px-4 py-3;
+}
+
+.article-content table tbody tr:nth-child(even) {
+  @apply bg-gray-50;
+}
+
+.article-content table tbody tr:hover {
+  @apply bg-gray-100;
+}
+
+.article-content .info-box,
+.article-content .highlight-box,
+.article-content .warning-box,
+.article-content .success-box,
+.article-content .note-box {
+  @apply p-6 rounded-lg my-8 border-l-4;
+}
+
+.article-content .info-box {
+  @apply bg-blue-50 border-blue-500;
+}
+
+.article-content .highlight-box {
+  @apply bg-purple-50 border-purple-500;
+}
+
+.article-content .warning-box {
+  @apply bg-red-50 border-red-500;
+}
+
+.article-content .success-box {
+  @apply bg-green-50 border-green-500;
+}
+
+.article-content .note-box {
+  @apply bg-yellow-50 border-yellow-500;
+}
+
+.article-content .info-box h3,
+.article-content .highlight-box h3,
+.article-content .warning-box h3,
+.article-content .success-box h3,
+.article-content .note-box h3 {
+  @apply text-xl font-bold mt-0 mb-3;
+}
+
+.article-content .info-box p:last-child,
+.article-content .highlight-box p:last-child,
+.article-content .warning-box p:last-child,
+.article-content .success-box p:last-child,
+.article-content .note-box p:last-child {
+  @apply mb-0;
+}
+
+.article-content .cta-box {
+  @apply bg-gradient-to-br from-red-500 to-red-600 text-white p-8 rounded-lg my-8 shadow-lg;
+}
+
+.article-content .cta-box h3 {
+  @apply text-white text-2xl font-bold mb-4 mt-0;
+}
+
+.article-content .cta-box p {
+  @apply text-white mb-4;
+}
+
+.article-content .cta-box ul {
+  @apply text-white mb-4;
+}
+
+.article-content .cta-box li {
+  @apply text-white;
+}
+
+.article-content .cta-box a,
+.article-content .cta-box button {
+  @apply inline-block bg-white text-red-600 hover:bg-gray-100 px-6 py-3 rounded-full font-semibold transition-colors no-underline;
+}
+
+.article-content hr {
+  @apply my-8 border-t border-gray-300;
+}
+
+.article-content code {
+  @apply bg-gray-100 px-2 py-1 rounded text-sm font-mono text-red-600;
+}
+
+.article-content pre {
+  @apply bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto my-6;
+}
+
+.article-content pre code {
+  @apply bg-transparent text-gray-100 p-0;
+}
+
+.article-content img {
+  @apply max-w-full h-auto rounded-lg shadow-md my-8;
+}
+
+.article-content figure {
+  @apply my-8;
+}
+
+.article-content figcaption {
+  @apply text-sm text-gray-600 mt-2 text-center italic;
+}

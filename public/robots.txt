@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://mediwaste.co.uk/sitemap.xml
