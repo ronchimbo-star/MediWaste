@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
-import { Plus, Edit2 } from 'lucide-react';
+import { Plus, FileEdit as Edit2 } from 'lucide-react';
 
 interface Staff {
   id: string;

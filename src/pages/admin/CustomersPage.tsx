@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
-import { Plus, Search, Edit2, Trash2 } from 'lucide-react';
+import { Plus, Search, FileEdit as Edit2, Trash2 } from 'lucide-react';
 
 interface Customer {
   id: string;
