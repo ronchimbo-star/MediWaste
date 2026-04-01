@@ -2,6 +2,7 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import QuoteForm from '../components/QuoteForm';
 import SEO from '../components/SEO';
+import { Star } from 'lucide-react';
 
 export default function QuotePage() {
   return (
@@ -35,18 +36,44 @@ export default function QuotePage() {
           </div>
 
           <div className="max-w-4xl mx-auto mt-16">
-            <div className="grid md:grid-cols-3 gap-8 text-center mb-16">
-              <div className="bg-white p-6 rounded-lg border border-gray-200">
-                <div className="text-red-600 text-4xl font-bold mb-2">2-4hrs</div>
-                <div className="text-gray-600 font-medium">Quote Response Time</div>
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                Trusted by Healthcare Professionals
+              </h2>
+              <p className="text-gray-600">
+                See what our clients say about our service
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-8 mb-16">
+              <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                <div className="flex gap-1 mb-4">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+                  ))}
+                </div>
+                <p className="text-gray-700 mb-4">
+                  "MediWaste has transformed our clinical waste management. Their service is impeccable, always on time, and their team is incredibly professional. The competitive pricing and excellent compliance standards make them our top choice."
+                </p>
+                <div>
+                  <p className="font-semibold text-gray-900">Sophie Anderson</p>
+                  <p className="text-sm text-gray-600">Director, Radiance Aesthetics Clinic</p>
+                </div>
               </div>
-              <div>
-                <div className="text-red-600 text-4xl font-bold mb-2">100%</div>
-                <div className="text-gray-600 font-medium">Compliant Service</div>
-              </div>
-              <div>
-                <div className="text-red-600 text-4xl font-bold mb-2">£0</div>
-                <div className="text-gray-600 font-medium">No Quote Fees</div>
+
+              <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                <div className="flex gap-1 mb-4">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+                  ))}
+                </div>
+                <p className="text-gray-700 mb-4">
+                  "We've been using MediWaste for over two years and couldn't be happier. They handle our sharps and clinical waste with complete professionalism. The service is reliable, compliant, and their pricing is very competitive."
+                </p>
+                <div>
+                  <p className="font-semibold text-gray-900">Dr. James Mitchell</p>
+                  <p className="text-sm text-gray-600">Principal Dentist, Harley Street Dental Practice</p>
+                </div>
               </div>
             </div>
 
