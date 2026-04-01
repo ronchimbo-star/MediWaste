@@ -10,6 +10,7 @@ import NewsArticlePage from './pages/NewsArticlePage';
 import NewsCategoryPage from './pages/NewsCategoryPage';
 import ServiceAreaPage from './pages/ServiceAreaPage';
 import LocationServicePage from './pages/LocationServicePage';
+import QuotePage from './pages/QuotePage';
 import PublicQuoteView from './pages/PublicQuoteView';
 import TermsPage from './pages/TermsPage';
 import PrivacyPage from './pages/PrivacyPage';
@@ -94,6 +95,7 @@ function App() {
         <Route path="/news" element={<NewsPage />} />
         <Route path="/news/category/:categorySlug" element={<NewsCategoryPage />} />
         <Route path="/news/:slug" element={<NewsArticlePage />} />
+        <Route path="/quote" element={<QuotePage />} />
         <Route path="/quote/:token" element={<PublicQuoteView />} />
         <Route path="/terms" element={<TermsPage />} />
         <Route path="/privacy" element={<PrivacyPage />} />
