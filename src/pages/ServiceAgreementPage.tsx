@@ -6,15 +6,22 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import SEO from '../components/SEO';
 
+interface WasteItem {
+  description: string;
+  frequency: string;
+}
+
 interface ServiceAgreement {
   id: string;
   agreement_number: string;
   client_name: string;
   client_address: string;
+  collection_address: string | null;
   contact_name: string;
   contact_email: string;
   contact_phone: string;
   waste_types: string[];
+  waste_items: WasteItem[] | null;
   collection_frequency: string;
   containers: string;
   initial_term_months: number;
@@ -27,6 +34,7 @@ interface ServiceAgreement {
   accepted_at: string | null;
   accepted_by_name: string | null;
   accepted_by_position: string | null;
+  accepted_by_date: string | null;
   declined_at: string | null;
   decline_reason: string | null;
   created_at: string;
@@ -42,7 +50,8 @@ export default function ServiceAgreementPage() {
   const [declineReason, setDeclineReason] = useState('');
   const [acceptForm, setAcceptForm] = useState({
     name: '',
-    position: ''
+    position: '',
+    date: new Date().toISOString().split('T')[0]
   });
 
   useEffect(() => {
@@ -73,8 +82,8 @@ export default function ServiceAgreementPage() {
   };
 
   const handleAccept = async () => {
-    if (!acceptForm.name.trim() || !acceptForm.position.trim()) {
-      setError('Please enter your name and position');
+    if (!acceptForm.name.trim() || !acceptForm.position.trim() || !acceptForm.date) {
+      setError('Please enter your name, position, and date');
       return;
     }
 
@@ -88,14 +97,15 @@ export default function ServiceAgreementPage() {
           status: 'accepted',
           accepted_at: new Date().toISOString(),
           accepted_by_name: acceptForm.name,
-          accepted_by_position: acceptForm.position
+          accepted_by_position: acceptForm.position,
+          accepted_by_date: acceptForm.date
         })
         .eq('id', agreement?.id);
 
       if (error) throw error;
 
       await fetchAgreement();
-      setAcceptForm({ name: '', position: '' });
+      setAcceptForm({ name: '', position: '', date: new Date().toISOString().split('T')[0] });
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -292,14 +302,38 @@ export default function ServiceAgreementPage() {
               <div>
                 <h2 className="text-xl font-bold text-gray-900 mb-3">1. Services Provided</h2>
                 <p className="mb-2">MediWaste agrees to provide the following waste collection and disposal services:</p>
-                <ul className="list-disc pl-6 space-y-2">
-                  <li>
-                    <span className="font-semibold">Waste types:</span>{' '}
-                    {agreement.waste_types.length > 0 ? agreement.waste_types.join(', ') : 'As specified'}
-                  </li>
-                  <li>
-                    <span className="font-semibold">Collection frequency:</span> {agreement.collection_frequency}
-                  </li>
+
+                {agreement.collection_address && (
+                  <div className="mb-4 p-3 bg-gray-50 rounded border border-gray-200">
+                    <p className="font-semibold text-gray-900">Collection Address:</p>
+                    <p className="text-gray-700">{agreement.collection_address}</p>
+                  </div>
+                )}
+
+                {agreement.waste_items && agreement.waste_items.length > 0 ? (
+                  <div className="mb-4">
+                    <p className="font-semibold mb-2">Waste Collection Items:</p>
+                    <ul className="list-disc pl-6 space-y-1">
+                      {agreement.waste_items.map((item, index) => (
+                        <li key={index}>
+                          <span className="font-medium">{item.description}</span> - <span className="text-gray-600">{item.frequency}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : (
+                  <ul className="list-disc pl-6 space-y-2">
+                    <li>
+                      <span className="font-semibold">Waste types:</span>{' '}
+                      {agreement.waste_types.length > 0 ? agreement.waste_types.join(', ') : 'As specified'}
+                    </li>
+                    <li>
+                      <span className="font-semibold">Collection frequency:</span> {agreement.collection_frequency}
+                    </li>
+                  </ul>
+                )}
+
+                <ul className="list-disc pl-6 space-y-2 mt-2">
                   <li>
                     <span className="font-semibold">Containers:</span> {agreement.containers}
                   </li>
@@ -374,7 +408,7 @@ export default function ServiceAgreementPage() {
                     {isAccepted ? (
                       <>
                         <p className="mb-2">Signature: <span className="italic font-semibold">{agreement.accepted_by_name}</span></p>
-                        <p className="mb-2">Date: {new Date(agreement.accepted_at!).toLocaleDateString()}</p>
+                        <p className="mb-2">Date: {agreement.accepted_by_date ? new Date(agreement.accepted_by_date).toLocaleDateString() : new Date(agreement.accepted_at!).toLocaleDateString()}</p>
                         <p className="mb-2">Name: {agreement.accepted_by_name}</p>
                         <p>Position: {agreement.accepted_by_position}</p>
                       </>
@@ -429,6 +463,18 @@ export default function ServiceAgreementPage() {
                         onChange={(e) => setAcceptForm({ ...acceptForm, name: e.target.value })}
                         className="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-transparent"
                         placeholder="e.g., John Smith"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Date *
+                      </label>
+                      <input
+                        type="date"
+                        value={acceptForm.date}
+                        onChange={(e) => setAcceptForm({ ...acceptForm, date: e.target.value })}
+                        className="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-transparent"
                       />
                     </div>
 

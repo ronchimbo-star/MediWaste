@@ -2,15 +2,22 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/useAuth';
-import { ArrowLeft, Save, Send, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Save, Send, ExternalLink, Plus, Trash2 } from 'lucide-react';
+
+interface WasteItem {
+  description: string;
+  frequency: string;
+}
 
 interface AgreementForm {
   client_name: string;
   client_address: string;
+  collection_address: string;
   contact_name: string;
   contact_email: string;
   contact_phone: string;
   waste_types: string[];
+  waste_items: WasteItem[];
   collection_frequency: string;
   containers: string;
   initial_term_months: number;
@@ -35,10 +42,12 @@ export default function ServiceAgreementEditPage() {
   const [form, setForm] = useState<AgreementForm>({
     client_name: '',
     client_address: '',
+    collection_address: '',
     contact_name: '',
     contact_email: '',
     contact_phone: '',
     waste_types: [],
+    waste_items: [],
     collection_frequency: 'Monthly',
     containers: 'Supplied by MediWaste',
     initial_term_months: 12,
@@ -83,10 +92,12 @@ export default function ServiceAgreementEditPage() {
         setForm({
           client_name: data.client_name,
           client_address: data.client_address,
+          collection_address: data.collection_address || '',
           contact_name: data.contact_name,
           contact_email: data.contact_email,
           contact_phone: data.contact_phone,
           waste_types: data.waste_types || [],
+          waste_items: data.waste_items || [],
           collection_frequency: data.collection_frequency,
           containers: data.containers,
           initial_term_months: data.initial_term_months,
@@ -124,6 +135,29 @@ export default function ServiceAgreementEditPage() {
       waste_types: prev.waste_types.includes(wasteType)
         ? prev.waste_types.filter((t) => t !== wasteType)
         : [...prev.waste_types, wasteType]
+    }));
+  };
+
+  const addWasteItem = () => {
+    setForm((prev) => ({
+      ...prev,
+      waste_items: [...prev.waste_items, { description: '', frequency: 'Monthly' }]
+    }));
+  };
+
+  const updateWasteItem = (index: number, field: keyof WasteItem, value: string) => {
+    setForm((prev) => ({
+      ...prev,
+      waste_items: prev.waste_items.map((item, i) =>
+        i === index ? { ...item, [field]: value } : item
+      )
+    }));
+  };
+
+  const removeWasteItem = (index: number) => {
+    setForm((prev) => ({
+      ...prev,
+      waste_items: prev.waste_items.filter((_, i) => i !== index)
     }));
   };
 
@@ -288,7 +322,7 @@ export default function ServiceAgreementEditPage() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Full Address *
+                    Business Address *
                   </label>
                   <input
                     type="text"
@@ -296,6 +330,19 @@ export default function ServiceAgreementEditPage() {
                     onChange={(e) => setForm({ ...form, client_address: e.target.value })}
                     className="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-red-500 focus:border-transparent"
                     required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Collection Address
+                  </label>
+                  <input
+                    type="text"
+                    value={form.collection_address}
+                    onChange={(e) => setForm({ ...form, collection_address: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                    placeholder="Leave blank if same as business address"
                   />
                 </div>
 
@@ -360,6 +407,62 @@ export default function ServiceAgreementEditPage() {
                       <span className="text-sm text-gray-700">{wasteType}</span>
                     </label>
                   ))}
+                </div>
+              </div>
+
+              <div className="mb-6">
+                <div className="flex items-center justify-between mb-3">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Waste Collection Items *
+                  </label>
+                  <button
+                    type="button"
+                    onClick={addWasteItem}
+                    className="flex items-center gap-1 text-sm text-red-600 hover:text-red-700 font-medium"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Add Item
+                  </button>
+                </div>
+
+                <div className="space-y-3">
+                  {form.waste_items.map((item, index) => (
+                    <div key={index} className="flex gap-3 items-start">
+                      <div className="flex-1">
+                        <input
+                          type="text"
+                          value={item.description}
+                          onChange={(e) => updateWasteItem(index, 'description', e.target.value)}
+                          placeholder="e.g., Clinical waste bins (60L)"
+                          className="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                        />
+                      </div>
+                      <div className="w-48">
+                        <select
+                          value={item.frequency}
+                          onChange={(e) => updateWasteItem(index, 'frequency', e.target.value)}
+                          className="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                        >
+                          <option>Weekly</option>
+                          <option>Fortnightly</option>
+                          <option>Monthly</option>
+                          <option>Quarterly</option>
+                          <option>On-demand</option>
+                          <option>Adhoc</option>
+                        </select>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeWasteItem(index)}
+                        className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </button>
+                    </div>
+                  ))}
+                  {form.waste_items.length === 0 && (
+                    <p className="text-sm text-gray-500 italic">No waste items added yet. Click "Add Item" to add waste collection items.</p>
+                  )}
                 </div>
               </div>
 
