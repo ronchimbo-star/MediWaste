@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/useAuth';
 import { Plus, Search, FileText, CheckCircle, XCircle, Clock, ExternalLink, FileEdit as Edit, Trash2, Filter } from 'lucide-react';
@@ -22,8 +22,7 @@ interface ServiceAgreement {
 }
 
 export default function ServiceAgreementsPage() {
-  const { user } = useAuth();
-  const navigate = useNavigate();
+  const { user, loading: authLoading } = useAuth();
   const [agreements, setAgreements] = useState<ServiceAgreement[]>([]);
   const [filteredAgreements, setFilteredAgreements] = useState<ServiceAgreement[]>([]);
   const [loading, setLoading] = useState(true);
@@ -33,12 +32,10 @@ export default function ServiceAgreementsPage() {
   const [agreementToDelete, setAgreementToDelete] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!user) {
-      navigate('/login');
-      return;
+    if (!authLoading && user) {
+      fetchAgreements();
     }
-    fetchAgreements();
-  }, [user, navigate]);
+  }, [user, authLoading]);
 
   useEffect(() => {
     filterAgreements();

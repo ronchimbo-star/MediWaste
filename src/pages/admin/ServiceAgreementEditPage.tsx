@@ -24,7 +24,7 @@ interface AgreementForm {
 
 export default function ServiceAgreementEditPage() {
   const { id } = useParams<{ id: string }>();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -61,15 +61,10 @@ export default function ServiceAgreementEditPage() {
   ];
 
   useEffect(() => {
-    if (!user) {
-      navigate('/login');
-      return;
-    }
-
-    if (id && id !== 'create') {
+    if (!authLoading && user && id && id !== 'create') {
       fetchAgreement();
     }
-  }, [id, user, navigate]);
+  }, [id, user, authLoading]);
 
   const fetchAgreement = async () => {
     if (!id || id === 'create') return;
