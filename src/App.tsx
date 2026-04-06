@@ -37,6 +37,9 @@ import InvoicingPage from './pages/admin/InvoicingPage';
 import WasteTransferNotesPage from './pages/admin/WasteTransferNotesPage';
 import StaffDashboard from './pages/staff/StaffDashboard';
 import CustomerDashboard from './pages/customer/CustomerDashboard';
+import ServiceAgreementPage from './pages/ServiceAgreementPage';
+import ServiceAgreementsPage from './pages/admin/ServiceAgreementsPage';
+import ServiceAgreementEditPage from './pages/admin/ServiceAgreementEditPage';
 import CookieConsent from './components/CookieConsent';
 import ScrollToTop from './components/ScrollToTop';
 import NotFound from './pages/NotFound';
@@ -97,6 +100,7 @@ function App() {
         <Route path="/news/:slug" element={<NewsArticlePage />} />
         <Route path="/quote" element={<QuotePage />} />
         <Route path="/quote/:token" element={<PublicQuoteView />} />
+        <Route path="/service-agreement/:token" element={<ServiceAgreementPage />} />
         <Route path="/terms" element={<TermsPage />} />
         <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="/cookies" element={<CookiePage />} />
@@ -234,6 +238,30 @@ function App() {
           element={
             <ProtectedRoute>
               <WasteTransferNotesPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/service-agreements"
+          element={
+            <ProtectedRoute>
+              <ServiceAgreementsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/service-agreements/create"
+          element={
+            <ProtectedRoute>
+              <ServiceAgreementEditPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/service-agreements/edit/:id"
+          element={
+            <ProtectedRoute>
+              <ServiceAgreementEditPage />
             </ProtectedRoute>
           }
         />

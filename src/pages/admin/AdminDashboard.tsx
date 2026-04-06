@@ -270,6 +270,14 @@ export default function AdminDashboard() {
             </button>
 
             <button
+              onClick={() => navigate('/admin/service-agreements')}
+              className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:border-orange-500 transition-colors text-left"
+            >
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Service Agreements</h3>
+              <p className="text-gray-600">Manage service agreements and contracts</p>
+            </button>
+
+            <button
               onClick={() => navigate('/admin/jobs')}
               className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:border-orange-500 transition-colors text-left"
             >
