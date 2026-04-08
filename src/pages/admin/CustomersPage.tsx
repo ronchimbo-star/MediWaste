@@ -64,19 +64,35 @@ export default function CustomersPage() {
       if (editingCustomer) {
         const { error } = await supabase
           .from('mw_customers')
-          .update(formData)
+          .update({
+            company_name: formData.company_name,
+            contact_name: formData.contact_name,
+            email: formData.email,
+            phone: formData.phone,
+            mobile: formData.mobile,
+            status: formData.status,
+            notes: formData.notes,
+          })
           .eq('id', editingCustomer.id);
 
         if (error) throw error;
+        toast.success('Customer updated successfully');
       } else {
         const { error } = await supabase
           .from('mw_customers')
           .insert([{
-            ...formData,
-            customer_number: ''
+            company_name: formData.company_name,
+            contact_name: formData.contact_name,
+            email: formData.email,
+            phone: formData.phone,
+            mobile: formData.mobile,
+            status: formData.status,
+            notes: formData.notes,
+            customer_number: '',
           }]);
 
         if (error) throw error;
+        toast.success('Customer added successfully');
       }
 
       setShowModal(false);
@@ -90,7 +106,7 @@ export default function CustomersPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this customer?')) return;
+    if (!window.confirm('Are you sure you want to delete this customer? This cannot be undone.')) return;
 
     try {
       const { error } = await supabase
@@ -99,6 +115,7 @@ export default function CustomersPage() {
         .eq('id', id);
 
       if (error) throw error;
+      toast.success('Customer deleted');
       fetchCustomers();
     } catch (error) {
       console.error('Error deleting customer:', error);
@@ -118,7 +135,7 @@ export default function CustomersPage() {
     });
   };
 
-  const openEditModal = (customer: Customer) => {
+  const openEditModal = (customer: Customer & { notes?: string }) => {
     setEditingCustomer(customer);
     setFormData({
       company_name: customer.company_name || '',
@@ -127,7 +144,7 @@ export default function CustomersPage() {
       phone: customer.phone || '',
       mobile: customer.mobile || '',
       status: customer.status,
-      notes: ''
+      notes: customer.notes || '',
     });
     setShowModal(true);
   };

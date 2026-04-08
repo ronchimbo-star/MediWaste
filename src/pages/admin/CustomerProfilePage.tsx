@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../lib/supabase';
+import { useToastContext } from '../../contexts/ToastContext';
 import { ArrowLeft, Plus, FileEdit as Edit2, Trash2, CheckCircle, Phone, Mail, MapPin, Building, X, ChevronDown, ChevronUp, Bell } from 'lucide-react';
 
 type ServiceStatus = 'active' | 'paused' | 'cancelled';
@@ -80,6 +81,7 @@ export default function CustomerProfilePage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const qc = useQueryClient();
+  const { toast } = useToastContext();
 
   const [activeTab, setActiveTab] = useState<'overview' | 'services' | 'payments' | 'reminders'>('overview');
   const [showServiceModal, setShowServiceModal] = useState(false);
@@ -88,12 +90,13 @@ export default function CustomerProfilePage() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingService, setEditingService] = useState<CustomerService | null>(null);
   const [editingPayment, setEditingPayment] = useState<CustomerPayment | null>(null);
+  const [editingReminder, setEditingReminder] = useState<Reminder | null>(null);
   const [expandedPayment, setExpandedPayment] = useState<string | null>(null);
 
   const [serviceForm, setServiceForm] = useState({
     service_name: '', service_type: 'collection', description: '',
     frequency: 'monthly', unit_price: '', quantity: '1',
-    status: 'active' as ServiceStatus, start_date: '', next_service_date: '', notes: ''
+    status: 'active' as ServiceStatus, start_date: '', next_service_date: '', last_service_date: '', notes: ''
   });
 
   const [paymentForm, setPaymentForm] = useState({
@@ -170,6 +173,7 @@ export default function CustomerProfilePage() {
         status: form.status,
         start_date: form.start_date || null,
         next_service_date: form.next_service_date || null,
+        last_service_date: form.last_service_date || null,
         notes: form.notes || null,
       };
       if (editingService) {
@@ -182,10 +186,12 @@ export default function CustomerProfilePage() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['customer-services', id] });
+      toast.success(editingService ? 'Service updated' : 'Service added');
       setShowServiceModal(false);
       setEditingService(null);
       resetServiceForm();
     },
+    onError: () => toast.error('Failed to save service'),
   });
 
   const deleteServiceMutation = useMutation({
@@ -193,7 +199,11 @@ export default function CustomerProfilePage() {
       const { error } = await supabase.from('mw_customer_services').delete().eq('id', serviceId);
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['customer-services', id] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['customer-services', id] });
+      toast.success('Service deleted');
+    },
+    onError: () => toast.error('Failed to delete service'),
   });
 
   const savePaymentMutation = useMutation({
@@ -224,10 +234,12 @@ export default function CustomerProfilePage() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['customer-payments', id] });
+      toast.success(editingPayment ? 'Payment updated' : 'Payment recorded');
       setShowPaymentModal(false);
       setEditingPayment(null);
       resetPaymentForm();
     },
+    onError: () => toast.error('Failed to save payment'),
   });
 
   const markPaidMutation = useMutation({
@@ -237,7 +249,11 @@ export default function CustomerProfilePage() {
         .eq('id', paymentId);
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['customer-payments', id] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['customer-payments', id] });
+      toast.success('Payment marked as paid');
+    },
+    onError: () => toast.error('Failed to mark payment as paid'),
   });
 
   const deletePaymentMutation = useMutation({
@@ -245,26 +261,55 @@ export default function CustomerProfilePage() {
       const { error } = await supabase.from('mw_customer_payments').delete().eq('id', paymentId);
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['customer-payments', id] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['customer-payments', id] });
+      toast.success('Payment deleted');
+    },
+    onError: () => toast.error('Failed to delete payment'),
   });
 
   const saveReminderMutation = useMutation({
     mutationFn: async (form: typeof reminderForm) => {
-      const { error } = await supabase.from('mw_reminders').insert([{
-        customer_id: id,
-        type: form.type,
-        title: form.title,
-        message: form.message,
-        due_date: form.due_date || null,
-        is_dismissed: false,
-      }]);
+      if (editingReminder) {
+        const { error } = await supabase.from('mw_reminders').update({
+          type: form.type,
+          title: form.title,
+          message: form.message,
+          due_date: form.due_date || null,
+        }).eq('id', editingReminder.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from('mw_reminders').insert([{
+          customer_id: id,
+          type: form.type,
+          title: form.title,
+          message: form.message,
+          due_date: form.due_date || null,
+          is_dismissed: false,
+        }]);
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['customer-reminders', id] });
+      toast.success(editingReminder ? 'Reminder updated' : 'Reminder added');
+      setShowReminderModal(false);
+      setEditingReminder(null);
+      setReminderForm({ type: 'general', title: '', message: '', due_date: '' });
+    },
+    onError: () => toast.error('Failed to save reminder'),
+  });
+
+  const deleteReminderMutation = useMutation({
+    mutationFn: async (reminderId: string) => {
+      const { error } = await supabase.from('mw_reminders').delete().eq('id', reminderId);
       if (error) throw error;
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['customer-reminders', id] });
-      setShowReminderModal(false);
-      setReminderForm({ type: 'general', title: '', message: '', due_date: '' });
+      toast.success('Reminder deleted');
     },
+    onError: () => toast.error('Failed to delete reminder'),
   });
 
   const dismissReminderMutation = useMutation({
@@ -274,7 +319,11 @@ export default function CustomerProfilePage() {
         .eq('id', reminderId);
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['customer-reminders', id] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['customer-reminders', id] });
+      toast.success('Reminder dismissed');
+    },
+    onError: () => toast.error('Failed to dismiss reminder'),
   });
 
   const updateCustomerMutation = useMutation({
@@ -284,12 +333,14 @@ export default function CustomerProfilePage() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['customer', id] });
+      toast.success('Customer updated');
       setShowEditModal(false);
     },
+    onError: () => toast.error('Failed to update customer'),
   });
 
   function resetServiceForm() {
-    setServiceForm({ service_name: '', service_type: 'collection', description: '', frequency: 'monthly', unit_price: '', quantity: '1', status: 'active', start_date: '', next_service_date: '', notes: '' });
+    setServiceForm({ service_name: '', service_type: 'collection', description: '', frequency: 'monthly', unit_price: '', quantity: '1', status: 'active', start_date: '', next_service_date: '', last_service_date: '', notes: '' });
   }
 
   function resetPaymentForm() {
@@ -301,9 +352,16 @@ export default function CustomerProfilePage() {
     setServiceForm({
       service_name: s.service_name, service_type: s.service_type, description: s.description || '',
       frequency: s.frequency, unit_price: String(s.unit_price), quantity: String(s.quantity),
-      status: s.status, start_date: s.start_date || '', next_service_date: s.next_service_date || '', notes: s.notes || ''
+      status: s.status, start_date: s.start_date || '', next_service_date: s.next_service_date || '',
+      last_service_date: s.last_service_date || '', notes: s.notes || ''
     });
     setShowServiceModal(true);
+  }
+
+  function openEditReminder(r: Reminder) {
+    setEditingReminder(r);
+    setReminderForm({ type: r.type, title: r.title, message: r.message, due_date: r.due_date || '' });
+    setShowReminderModal(true);
   }
 
   function openEditPayment(p: CustomerPayment) {
@@ -534,7 +592,7 @@ export default function CustomerProfilePage() {
                       </div>
                       <div className="flex gap-2 ml-4">
                         <button onClick={() => openEditService(s)} className="text-blue-600 hover:text-blue-800 p-1"><Edit2 size={16} /></button>
-                        <button onClick={() => { if (confirm('Delete this service?')) deleteServiceMutation.mutate(s.id); }} className="text-red-500 hover:text-red-700 p-1"><Trash2 size={16} /></button>
+                        <button onClick={() => { if (window.confirm('Delete this service?')) deleteServiceMutation.mutate(s.id); }} className="text-red-500 hover:text-red-700 p-1"><Trash2 size={16} /></button>
                       </div>
                     </div>
                   </div>
@@ -588,7 +646,7 @@ export default function CustomerProfilePage() {
                           {expandedPayment === p.id ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                         </button>
                         <button onClick={() => openEditPayment(p)} className="text-blue-600 hover:text-blue-800 p-1"><Edit2 size={15} /></button>
-                        <button onClick={() => { if (confirm('Delete this payment record?')) deletePaymentMutation.mutate(p.id); }} className="text-red-500 hover:text-red-700 p-1"><Trash2 size={15} /></button>
+                        <button onClick={() => { if (window.confirm('Delete this payment record?')) deletePaymentMutation.mutate(p.id); }} className="text-red-500 hover:text-red-700 p-1"><Trash2 size={15} /></button>
                       </div>
                     </div>
                     {expandedPayment === p.id && (
@@ -635,9 +693,11 @@ export default function CustomerProfilePage() {
                       <p className="text-sm text-gray-600">{r.message}</p>
                       {r.due_date && <p className={`text-xs mt-1 font-medium ${isOverdue(r.due_date) ? 'text-amber-600' : 'text-gray-500'}`}>Due: {formatDate(r.due_date)}</p>}
                     </div>
-                    <button onClick={() => dismissReminderMutation.mutate(r.id)} className="text-gray-400 hover:text-gray-600 p-1 ml-4 flex-shrink-0" title="Dismiss">
-                      <X size={16} />
-                    </button>
+                    <div className="flex items-center gap-1 ml-4 flex-shrink-0">
+                      <button onClick={() => openEditReminder(r)} className="text-blue-500 hover:text-blue-700 p-1" title="Edit"><Edit2 size={15} /></button>
+                      <button onClick={() => { if (window.confirm('Delete this reminder permanently?')) deleteReminderMutation.mutate(r.id); }} className="text-red-400 hover:text-red-600 p-1" title="Delete"><Trash2 size={15} /></button>
+                      <button onClick={() => dismissReminderMutation.mutate(r.id)} className="text-gray-400 hover:text-gray-600 p-1" title="Dismiss"><X size={16} /></button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -742,6 +802,10 @@ export default function CustomerProfilePage() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">Next Service Date</label>
                   <input type="date" value={serviceForm.next_service_date} onChange={e => setServiceForm({ ...serviceForm, next_service_date: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent" />
                 </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Last Service Date</label>
+                  <input type="date" value={serviceForm.last_service_date} onChange={e => setServiceForm({ ...serviceForm, last_service_date: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent" />
+                </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
@@ -845,8 +909,8 @@ export default function CustomerProfilePage() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl max-w-md w-full">
             <div className="p-5 border-b border-gray-200 flex justify-between items-center">
-              <h3 className="text-lg font-bold text-gray-900">Add Reminder</h3>
-              <button onClick={() => setShowReminderModal(false)} className="text-gray-400 hover:text-gray-600"><X size={20} /></button>
+              <h3 className="text-lg font-bold text-gray-900">{editingReminder ? 'Edit Reminder' : 'Add Reminder'}</h3>
+              <button onClick={() => { setShowReminderModal(false); setEditingReminder(null); setReminderForm({ type: 'general', title: '', message: '', due_date: '' }); }} className="text-gray-400 hover:text-gray-600"><X size={20} /></button>
             </div>
             <div className="p-5 space-y-4">
               <div>
@@ -871,8 +935,8 @@ export default function CustomerProfilePage() {
               </div>
             </div>
             <div className="p-5 border-t border-gray-100 flex justify-end gap-3">
-              <button onClick={() => setShowReminderModal(false)} className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm hover:bg-gray-50">Cancel</button>
-              <button onClick={() => saveReminderMutation.mutate(reminderForm)} disabled={saveReminderMutation.isPending || !reminderForm.title} className="px-4 py-2 bg-orange-500 text-white rounded-lg text-sm hover:bg-orange-600 disabled:opacity-50">Add Reminder</button>
+              <button onClick={() => { setShowReminderModal(false); setEditingReminder(null); setReminderForm({ type: 'general', title: '', message: '', due_date: '' }); }} className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm hover:bg-gray-50">Cancel</button>
+              <button onClick={() => saveReminderMutation.mutate(reminderForm)} disabled={saveReminderMutation.isPending || !reminderForm.title} className="px-4 py-2 bg-orange-500 text-white rounded-lg text-sm hover:bg-orange-600 disabled:opacity-50">{editingReminder ? 'Save Changes' : 'Add Reminder'}</button>
             </div>
           </div>
         </div>
