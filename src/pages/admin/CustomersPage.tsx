@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
-import { Plus, Search, FileEdit as Edit2, Trash2 } from 'lucide-react';
+import { Plus, Search, FileEdit as Edit2, Trash2, Eye, ArrowLeft } from 'lucide-react';
 
 interface Customer {
   id: string;
@@ -15,6 +16,7 @@ interface Customer {
 }
 
 export default function CustomersPage() {
+  const navigate = useNavigate();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -151,9 +153,15 @@ export default function CustomersPage() {
 
   return (
     <div className="p-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Customer Management</h1>
-        <p className="text-gray-600 mt-1">Manage your customer accounts and information</p>
+      <div className="mb-6 flex items-center gap-4">
+        <button onClick={() => navigate('/admin')} className="flex items-center gap-1 text-gray-500 hover:text-gray-700 text-sm">
+          <ArrowLeft size={16} />
+          Dashboard
+        </button>
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Customer Management</h1>
+          <p className="text-gray-600 mt-1">Manage your customer accounts and information</p>
+        </div>
       </div>
 
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
@@ -255,6 +263,13 @@ export default function CustomersPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => navigate(`/admin/customers/${customer.id}`)}
+                            className="text-orange-600 hover:text-orange-900"
+                            title="View Profile"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
                           <button
                             onClick={() => openEditModal(customer)}
                             className="text-blue-600 hover:text-blue-900"

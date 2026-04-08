@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useQuery } from '@tanstack/react-query';
-import { Bell, Mail, FileText, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { Bell, Mail, FileText, CheckCircle, XCircle, Clock, Users, AlertTriangle, Calendar } from 'lucide-react';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -57,6 +57,49 @@ export default function AdminDashboard() {
         .order('created_at', { ascending: false })
         .limit(5);
       return data || [];
+    },
+  });
+
+  const { data: activeCustomerCount } = useQuery({
+    queryKey: ['active-customer-count'],
+    queryFn: async () => {
+      const { count } = await supabase.from('mw_customers').select('*', { count: 'exact', head: true }).eq('status', 'active');
+      return count || 0;
+    },
+  });
+
+  const { data: overduePaymentCount } = useQuery({
+    queryKey: ['overdue-payment-count'],
+    queryFn: async () => {
+      const today = new Date().toISOString().split('T')[0];
+      const { count } = await supabase
+        .from('mw_customer_payments')
+        .select('*', { count: 'exact', head: true })
+        .in('status', ['pending', 'overdue'])
+        .lt('due_date', today);
+      return count || 0;
+    },
+  });
+
+  const { data: serviceDueSoonCount } = useQuery({
+    queryKey: ['service-due-soon-count'],
+    queryFn: async () => {
+      const in7days = new Date();
+      in7days.setDate(in7days.getDate() + 7);
+      const { count } = await supabase
+        .from('mw_customer_services')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'active')
+        .lte('next_service_date', in7days.toISOString().split('T')[0]);
+      return count || 0;
+    },
+  });
+
+  const { data: activeRemindersCount } = useQuery({
+    queryKey: ['active-reminders-count'],
+    queryFn: async () => {
+      const { count } = await supabase.from('mw_reminders').select('*', { count: 'exact', head: true }).eq('is_dismissed', false);
+      return count || 0;
     },
   });
 
@@ -250,23 +293,51 @@ export default function AdminDashboard() {
           </div>
         )}
 
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          <button onClick={() => navigate('/admin/customers')} className={`rounded-xl border p-4 text-left transition-all hover:border-orange-300 ${(activeCustomerCount || 0) > 0 ? 'bg-green-50 border-green-200' : 'bg-white border-gray-200'}`}>
+            <div className="flex items-center gap-2 text-green-600 mb-2"><Users size={18} /><span className="text-sm font-medium">Active Customers</span></div>
+            <p className="text-2xl font-bold text-gray-900">{activeCustomerCount ?? '—'}</p>
+          </button>
+          <button onClick={() => navigate('/admin/mailing-lists?list=payment_due')} className={`rounded-xl border p-4 text-left transition-all hover:border-orange-300 ${(overduePaymentCount || 0) > 0 ? 'bg-red-50 border-red-200' : 'bg-white border-gray-200'}`}>
+            <div className={`flex items-center gap-2 mb-2 ${(overduePaymentCount || 0) > 0 ? 'text-red-600' : 'text-gray-500'}`}><AlertTriangle size={18} /><span className="text-sm font-medium">Overdue Payments</span></div>
+            <p className="text-2xl font-bold text-gray-900">{overduePaymentCount ?? '—'}</p>
+          </button>
+          <button onClick={() => navigate('/admin/mailing-lists?list=service_due')} className={`rounded-xl border p-4 text-left transition-all hover:border-orange-300 ${(serviceDueSoonCount || 0) > 0 ? 'bg-amber-50 border-amber-200' : 'bg-white border-gray-200'}`}>
+            <div className={`flex items-center gap-2 mb-2 ${(serviceDueSoonCount || 0) > 0 ? 'text-amber-600' : 'text-gray-500'}`}><Calendar size={18} /><span className="text-sm font-medium">Services Due (7d)</span></div>
+            <p className="text-2xl font-bold text-gray-900">{serviceDueSoonCount ?? '—'}</p>
+          </button>
+          <div className={`rounded-xl border p-4 ${(activeRemindersCount || 0) > 0 ? 'bg-orange-50 border-orange-200' : 'bg-white border-gray-200'}`}>
+            <div className={`flex items-center gap-2 mb-2 ${(activeRemindersCount || 0) > 0 ? 'text-orange-600' : 'text-gray-500'}`}><Bell size={18} /><span className="text-sm font-medium">Active Reminders</span></div>
+            <p className="text-2xl font-bold text-gray-900">{activeRemindersCount ?? '—'}</p>
+          </div>
+        </div>
+
         <div className="mb-6">
-          <h3 className="text-xl font-bold text-gray-900 mb-4">Business Operations</h3>
+          <h3 className="text-xl font-bold text-gray-900 mb-4">Customer Management</h3>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
             <button
               onClick={() => navigate('/admin/customers')}
               className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:border-orange-500 transition-colors text-left"
             >
               <h3 className="text-xl font-bold text-gray-900 mb-2">Customers</h3>
-              <p className="text-gray-600">Manage customer accounts and profiles</p>
+              <p className="text-gray-600">View profiles, services, payments and history</p>
             </button>
 
             <button
-              onClick={() => navigate('/admin/subscriptions')}
+              onClick={() => navigate('/admin/quote-requests')}
+              className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:border-orange-500 transition-colors text-left relative"
+            >
+              {unreadQuotes ? <div className="absolute top-4 right-4 w-6 h-6 bg-orange-500 text-white rounded-full flex items-center justify-center text-xs font-bold">{unreadQuotes}</div> : null}
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Quote Requests</h3>
+              <p className="text-gray-600">Convert leads into customers and create quotes</p>
+            </button>
+
+            <button
+              onClick={() => navigate('/admin/mailing-lists')}
               className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:border-orange-500 transition-colors text-left"
             >
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Subscriptions</h3>
-              <p className="text-gray-600">Manage customer subscriptions and plans</p>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Mailing Lists</h3>
+              <p className="text-gray-600">Export lists by status, payment due, service due</p>
             </button>
 
             <button
@@ -275,6 +346,14 @@ export default function AdminDashboard() {
             >
               <h3 className="text-xl font-bold text-gray-900 mb-2">Service Agreements</h3>
               <p className="text-gray-600">Manage service agreements and contracts</p>
+            </button>
+
+            <button
+              onClick={() => navigate('/admin/subscriptions')}
+              className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:border-orange-500 transition-colors text-left"
+            >
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Subscriptions</h3>
+              <p className="text-gray-600">Manage customer subscriptions and plans</p>
             </button>
 
             <button
@@ -335,19 +414,6 @@ export default function AdminDashboard() {
         <div className="mb-6">
           <h3 className="text-xl font-bold text-gray-900 mb-4">Website & Communications</h3>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <button
-              onClick={() => navigate('/admin/quote-requests')}
-              className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:border-orange-500 transition-colors text-left relative"
-            >
-              {unreadQuotes ? (
-                <div className="absolute top-4 right-4 w-6 h-6 bg-orange-500 text-white rounded-full flex items-center justify-center text-xs font-bold">
-                  {unreadQuotes}
-                </div>
-              ) : null}
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Quote Requests</h3>
-              <p className="text-gray-600">View and manage customer quote requests</p>
-            </button>
-
             <button
               onClick={() => navigate('/admin/contact-enquiries')}
               className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:border-orange-500 transition-colors text-left relative"

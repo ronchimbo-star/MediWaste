@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../lib/supabase';
-import { Eye, Check, Archive, Trash2, X, FileText } from 'lucide-react';
+import { Eye, Check, Archive, Trash2, X, FileText, UserPlus } from 'lucide-react';
 
 type QuoteStatus = 'pending' | 'read' | 'actioned' | 'archived';
 
@@ -73,6 +73,48 @@ export default function QuoteRequestsPage() {
       queryClient.invalidateQueries({ queryKey: ['quote-count'] });
       queryClient.invalidateQueries({ queryKey: ['unread-quotes'] });
       setSelectedQuote(null);
+    },
+  });
+
+  const convertToCustomerMutation = useMutation({
+    mutationFn: async (quote: any) => {
+      const { data: existing } = await supabase
+        .from('mw_customers')
+        .select('id')
+        .eq('email', quote.email)
+        .maybeSingle();
+
+      if (existing) {
+        return { customerId: existing.id, alreadyExists: true };
+      }
+
+      const { data, error } = await supabase
+        .from('mw_customers')
+        .insert([{
+          company_name: quote.company_name || '',
+          contact_name: quote.contact_name || '',
+          email: quote.email || '',
+          phone: quote.phone || '',
+          postcode: quote.postcode || '',
+          status: 'active',
+          source: 'quote_request',
+          source_id: quote.id,
+          customer_number: '',
+        }])
+        .select('id')
+        .single();
+
+      if (error) throw error;
+      return { customerId: data.id, alreadyExists: false };
+    },
+    onSuccess: ({ customerId, alreadyExists }) => {
+      if (alreadyExists) {
+        if (confirm('A customer with this email already exists. Open their profile?')) {
+          navigate(`/admin/customers/${customerId}`);
+        }
+      } else {
+        navigate(`/admin/customers/${customerId}`);
+      }
     },
   });
 
@@ -180,6 +222,13 @@ export default function QuoteRequestsPage() {
                           title="Create Quote"
                         >
                           <FileText size={18} />
+                        </button>
+                        <button
+                          onClick={() => convertToCustomerMutation.mutate(quote)}
+                          className="text-green-600 hover:text-green-700 p-1"
+                          title="Convert to Customer"
+                        >
+                          <UserPlus size={18} />
                         </button>
                         <button
                           onClick={() => setSelectedQuote(quote)}

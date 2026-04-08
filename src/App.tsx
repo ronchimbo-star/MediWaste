@@ -30,6 +30,8 @@ import SiteSettingsPage from './pages/admin/SiteSettingsPage';
 import NewsManagementPage from './pages/admin/NewsManagementPage';
 import NewsEditPage from './pages/admin/NewsEditPage';
 import CustomersPage from './pages/admin/CustomersPage';
+import CustomerProfilePage from './pages/admin/CustomerProfilePage';
+import MailingListsPage from './pages/admin/MailingListsPage';
 import SubscriptionsPage from './pages/admin/SubscriptionsPage';
 import ServiceJobsPage from './pages/admin/ServiceJobsPage';
 import StaffManagementPage from './pages/admin/StaffManagementPage';
@@ -198,6 +200,22 @@ function App() {
           element={
             <ProtectedRoute>
               <CustomersPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/customers/:id"
+          element={
+            <ProtectedRoute>
+              <CustomerProfilePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/mailing-lists"
+          element={
+            <ProtectedRoute>
+              <MailingListsPage />
             </ProtectedRoute>
           }
         />
