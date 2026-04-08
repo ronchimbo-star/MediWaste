@@ -3,6 +3,7 @@ import { useNavigate, useParams, Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/useAuth';
 import { ArrowLeft, Save, Send, ExternalLink, Plus, Trash2, Eye, X } from 'lucide-react';
+import { useToastContext } from '../../contexts/ToastContext';
 
 interface WasteItem {
   description: string;
@@ -33,6 +34,7 @@ export default function ServiceAgreementEditPage() {
   const { id } = useParams<{ id: string }>();
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToastContext();
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -228,7 +230,7 @@ export default function ServiceAgreementEditPage() {
   const copyToClipboard = () => {
     const url = getPublicUrl();
     navigator.clipboard.writeText(url);
-    alert('Link copied to clipboard!');
+    toast.success('Link copied to clipboard');
   };
 
   if (loading) {

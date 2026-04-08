@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { AlertCircle, X } from 'lucide-react';
+import { useToastContext } from '../contexts/ToastContext';
 
 interface IssueReportModalProps {
   jobId: string;
@@ -27,6 +28,7 @@ const SEVERITY_LEVELS = [
 ];
 
 export default function IssueReportModal({ jobId, jobNumber, staffId, onClose, onIssueReported }: IssueReportModalProps) {
+  const { toast } = useToastContext();
   const [submitting, setSubmitting] = useState(false);
   const [issueType, setIssueType] = useState('');
   const [severity, setSeverity] = useState('medium');
@@ -38,7 +40,7 @@ export default function IssueReportModal({ jobId, jobNumber, staffId, onClose, o
     e.preventDefault();
 
     if (!issueType || !description) {
-      alert('Please fill in all required fields');
+      toast.error('Please fill in all required fields');
       return;
     }
 
@@ -59,13 +61,13 @@ export default function IssueReportModal({ jobId, jobNumber, staffId, onClose, o
 
       if (error) throw error;
 
-      alert('Issue reported successfully');
+      toast.success('Issue reported successfully');
       window.scrollTo({ top: 0, behavior: 'smooth' });
       onIssueReported();
       onClose();
     } catch (error) {
       console.error('Error reporting issue:', error);
-      alert('Failed to report issue. Please try again.');
+      toast.error('Failed to report issue. Please try again.');
     } finally {
       setSubmitting(false);
     }

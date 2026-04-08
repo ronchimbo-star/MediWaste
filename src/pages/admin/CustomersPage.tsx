@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { Plus, Search, FileEdit as Edit2, Trash2, Eye, ArrowLeft } from 'lucide-react';
+import { useToastContext } from '../../contexts/ToastContext';
 
 interface Customer {
   id: string;
@@ -17,6 +18,7 @@ interface Customer {
 
 export default function CustomersPage() {
   const navigate = useNavigate();
+  const { toast } = useToastContext();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -83,7 +85,7 @@ export default function CustomersPage() {
       fetchCustomers();
     } catch (error) {
       console.error('Error saving customer:', error);
-      alert('Failed to save customer');
+      toast.error('Failed to save customer');
     }
   };
 
@@ -100,7 +102,7 @@ export default function CustomersPage() {
       fetchCustomers();
     } catch (error) {
       console.error('Error deleting customer:', error);
-      alert('Failed to delete customer');
+      toast.error('Failed to delete customer');
     }
   };
 

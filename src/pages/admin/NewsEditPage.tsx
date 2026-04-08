@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { ArrowLeft, Save, Eye, Code, Trash2, Plus } from 'lucide-react';
+import { useToastContext } from '../../contexts/ToastContext';
 
 interface Category {
   id: string;
@@ -11,6 +12,7 @@ interface Category {
 export default function NewsEditPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { toast } = useToastContext();
   const isEditMode = Boolean(id);
 
   const [loading, setLoading] = useState(isEditMode);
@@ -108,7 +110,7 @@ export default function NewsEditPage() {
 
   const handleSave = async (publishNow = false) => {
     if (!formData.title || !formData.slug) {
-      alert('Title and slug are required');
+      toast.error('Title and slug are required');
       return;
     }
 
@@ -158,11 +160,11 @@ export default function NewsEditPage() {
           );
       }
 
-      alert(isEditMode ? 'Article updated successfully!' : 'Article created successfully!');
+      toast.success(isEditMode ? 'Article updated successfully' : 'Article created successfully');
       navigate('/admin/news');
     } catch (error) {
       console.error('Error saving article:', error);
-      alert('Error saving article. Please try again.');
+      toast.error('Error saving article. Please try again.');
     } finally {
       setSaving(false);
     }
@@ -179,11 +181,11 @@ export default function NewsEditPage() {
 
       if (error) throw error;
 
-      alert('Article deleted successfully!');
+      toast.success('Article deleted successfully');
       navigate('/admin/news');
     } catch (error) {
       console.error('Error deleting article:', error);
-      alert('Error deleting article. Please try again.');
+      toast.error('Error deleting article. Please try again.');
     }
   };
 

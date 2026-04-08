@@ -42,6 +42,7 @@ import CustomerDashboard from './pages/customer/CustomerDashboard';
 import ServiceAgreementPage from './pages/ServiceAgreementPage';
 import ServiceAgreementsPage from './pages/admin/ServiceAgreementsPage';
 import ServiceAgreementEditPage from './pages/admin/ServiceAgreementEditPage';
+import EmailInboxPage from './pages/admin/EmailInboxPage';
 import CookieConsent from './components/CookieConsent';
 import ScrollToTop from './components/ScrollToTop';
 import NotFound from './pages/NotFound';
@@ -280,6 +281,14 @@ function App() {
           element={
             <ProtectedRoute>
               <ServiceAgreementEditPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/email-inbox"
+          element={
+            <ProtectedRoute>
+              <EmailInboxPage />
             </ProtectedRoute>
           }
         />

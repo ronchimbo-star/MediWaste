@@ -3,6 +3,7 @@ import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/useAuth';
 import { Calendar, FileText, DollarSign, Package } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useToastContext } from '../../contexts/ToastContext';
 
 interface Subscription {
   id: string;
@@ -26,6 +27,7 @@ interface Invoice {
 export default function CustomerDashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToastContext();
   const [customerInfo, setCustomerInfo] = useState<any>(null);
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
@@ -50,7 +52,7 @@ export default function CustomerDashboard() {
       if (customerError) throw customerError;
 
       if (!customerData) {
-        alert('Customer profile not found');
+        toast.error('Customer profile not found');
         navigate('/');
         return;
       }
@@ -218,7 +220,7 @@ export default function CustomerDashboard() {
 
         <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
           <button
-            onClick={() => alert('Book ad-hoc service feature coming soon')}
+            onClick={() => toast.info('Ad-hoc service booking coming soon')}
             className="bg-[#F59E0B] text-white rounded-lg p-6 hover:bg-[#D97706] transition-colors text-left"
           >
             <Calendar className="w-8 h-8 mb-2" />
@@ -226,7 +228,7 @@ export default function CustomerDashboard() {
             <p className="text-sm opacity-90">Schedule a one-time collection</p>
           </button>
           <button
-            onClick={() => alert('View documents feature coming soon')}
+            onClick={() => toast.info('Document viewing coming soon')}
             className="bg-blue-600 text-white rounded-lg p-6 hover:bg-blue-700 transition-colors text-left"
           >
             <FileText className="w-8 h-8 mb-2" />

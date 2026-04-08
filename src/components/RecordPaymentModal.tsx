@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { X, DollarSign } from 'lucide-react';
+import { useToastContext } from '../contexts/ToastContext';
 
 interface RecordPaymentModalProps {
   invoice: {
@@ -27,6 +28,7 @@ const PAYMENT_METHODS = [
 ];
 
 export default function RecordPaymentModal({ invoice, onClose, onPaymentRecorded }: RecordPaymentModalProps) {
+  const { toast } = useToastContext();
   const [loading, setLoading] = useState(false);
   const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split('T')[0]);
   const [amount, setAmount] = useState(Number(invoice.total_amount).toFixed(2));
@@ -39,7 +41,7 @@ export default function RecordPaymentModal({ invoice, onClose, onPaymentRecorded
 
     const paymentAmount = Number(amount);
     if (paymentAmount <= 0 || paymentAmount > Number(invoice.total_amount)) {
-      alert('Payment amount must be between 0 and the invoice total');
+      toast.error('Payment amount must be between 0 and the invoice total');
       return;
     }
 
@@ -82,13 +84,12 @@ export default function RecordPaymentModal({ invoice, onClose, onPaymentRecorded
 
       if (invoiceError) throw invoiceError;
 
-      alert('Payment recorded successfully');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      toast.success('Payment recorded successfully');
       onPaymentRecorded();
       onClose();
     } catch (error) {
       console.error('Error recording payment:', error);
-      alert('Failed to record payment. Please try again.');
+      toast.error('Failed to record payment. Please try again.');
     } finally {
       setLoading(false);
     }

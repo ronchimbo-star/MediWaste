@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/useAuth';
 import { Plus, Search, FileText, CheckCircle, XCircle, Clock, ExternalLink, FileEdit as Edit, Trash2, Filter } from 'lucide-react';
+import { useToastContext } from '../../contexts/ToastContext';
 
 interface ServiceAgreement {
   id: string;
@@ -23,6 +24,7 @@ interface ServiceAgreement {
 
 export default function ServiceAgreementsPage() {
   const { user, loading: authLoading } = useAuth();
+  const { toast } = useToastContext();
   const [agreements, setAgreements] = useState<ServiceAgreement[]>([]);
   const [filteredAgreements, setFilteredAgreements] = useState<ServiceAgreement[]>([]);
   const [loading, setLoading] = useState(true);
@@ -93,7 +95,7 @@ export default function ServiceAgreementsPage() {
       setAgreementToDelete(null);
     } catch (error) {
       console.error('Error deleting agreement:', error);
-      alert('Failed to delete agreement');
+      toast.error('Failed to delete agreement');
     }
   };
 
@@ -103,7 +105,7 @@ export default function ServiceAgreementsPage() {
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
-    alert('Link copied to clipboard!');
+    toast.success('Link copied to clipboard');
   };
 
   const getStatusBadge = (status: string) => {

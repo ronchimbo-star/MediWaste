@@ -5,6 +5,7 @@ import { Calendar, Clock, AlertCircle, CheckCircle, Camera } from 'lucide-react'
 import { useNavigate } from 'react-router-dom';
 import PhotoUploadModal from '../../components/PhotoUploadModal';
 import IssueReportModal from '../../components/IssueReportModal';
+import { useToastContext } from '../../contexts/ToastContext';
 
 interface Job {
   id: string;
@@ -28,6 +29,7 @@ interface Job {
 export default function StaffDashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToastContext();
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [staffInfo, setStaffInfo] = useState<any>(null);
@@ -54,7 +56,7 @@ export default function StaffDashboard() {
       if (staffError) throw staffError;
 
       if (!staffData) {
-        alert('Staff profile not found');
+        toast.error('Staff profile not found');
         navigate('/');
         return;
       }
@@ -95,7 +97,7 @@ export default function StaffDashboard() {
       fetchStaffInfo();
     } catch (error) {
       console.error('Error starting job:', error);
-      alert('Failed to start job');
+      toast.error('Failed to start job');
     }
   };
 
@@ -155,11 +157,11 @@ export default function StaffDashboard() {
         }
       }
 
-      alert('Job completed successfully! Waste Transfer Note has been generated.');
+      toast.success('Job completed successfully! Waste Transfer Note has been generated.');
       fetchStaffInfo();
     } catch (error) {
       console.error('Error completing job:', error);
-      alert('Failed to complete job');
+      toast.error('Failed to complete job');
     }
   };
 

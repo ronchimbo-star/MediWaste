@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
-import { Plus, Download, Eye } from 'lucide-react';
+import { Plus, Download, Eye, X, ArrowLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useToastContext } from '../../contexts/ToastContext';
 
 interface WasteTransferNote {
   id: string;
@@ -24,11 +26,28 @@ interface WasteTransferNote {
   customer_signature: string;
 }
 
+const WASTE_TYPES = ['clinical_waste', 'sharps', 'pharmaceutical', 'cytotoxic', 'anatomical', 'dental', 'general_medical'];
+const CONTAINER_TYPES = ['yellow_bag', 'sharps_bin', 'rigid_container', 'drum', 'box'];
+const QUANTITY_UNITS = ['kg', 'litres', 'units', 'bags'];
+
+const emptyCreateForm = {
+  customer_id: '', job_id: '', waste_type: 'clinical_waste', waste_description: '',
+  quantity: '', quantity_unit: 'kg', container_type: 'yellow_bag', container_count: '1',
+  carrier_signature: 'WeClean4U Ltd',
+};
+
 export default function WasteTransferNotesPage() {
+  const navigate = useNavigate();
+  const { toast } = useToastContext();
   const [wtns, setWtns] = useState<WasteTransferNote[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [selectedWtn, setSelectedWtn] = useState<WasteTransferNote | null>(null);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [createForm, setCreateForm] = useState({ ...emptyCreateForm });
+  const [createLoading, setCreateLoading] = useState(false);
+  const [customers, setCustomers] = useState<any[]>([]);
+  const [jobs, setJobs] = useState<any[]>([]);
 
   useEffect(() => {
     fetchWTNs();
@@ -60,11 +79,58 @@ export default function WasteTransferNotesPage() {
     setShowModal(true);
   };
 
+  const openCreateModal = async () => {
+    const [custRes, jobRes] = await Promise.all([
+      supabase.from('mw_customers').select('id,customer_number,company_name,contact_name').eq('status', 'active').order('company_name'),
+      supabase.from('mw_service_jobs').select('id,job_number,service_type').eq('status', 'completed').order('scheduled_date', { ascending: false }).limit(50),
+    ]);
+    setCustomers(custRes.data || []);
+    setJobs(jobRes.data || []);
+    setCreateForm({ ...emptyCreateForm });
+    setShowCreateModal(true);
+  };
+
+  const handleCreateWTN = async () => {
+    if (!createForm.customer_id || !createForm.waste_description || !createForm.quantity) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+    setCreateLoading(true);
+    try {
+      const today = new Date().toISOString().split('T')[0].replace(/-/g, '');
+      const wtnNumber = `WTN${today}-${Date.now().toString().slice(-4)}`;
+      const { error } = await supabase.from('mw_waste_transfer_notes').insert([{
+        wtn_number: wtnNumber,
+        customer_id: createForm.customer_id,
+        job_id: createForm.job_id || null,
+        issue_date: new Date().toISOString().split('T')[0],
+        waste_type: createForm.waste_type,
+        waste_description: createForm.waste_description,
+        quantity: Number(createForm.quantity),
+        quantity_unit: createForm.quantity_unit,
+        container_type: createForm.container_type,
+        container_count: Number(createForm.container_count),
+        carrier_signature: createForm.carrier_signature,
+      }]);
+      if (error) throw error;
+      toast.success(`WTN ${wtnNumber} created successfully`);
+      setShowCreateModal(false);
+      fetchWTNs();
+    } catch {
+      toast.error('Failed to create WTN');
+    } finally {
+      setCreateLoading(false);
+    }
+  };
+
   return (
     <div className="p-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Waste Transfer Notes</h1>
-        <p className="text-gray-600 mt-1">Manage waste transfer documentation</p>
+      <div className="mb-6 flex items-center gap-4">
+        <button onClick={() => navigate('/admin')} className="flex items-center gap-1 text-gray-500 hover:text-gray-700 text-sm"><ArrowLeft size={16} />Dashboard</button>
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Waste Transfer Notes</h1>
+          <p className="text-gray-600 mt-1">Manage waste transfer documentation</p>
+        </div>
       </div>
 
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
@@ -76,8 +142,8 @@ export default function WasteTransferNotesPage() {
             </div>
           </div>
           <button
-            onClick={() => alert('Create WTN from completed job')}
-            className="flex items-center gap-2 px-4 py-2 bg-[#F59E0B] text-white rounded-lg hover:bg-[#D97706] transition-colors"
+            onClick={openCreateModal}
+            className="flex items-center gap-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
           >
             <Plus className="w-5 h-5" />
             Create WTN
@@ -135,7 +201,7 @@ export default function WasteTransferNotesPage() {
                           <Eye className="w-4 h-4" />
                         </button>
                         <button
-                          onClick={() => alert('Download PDF feature coming soon')}
+                          onClick={() => toast.info('PDF download coming soon')}
                           className="text-green-600 hover:text-green-900"
                           title="Download PDF"
                         >
@@ -160,6 +226,73 @@ export default function WasteTransferNotesPage() {
           }}
         />
       )}
+
+      {showCreateModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-5 border-b border-gray-200 flex justify-between items-center">
+              <h3 className="text-lg font-bold text-gray-900">Create Waste Transfer Note</h3>
+              <button onClick={() => setShowCreateModal(false)} className="text-gray-400 hover:text-gray-600"><X size={20} /></button>
+            </div>
+            <div className="p-5 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Customer *</label>
+                <select value={createForm.customer_id} onChange={e => setCreateForm({ ...createForm, customer_id: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent">
+                  <option value="">Select customer...</option>
+                  {customers.map(c => <option key={c.id} value={c.id}>{c.company_name || c.contact_name} ({c.customer_number})</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Linked Job (optional)</label>
+                <select value={createForm.job_id} onChange={e => setCreateForm({ ...createForm, job_id: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent">
+                  <option value="">No linked job</option>
+                  {jobs.map(j => <option key={j.id} value={j.id}>{j.job_number} — {j.service_type?.replace(/_/g, ' ')}</option>)}
+                </select>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Waste Type</label>
+                  <select value={createForm.waste_type} onChange={e => setCreateForm({ ...createForm, waste_type: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent">
+                    {WASTE_TYPES.map(t => <option key={t} value={t}>{t.replace(/_/g, ' ')}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Container Type</label>
+                  <select value={createForm.container_type} onChange={e => setCreateForm({ ...createForm, container_type: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent">
+                    {CONTAINER_TYPES.map(t => <option key={t} value={t}>{t.replace(/_/g, ' ')}</option>)}
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Waste Description *</label>
+                <textarea rows={2} value={createForm.waste_description} onChange={e => setCreateForm({ ...createForm, waste_description: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent" />
+              </div>
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Quantity *</label>
+                  <input type="number" min="0" step="0.1" value={createForm.quantity} onChange={e => setCreateForm({ ...createForm, quantity: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Unit</label>
+                  <select value={createForm.quantity_unit} onChange={e => setCreateForm({ ...createForm, quantity_unit: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent">
+                    {QUANTITY_UNITS.map(u => <option key={u} value={u}>{u}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Containers</label>
+                  <input type="number" min="1" value={createForm.container_count} onChange={e => setCreateForm({ ...createForm, container_count: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent" />
+                </div>
+              </div>
+            </div>
+            <div className="p-5 border-t border-gray-100 flex justify-end gap-3">
+              <button onClick={() => setShowCreateModal(false)} className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm hover:bg-gray-50">Cancel</button>
+              <button onClick={handleCreateWTN} disabled={createLoading || !createForm.customer_id || !createForm.waste_description || !createForm.quantity} className="px-4 py-2 bg-orange-500 text-white rounded-lg text-sm hover:bg-orange-600 disabled:opacity-50">
+                {createLoading ? 'Creating...' : 'Create WTN'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -170,6 +303,7 @@ interface WTNViewModalProps {
 }
 
 function WTNViewModal({ wtn, onClose }: WTNViewModalProps) {
+  const { toast } = useToastContext();
   const [customerAddress, setCustomerAddress] = useState<any>(null);
 
   useEffect(() => {
@@ -323,7 +457,7 @@ function WTNViewModal({ wtn, onClose }: WTNViewModalProps) {
               Close
             </button>
             <button
-              onClick={() => alert('Download PDF feature coming soon')}
+              onClick={() => toast.info('PDF download coming soon')}
               className="flex items-center gap-2 px-4 py-2 bg-[#F59E0B] text-white rounded-lg hover:bg-[#D97706] transition-colors"
             >
               <Download className="w-4 h-4" />

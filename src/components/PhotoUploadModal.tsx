@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { Upload, X, Image as ImageIcon } from 'lucide-react';
+import { useToastContext } from '../contexts/ToastContext';
 
 interface PhotoUploadModalProps {
   jobId: string;
@@ -10,6 +11,7 @@ interface PhotoUploadModalProps {
 }
 
 export default function PhotoUploadModal({ jobId, jobNumber, onClose, onPhotoAdded }: PhotoUploadModalProps) {
+  const { toast } = useToastContext();
   const [uploading, setUploading] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
@@ -21,7 +23,7 @@ export default function PhotoUploadModal({ jobId, jobNumber, onClose, onPhotoAdd
       const validFiles = files.filter(f => f.type.startsWith('image/'));
 
       if (validFiles.length !== files.length) {
-        alert('Only image files are allowed');
+        toast.error('Only image files are allowed');
       }
 
       setSelectedFiles(prev => [...prev, ...validFiles]);
@@ -43,7 +45,7 @@ export default function PhotoUploadModal({ jobId, jobNumber, onClose, onPhotoAdd
 
   const handleUpload = async () => {
     if (selectedFiles.length === 0) {
-      alert('Please select at least one photo');
+      toast.error('Please select at least one photo');
       return;
     }
 
@@ -88,13 +90,13 @@ export default function PhotoUploadModal({ jobId, jobNumber, onClose, onPhotoAdd
         if (dbError) throw dbError;
       }
 
-      alert(`${uploadedPhotos.length} photo(s) uploaded successfully`);
+      toast.success(`${uploadedPhotos.length} photo(s) uploaded successfully`);
       window.scrollTo({ top: 0, behavior: 'smooth' });
       onPhotoAdded();
       onClose();
     } catch (error) {
       console.error('Error uploading photos:', error);
-      alert('Failed to upload photos. Please try again.');
+      toast.error('Failed to upload photos. Please try again.');
     } finally {
       setUploading(false);
     }

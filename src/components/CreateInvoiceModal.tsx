@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { X, Plus, Trash2 } from 'lucide-react';
+import { useToastContext } from '../contexts/ToastContext';
 
 interface CreateInvoiceModalProps {
   onClose: () => void;
@@ -32,6 +33,7 @@ interface LineItem {
 }
 
 export default function CreateInvoiceModal({ onClose, onInvoiceCreated }: CreateInvoiceModalProps) {
+  const { toast } = useToastContext();
   const [loading, setLoading] = useState(false);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [selectedCustomer, setSelectedCustomer] = useState('');
@@ -146,12 +148,12 @@ export default function CreateInvoiceModal({ onClose, onInvoiceCreated }: Create
     e.preventDefault();
 
     if (!selectedCustomer || lineItems.length === 0) {
-      alert('Please select a customer and add at least one line item');
+      toast.error('Please select a customer and add at least one line item');
       return;
     }
 
     if (lineItems.some(item => !item.description || item.unit_price <= 0)) {
-      alert('Please fill in all line item details');
+      toast.error('Please fill in all line item details');
       return;
     }
 
@@ -191,13 +193,12 @@ export default function CreateInvoiceModal({ onClose, onInvoiceCreated }: Create
 
       if (lineItemsError) throw lineItemsError;
 
-      alert(`Invoice ${invoiceNumber} created successfully`);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      toast.success(`Invoice ${invoiceNumber} created successfully`);
       onInvoiceCreated();
       onClose();
     } catch (error) {
       console.error('Error creating invoice:', error);
-      alert('Failed to create invoice. Please try again.');
+      toast.error('Failed to create invoice. Please try again.');
     } finally {
       setLoading(false);
     }

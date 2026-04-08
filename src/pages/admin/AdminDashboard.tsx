@@ -394,7 +394,7 @@ export default function AdminDashboard() {
             </button>
 
             <button
-              onClick={() => alert('Payments management coming soon')}
+              onClick={() => navigate('/admin/invoicing')}
               className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:border-orange-500 transition-colors text-left"
             >
               <h3 className="text-xl font-bold text-gray-900 mb-2">Payments</h3>
@@ -433,6 +433,14 @@ export default function AdminDashboard() {
             >
               <h3 className="text-xl font-bold text-gray-900 mb-2">News Management</h3>
               <p className="text-gray-600">Create, edit, and publish news articles</p>
+            </button>
+
+            <button
+              onClick={() => navigate('/admin/email-inbox')}
+              className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:border-orange-500 transition-colors text-left"
+            >
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Email Inbox</h3>
+              <p className="text-gray-600">View and manage synced @mediwaste.co.uk emails</p>
             </button>
 
             <button

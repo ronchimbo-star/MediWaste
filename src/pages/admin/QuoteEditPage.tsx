@@ -3,6 +3,7 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Save, Plus, Trash2, ArrowLeft, Send, Copy } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import Header from '../../components/Header';
+import { useToastContext } from '../../contexts/ToastContext';
 
 interface LineItem {
   id?: string;
@@ -17,6 +18,7 @@ interface LineItem {
 export default function QuoteEditPage() {
   const navigate = useNavigate();
   const { id } = useParams();
+  const { toast } = useToastContext();
   const [searchParams] = useSearchParams();
   const quoteRequestId = searchParams.get('from_request');
 
@@ -93,7 +95,7 @@ export default function QuoteEditPage() {
       }
     } catch (err) {
       console.error('Error loading quote:', err);
-      alert('Failed to load quote');
+      toast.error('Failed to load quote');
     }
   }
 
@@ -254,7 +256,7 @@ export default function QuoteEditPage() {
       }
     } catch (err) {
       console.error('Error saving quote:', err);
-      alert('Failed to save quote');
+      toast.error('Failed to save quote');
     } finally {
       setSaving(false);
     }
@@ -486,7 +488,7 @@ export default function QuoteEditPage() {
               <button
                 onClick={() => {
                   navigator.clipboard.writeText(shareLink);
-                  alert('Link copied to clipboard!');
+                  toast.success('Link copied to clipboard');
                 }}
                 className="flex-1 px-4 py-2 border border-gray-300 rounded-lg font-semibold hover:bg-gray-50 flex items-center justify-center gap-2"
               >

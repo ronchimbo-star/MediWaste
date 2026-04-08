@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { FileText, Plus, Eye, FileEdit as Edit, Trash2, Search, Filter, CheckCircle, XCircle, Clock } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import Header from '../../components/Header';
+import { useToastContext } from '../../contexts/ToastContext';
 
 interface Quote {
   id: string;
@@ -19,6 +20,7 @@ interface Quote {
 
 export default function QuotesPage() {
   const navigate = useNavigate();
+  const { toast } = useToastContext();
   const [quotes, setQuotes] = useState<Quote[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -57,7 +59,7 @@ export default function QuotesPage() {
       fetchQuotes();
     } catch (err) {
       console.error('Error deleting quote:', err);
-      alert('Failed to delete quote');
+      toast.error('Failed to delete quote');
     }
   }
 

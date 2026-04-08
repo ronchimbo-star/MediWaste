@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
+import { useToastContext } from '../../contexts/ToastContext';
 
 interface NewsArticle {
   id: string;
@@ -15,6 +16,7 @@ interface NewsArticle {
 
 export default function NewsManagementPage() {
   const navigate = useNavigate();
+  const { toast } = useToastContext();
   const [articles, setArticles] = useState<NewsArticle[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'published' | 'draft'>('all');
@@ -59,10 +61,10 @@ export default function NewsManagementPage() {
       if (error) throw error;
 
       setArticles(articles.filter(a => a.id !== id));
-      alert('Article deleted successfully');
+      toast.success('Article deleted successfully');
     } catch (err) {
       console.error('Error deleting article:', err);
-      alert('Failed to delete article');
+      toast.error('Failed to delete article');
     }
   };
 
@@ -83,7 +85,7 @@ export default function NewsManagementPage() {
       ));
     } catch (err) {
       console.error('Error updating status:', err);
-      alert('Failed to update article status');
+      toast.error('Failed to update article status');
     }
   };
 
