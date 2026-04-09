@@ -7,6 +7,38 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey",
 };
 
+async function getAccessToken(): Promise<string> {
+  const refreshToken = Deno.env.get("GMAIL_REFRESH_TOKEN");
+  const clientId = Deno.env.get("GMAIL_CLIENT_ID");
+  const clientSecret = Deno.env.get("GMAIL_CLIENT_SECRET");
+
+  if (refreshToken && clientId && clientSecret) {
+    const resp = await fetch("https://oauth2.googleapis.com/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        grant_type: "refresh_token",
+        refresh_token: refreshToken,
+        client_id: clientId,
+        client_secret: clientSecret,
+      }),
+    });
+
+    if (resp.ok) {
+      const data = await resp.json();
+      if (data.access_token) return data.access_token;
+    }
+
+    const errText = await resp.text().catch(() => "unknown");
+    throw new Error(`Failed to refresh Gmail token: ${errText}`);
+  }
+
+  const staticToken = Deno.env.get("GMAIL_ACCESS_TOKEN");
+  if (staticToken) return staticToken;
+
+  throw new Error("No Gmail credentials configured. Set GMAIL_REFRESH_TOKEN + GMAIL_CLIENT_ID + GMAIL_CLIENT_SECRET, or GMAIL_ACCESS_TOKEN.");
+}
+
 function decodeBase64Url(str: string): string {
   try {
     const base64 = str.replace(/-/g, "+").replace(/_/g, "/");
@@ -100,16 +132,24 @@ Deno.serve(async (req: Request) => {
     return new Response(null, { status: 200, headers: corsHeaders });
   }
 
-  try {
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
-    );
+  const supabase = createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+  );
 
-    const gmailToken = Deno.env.get("GMAIL_ACCESS_TOKEN");
-    if (!gmailToken) {
+  try {
+    let gmailToken: string;
+    try {
+      gmailToken = await getAccessToken();
+    } catch (tokenErr: any) {
+      await supabase.from("mw_email_sync_log").insert([{
+        status: "error",
+        error_message: tokenErr.message,
+        emails_fetched: 0,
+        emails_new: 0,
+      }]);
       return new Response(
-        JSON.stringify({ error: "GMAIL_ACCESS_TOKEN not configured" }),
+        JSON.stringify({ error: tokenErr.message }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -235,6 +275,13 @@ Deno.serve(async (req: Request) => {
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (err: any) {
+    await supabase.from("mw_email_sync_log").insert([{
+      status: "error",
+      error_message: err.message,
+      emails_fetched: 0,
+      emails_new: 0,
+    }]).catch(() => {});
+
     return new Response(
       JSON.stringify({ error: err.message }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
