@@ -116,13 +116,12 @@ export default function EmailInboxPage() {
   const handleSync = async () => {
     setSyncing(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
       const resp = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sync-gmail`,
         {
           method: 'POST',
           headers: {
-            Authorization: `Bearer ${session?.access_token}`,
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({ maxResults: 100 }),
