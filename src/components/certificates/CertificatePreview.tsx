@@ -81,14 +81,16 @@ export default function CertificatePreview({ data, settings, forDownload = false
       <div
         style={{
           width: '90px',
+          minHeight: '1123px',
           background: '#c0392b',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          justifyContent: 'space-evenly',
-          padding: '60px 0',
+          justifyContent: 'space-between',
+          padding: '36px 0',
           flexShrink: 0,
-          overflow: 'visible',
+          overflow: 'hidden',
+          boxSizing: 'border-box',
         }}
       >
         {sidebarCount.map((_, i) => (
@@ -99,13 +101,14 @@ export default function CertificatePreview({ data, settings, forDownload = false
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
+              flexShrink: 0,
             }}
           >
             <img
               src="/mediwaste-logo.png"
               alt="MediWaste"
               style={{
-                width: '220px',
+                width: '180px',
                 height: 'auto',
                 objectFit: 'contain',
                 transform: 'rotate(-90deg)',
@@ -222,7 +225,7 @@ export default function CertificatePreview({ data, settings, forDownload = false
           </div>
         )}
 
-        <div style={{ marginTop: 'auto', paddingBottom: '32px', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '24px' }}>
+        <div style={{ marginTop: '24px', paddingBottom: '32px', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '24px' }}>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '12px' }}>
             <div
               style={{
@@ -247,7 +250,7 @@ export default function CertificatePreview({ data, settings, forDownload = false
             <img
               src="/mediwaste-logo.png"
               alt="MediWaste"
-              style={{ width: '140px', height: 'auto', display: 'block', objectFit: 'contain' }}
+              style={{ width: '200px', height: 'auto', display: 'block', objectFit: 'contain' }}
             />
           </div>
 
