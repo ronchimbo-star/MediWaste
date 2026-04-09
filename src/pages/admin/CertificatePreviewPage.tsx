@@ -1,15 +1,14 @@
-import { useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../../lib/supabase';
 import AdminLayout from '../../components/admin/AdminLayout';
 import CertificatePreview from '../../components/certificates/CertificatePreview';
 import { Download, FileEdit as Edit, ChevronLeft, ExternalLink } from 'lucide-react';
+import { downloadCertificateAsPDF } from '../../utils/certificateDownload';
 
 export default function CertificatePreviewPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const printRef = useRef<HTMLDivElement>(null);
 
   const { data: cert, isLoading } = useQuery({
     queryKey: ['certificate', id],
@@ -31,45 +30,6 @@ export default function CertificatePreviewPage() {
       return data;
     },
   });
-
-  const handlePrint = () => {
-    const printContent = printRef.current;
-    if (!printContent) return;
-
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) return;
-
-    const html = `<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8" />
-  <title>Certificate ${cert?.certificate_number || ''}</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { background: white; }
-    @media print {
-      body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-      @page { margin: 0; size: A4 portrait; }
-    }
-  </style>
-</head>
-<body>
-  ${printContent.innerHTML}
-</body>
-</html>`;
-
-    printWindow.document.write(html);
-    printWindow.document.close();
-    printWindow.focus();
-    setTimeout(() => {
-      printWindow.print();
-      printWindow.close();
-    }, 500);
-  };
-
-  const handleDownloadPNG = () => {
-    handlePrint();
-  };
 
   if (isLoading) {
     return (
@@ -99,6 +59,8 @@ export default function CertificatePreviewPage() {
     waste_carrier_licence: settings?.waste_carrier_licence || '',
     certification_statement: cert.certification_statement || settings?.default_certification_statement || '',
   };
+
+  const handleDownload = () => downloadCertificateAsPDF(cert.certificate_number);
 
   return (
     <AdminLayout
@@ -136,14 +98,14 @@ export default function CertificatePreviewPage() {
               Edit
             </button>
             <button
-              onClick={handleDownloadPNG}
+              onClick={handleDownload}
               className="flex items-center gap-2 border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
             >
               <Download size={15} />
               Download PNG
             </button>
             <button
-              onClick={handlePrint}
+              onClick={handleDownload}
               className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
             >
               <Download size={15} />
@@ -152,10 +114,8 @@ export default function CertificatePreviewPage() {
           </div>
         </div>
 
-        <div className="flex justify-center">
-          <div ref={printRef} className="overflow-auto">
-            <CertificatePreview data={previewData} settings={settings || null} forDownload={false} />
-          </div>
+        <div className="flex justify-center overflow-auto">
+          <CertificatePreview data={previewData} settings={settings || null} />
         </div>
       </div>
     </AdminLayout>

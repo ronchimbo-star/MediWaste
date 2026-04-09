@@ -1,8 +1,8 @@
-import { useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import CertificatePreview from '../components/certificates/CertificatePreview';
+import { downloadCertificateAsPDF } from '../utils/certificateDownload';
 import { Download, Award, FileText, CheckCircle, XCircle, Clock, MapPin, Phone, Mail, Building, AlertTriangle } from 'lucide-react';
 
 interface WasteTransferNote {
@@ -41,7 +41,6 @@ function fmt(date: string) {
 
 export default function CompliancePage() {
   const { token } = useParams<{ token: string }>();
-  const printRef = useRef<HTMLDivElement>(null);
 
   const { data: cert, isLoading, error } = useQuery({
     queryKey: ['compliance-cert', token],
@@ -84,44 +83,7 @@ export default function CompliancePage() {
     },
   });
 
-  const handlePrintCertificate = () => {
-    const printContent = printRef.current;
-    if (!printContent) return;
-
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) return;
-
-    const html = `<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8" />
-  <title>Certificate ${cert?.certificate_number || ''}</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { background: white; }
-    @media print {
-      body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-      @page { margin: 0; size: A4 portrait; }
-    }
-  </style>
-</head>
-<body>
-  ${printContent.innerHTML}
-</body>
-</html>`;
-
-    printWindow.document.write(html);
-    printWindow.document.close();
-    printWindow.focus();
-    setTimeout(() => {
-      printWindow.print();
-      printWindow.close();
-    }, 500);
-  };
-
-  const handleDownloadPNG = () => {
-    handlePrintCertificate();
-  };
+  const handleDownload = () => downloadCertificateAsPDF(cert?.certificate_number || '');
 
   if (isLoading) {
     return (
@@ -180,14 +142,14 @@ export default function CompliancePage() {
           </div>
           <div className="flex items-center gap-2">
             <button
-              onClick={handleDownloadPNG}
+              onClick={handleDownload}
               className="flex items-center gap-1.5 text-sm border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 px-3 py-1.5 rounded-lg transition-colors"
             >
               <Download size={14} />
               PNG
             </button>
             <button
-              onClick={handlePrintCertificate}
+              onClick={handleDownload}
               className="flex items-center gap-1.5 text-sm bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-lg transition-colors"
             >
               <Download size={14} />
@@ -293,14 +255,14 @@ export default function CompliancePage() {
                 <h2 className="font-semibold text-gray-900">Certificate</h2>
                 <div className="flex gap-2">
                   <button
-                    onClick={handleDownloadPNG}
+                    onClick={handleDownload}
                     className="flex items-center gap-1.5 text-xs border border-gray-200 bg-white hover:bg-gray-50 text-gray-600 px-2.5 py-1.5 rounded-lg transition-colors"
                   >
                     <Download size={12} />
                     PNG
                   </button>
                   <button
-                    onClick={handlePrintCertificate}
+                    onClick={handleDownload}
                     className="flex items-center gap-1.5 text-xs bg-red-600 hover:bg-red-700 text-white px-2.5 py-1.5 rounded-lg transition-colors"
                   >
                     <Download size={12} />
@@ -309,7 +271,7 @@ export default function CompliancePage() {
                 </div>
               </div>
               <div className="overflow-auto">
-                <div ref={printRef} style={{ transform: 'scale(0.75)', transformOrigin: 'top left', width: '133%', pointerEvents: 'none' }}>
+                <div style={{ transform: 'scale(0.75)', transformOrigin: 'top left', width: '133%', pointerEvents: 'none' }}>
                   <CertificatePreview data={previewData} settings={settings || null} />
                 </div>
               </div>

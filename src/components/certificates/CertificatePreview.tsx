@@ -1,4 +1,4 @@
-import QRCode from './QRCode';
+import QRCodeCanvas from './QRCode';
 
 interface CertificateData {
   certificate_number: string;
@@ -32,12 +32,42 @@ function fmt(date: string) {
   return new Date(date).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
 
+function SignatureSVG({ name }: { name: string }) {
+  const words = name.trim().split(/\s+/);
+  const firstName = words[0] || '';
+  const lastName = words.slice(1).join(' ');
+
+  return (
+    <svg
+      viewBox="0 0 220 60"
+      width="220"
+      height="60"
+      style={{ display: 'block', overflow: 'visible' }}
+    >
+      <defs>
+        <style>{`
+          @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap');
+          .sig { font-family: 'Dancing Script', cursive; font-size: 32px; font-weight: 700; fill: #1a1a1a; }
+        `}</style>
+      </defs>
+      <text className="sig" x="4" y="44">{firstName}</text>
+      {lastName && <text className="sig" x={firstName.length * 14 + 10} y="44">{lastName}</text>}
+    </svg>
+  );
+}
+
 export default function CertificatePreview({ data, settings, forDownload = false }: Props) {
   const companyName = settings?.waste_carrier_company_name || 'MediWaste';
   const licenceNo = data.waste_carrier_licence || settings?.waste_carrier_licence || '';
   const signatoryName = data.authorised_signatory_name || settings?.default_signatory_name || '';
   const signatoryTitle = data.authorised_signatory_title || settings?.default_signatory_title || '';
   const verifyUrl = `${window.location.origin}/compliance/${data.qr_code_token}`;
+
+  const sidebarItems = [
+    { text: 'mediwaste' },
+    { text: 'mediwaste' },
+    { text: 'mediwaste' },
+  ];
 
   return (
     <div
@@ -46,28 +76,27 @@ export default function CertificatePreview({ data, settings, forDownload = false
         width: '794px',
         minHeight: '1123px',
         background: 'white',
-        fontFamily: "'Georgia', 'Times New Roman', serif",
+        fontFamily: "'Arial', sans-serif",
         display: 'flex',
         flexDirection: 'row',
         position: 'relative',
-        boxShadow: forDownload ? 'none' : '0 4px 32px rgba(0,0,0,0.12)',
-        transform: forDownload ? 'none' : 'scale(1)',
+        boxShadow: forDownload ? 'none' : '0 4px 32px rgba(0,0,0,0.14)',
       }}
     >
       <div
         style={{
-          width: '80px',
+          width: '88px',
           background: '#c0392b',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          justifyContent: 'space-around',
-          padding: '20px 0',
+          justifyContent: 'space-evenly',
+          padding: '32px 0',
           flexShrink: 0,
         }}
       >
-        {[0, 1, 2].map((i) => (
-          <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+        {sidebarItems.map((_, i) => (
+          <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
             <div
               style={{
                 writingMode: 'vertical-rl',
@@ -75,9 +104,9 @@ export default function CertificatePreview({ data, settings, forDownload = false
                 transform: 'rotate(180deg)',
                 color: 'white',
                 fontFamily: 'Arial, sans-serif',
-                fontWeight: 'bold',
-                fontSize: '13px',
-                letterSpacing: '2px',
+                fontWeight: '900',
+                fontSize: '14px',
+                letterSpacing: '3px',
                 textTransform: 'lowercase',
               }}
             >
@@ -85,57 +114,57 @@ export default function CertificatePreview({ data, settings, forDownload = false
             </div>
             <div
               style={{
-                width: '32px',
-                height: '32px',
+                width: '44px',
+                height: '44px',
                 background: 'white',
                 borderRadius: '50%',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
+                flexShrink: 0,
               }}
             >
-              <div
-                style={{
-                  width: '20px',
-                  height: '20px',
-                  background: '#c0392b',
-                  clipPath: 'polygon(50% 0%, 50% 40%, 90% 40%, 90% 60%, 50% 60%, 50% 100%, 50% 60%, 10% 60%, 10% 40%, 50% 40%)',
-                }}
+              <img
+                src="/mediwaste-logo.png"
+                alt="MW"
+                style={{ width: '34px', height: '34px', objectFit: 'contain' }}
+                crossOrigin="anonymous"
               />
             </div>
           </div>
         ))}
       </div>
 
-      <div style={{ flex: 1, padding: '48px 48px 40px 48px', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ flex: 1, padding: '52px 52px 44px 52px', display: 'flex', flexDirection: 'column' }}>
         <div style={{ marginBottom: '28px' }}>
           <h1
             style={{
-              fontSize: '36px',
-              fontWeight: 'bold',
+              fontSize: '38px',
+              fontWeight: '900',
               lineHeight: '1.15',
               color: '#111',
-              margin: '0 0 12px 0',
+              margin: '0 0 14px 0',
               fontFamily: 'Arial, sans-serif',
+              letterSpacing: '-0.5px',
             }}
           >
             MEDICAL WASTE<br />DISPOSAL<br />CERTIFICATE
           </h1>
-          <p style={{ fontSize: '13px', color: '#444', margin: 0, fontFamily: 'Arial, sans-serif' }}>
-            Certificate Registration No.: <strong>{data.certificate_number}</strong>
+          <p style={{ fontSize: '13px', color: '#555', margin: 0, fontFamily: 'Arial, sans-serif' }}>
+            Certificate Registration No.: <strong style={{ color: '#111' }}>{data.certificate_number}</strong>
           </p>
         </div>
 
-        <div style={{ marginBottom: '24px', fontFamily: 'Arial, sans-serif', fontSize: '14px', color: '#333' }}>
-          <p style={{ fontWeight: 'bold', margin: '0 0 4px 0' }}>The Certification Body</p>
+        <div style={{ marginBottom: '20px', fontFamily: 'Arial, sans-serif', fontSize: '14px', color: '#333' }}>
+          <p style={{ fontWeight: 'bold', margin: '0 0 3px 0' }}>The Certification Body</p>
           <p style={{ margin: '0 0 2px 0' }}>of {companyName}</p>
           <p style={{ margin: 0 }}>certifies that the organization</p>
         </div>
 
-        <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '18px' }}>
           <p
             style={{
-              fontSize: '22px',
+              fontSize: '24px',
               fontWeight: 'bold',
               fontFamily: 'Arial, sans-serif',
               color: '#111',
@@ -146,7 +175,7 @@ export default function CertificatePreview({ data, settings, forDownload = false
           </p>
         </div>
 
-        <div style={{ marginBottom: '20px', fontFamily: 'Arial, sans-serif', fontSize: '14px', color: '#333' }}>
+        <div style={{ marginBottom: '18px', fontFamily: 'Arial, sans-serif', fontSize: '14px', color: '#333' }}>
           <p style={{ margin: '0 0 10px 0' }}>for the scope</p>
           <div
             style={{
@@ -156,8 +185,8 @@ export default function CertificatePreview({ data, settings, forDownload = false
               background: '#fafafa',
             }}
           >
-            <p style={{ fontWeight: 'bold', marginBottom: '8px', margin: '0 0 8px 0' }}>Waste Management Services:</p>
-            <ul style={{ margin: 0, padding: '0 0 0 16px' }}>
+            <p style={{ fontWeight: 'bold', margin: '0 0 8px 0' }}>Waste Management Services:</p>
+            <ul style={{ margin: 0, padding: '0 0 0 18px' }}>
               {data.waste_types_covered.map((wt, i) => (
                 <li key={i} style={{ marginBottom: '4px', color: '#c0392b', fontSize: '13px' }}>
                   <span style={{ color: '#333' }}>{wt}</span>
@@ -167,13 +196,13 @@ export default function CertificatePreview({ data, settings, forDownload = false
           </div>
         </div>
 
-        <div style={{ fontFamily: 'Arial, sans-serif', fontSize: '14px', color: '#333', marginBottom: '16px' }}>
+        <div style={{ fontFamily: 'Arial, sans-serif', fontSize: '14px', color: '#333', marginBottom: '18px' }}>
           <p style={{ margin: '0 0 8px 0' }}>has established and applies an Environmental Management System.</p>
           <p style={{ margin: '0 0 8px 0' }}>An audit was performed and has furnished proof that the requirements according to</p>
           <p style={{ fontWeight: 'bold', fontSize: '15px', textAlign: 'center', margin: '12px 0' }}>
             HTM 07-01: Safe Management of Healthcare Waste
           </p>
-          <p style={{ margin: '0 0 16px 0' }}>are fulfilled.</p>
+          <p style={{ margin: '0 0 14px 0' }}>are fulfilled.</p>
           <p style={{ margin: 0 }}>
             The certificate is valid from{' '}
             <strong>{fmt(data.issue_date)}</strong> until{' '}
@@ -187,7 +216,7 @@ export default function CertificatePreview({ data, settings, forDownload = false
               border: '1px solid #ddd',
               borderRadius: '8px',
               padding: '12px 16px',
-              marginBottom: '24px',
+              marginBottom: '28px',
               background: '#fafafa',
               fontFamily: 'Arial, sans-serif',
             }}
@@ -197,7 +226,7 @@ export default function CertificatePreview({ data, settings, forDownload = false
                 fontSize: '11px',
                 fontWeight: 'bold',
                 letterSpacing: '1px',
-                color: '#666',
+                color: '#777',
                 textTransform: 'uppercase',
                 margin: '0 0 8px 0',
               }}
@@ -211,26 +240,18 @@ export default function CertificatePreview({ data, settings, forDownload = false
           </div>
         )}
 
-        <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
+        <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '24px' }}>
           <div
             style={{
               border: '1px solid #2ecc71',
               borderRadius: '8px',
-              padding: '12px 20px',
-              minWidth: '200px',
+              padding: '14px 22px',
+              minWidth: '220px',
             }}
           >
-            <p
-              style={{
-                fontFamily: "'Dancing Script', cursive, Georgia, serif",
-                fontSize: '22px',
-                color: '#333',
-                margin: '0 0 8px 0',
-                fontStyle: 'italic',
-              }}
-            >
-              {signatoryName}
-            </p>
+            <div style={{ marginBottom: '10px' }}>
+              <SignatureSVG name={signatoryName} />
+            </div>
             <p style={{ fontWeight: 'bold', fontSize: '13px', fontFamily: 'Arial, sans-serif', margin: '0 0 2px 0', color: '#111' }}>
               {signatoryName}
             </p>
@@ -239,9 +260,9 @@ export default function CertificatePreview({ data, settings, forDownload = false
             </p>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-            <QRCode value={verifyUrl} size={100} />
-            <p style={{ fontSize: '10px', color: '#999', fontFamily: 'Arial, sans-serif', margin: 0 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+            <QRCodeCanvas value={verifyUrl} size={160} />
+            <p style={{ fontSize: '11px', color: '#999', fontFamily: 'Arial, sans-serif', margin: 0 }}>
               Verify Online
             </p>
           </div>
@@ -250,8 +271,8 @@ export default function CertificatePreview({ data, settings, forDownload = false
         <div
           style={{
             position: 'absolute',
-            bottom: '16px',
-            right: '48px',
+            bottom: '18px',
+            right: '52px',
             fontSize: '11px',
             color: '#aaa',
             fontFamily: 'Arial, sans-serif',
