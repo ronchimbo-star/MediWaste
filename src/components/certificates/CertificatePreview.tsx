@@ -97,7 +97,7 @@ export default function CertificatePreview({ data, settings, forDownload = false
             src="/mediwaste-logo.png"
             alt="MediWaste"
             style={{
-              width: '60px',
+              width: '68px',
               height: 'auto',
               objectFit: 'contain',
               transform: 'rotate(-90deg)',
@@ -212,24 +212,26 @@ export default function CertificatePreview({ data, settings, forDownload = false
           </div>
         )}
 
-        <div style={{ marginTop: 'auto', marginBottom: '16px', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '24px' }}>
+        <div style={{ marginTop: 'auto', paddingBottom: '32px', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '24px' }}>
           <div
             style={{
-              border: '1px solid #2ecc71',
+              border: '1.5px solid #111',
               borderRadius: '8px',
-              padding: '14px 22px',
-              minWidth: '220px',
+              padding: '16px 24px',
+              minWidth: '240px',
             }}
           >
-            <div style={{ marginBottom: '10px' }}>
+            <div style={{ marginBottom: '12px' }}>
               <SignatureSVG name={signatoryName} />
             </div>
-            <p style={{ fontWeight: 'bold', fontSize: '13px', fontFamily: 'Arial, sans-serif', margin: '0 0 2px 0', color: '#111' }}>
-              {signatoryName}
-            </p>
-            <p style={{ fontSize: '12px', fontFamily: 'Arial, sans-serif', margin: 0, color: '#666' }}>
-              {signatoryTitle}
-            </p>
+            <div style={{ borderTop: '1px solid #ddd', paddingTop: '10px' }}>
+              <p style={{ fontWeight: 'bold', fontSize: '13px', fontFamily: 'Arial, sans-serif', margin: '0 0 2px 0', color: '#111' }}>
+                {signatoryName}
+              </p>
+              <p style={{ fontSize: '12px', fontFamily: 'Arial, sans-serif', margin: 0, color: '#666' }}>
+                {signatoryTitle}
+              </p>
+            </div>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
