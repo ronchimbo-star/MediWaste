@@ -43,6 +43,10 @@ import ServiceAgreementPage from './pages/ServiceAgreementPage';
 import ServiceAgreementsPage from './pages/admin/ServiceAgreementsPage';
 import ServiceAgreementEditPage from './pages/admin/ServiceAgreementEditPage';
 import EmailInboxPage from './pages/admin/EmailInboxPage';
+import CertificatesPage from './pages/admin/CertificatesPage';
+import CertificateEditPage from './pages/admin/CertificateEditPage';
+import CertificatePreviewPage from './pages/admin/CertificatePreviewPage';
+import CompliancePage from './pages/CompliancePage';
 import CookieConsent from './components/CookieConsent';
 import ScrollToTop from './components/ScrollToTop';
 import NotFound from './pages/NotFound';
@@ -104,6 +108,7 @@ function App() {
         <Route path="/quote" element={<QuotePage />} />
         <Route path="/quote/:token" element={<PublicQuoteView />} />
         <Route path="/service-agreement/:token" element={<ServiceAgreementPage />} />
+        <Route path="/compliance/:token" element={<CompliancePage />} />
         <Route path="/terms" element={<TermsPage />} />
         <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="/cookies" element={<CookiePage />} />
@@ -290,6 +295,38 @@ function App() {
           element={
             <ProtectedRoute>
               <EmailInboxPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/certificates"
+          element={
+            <ProtectedRoute>
+              <CertificatesPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/certificates/create"
+          element={
+            <ProtectedRoute>
+              <CertificateEditPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/certificates/:id/edit"
+          element={
+            <ProtectedRoute>
+              <CertificateEditPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/certificates/:id/preview"
+          element={
+            <ProtectedRoute>
+              <CertificatePreviewPage />
             </ProtectedRoute>
           }
         />

@@ -1,0 +1,265 @@
+import QRCode from './QRCode';
+
+interface CertificateData {
+  certificate_number: string;
+  qr_code_token: string;
+  customer_name: string;
+  issue_date: string;
+  expiry_date: string;
+  waste_types_covered: string[];
+  authorised_signatory_name: string;
+  authorised_signatory_title: string;
+  waste_carrier_licence: string;
+  certification_statement?: string;
+}
+
+interface CertificateSettings {
+  waste_carrier_licence: string;
+  company_address?: string;
+  default_signatory_name?: string;
+  default_signatory_title?: string;
+  waste_carrier_company_name?: string | null;
+}
+
+interface Props {
+  data: CertificateData;
+  settings: CertificateSettings | null;
+  forDownload?: boolean;
+}
+
+function fmt(date: string) {
+  if (!date) return '—';
+  return new Date(date).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+
+export default function CertificatePreview({ data, settings, forDownload = false }: Props) {
+  const companyName = settings?.waste_carrier_company_name || 'MediWaste';
+  const licenceNo = data.waste_carrier_licence || settings?.waste_carrier_licence || '';
+  const signatoryName = data.authorised_signatory_name || settings?.default_signatory_name || '';
+  const signatoryTitle = data.authorised_signatory_title || settings?.default_signatory_title || '';
+  const verifyUrl = `${window.location.origin}/compliance/${data.qr_code_token}`;
+
+  return (
+    <div
+      id="certificate-render"
+      style={{
+        width: '794px',
+        minHeight: '1123px',
+        background: 'white',
+        fontFamily: "'Georgia', 'Times New Roman', serif",
+        display: 'flex',
+        flexDirection: 'row',
+        position: 'relative',
+        boxShadow: forDownload ? 'none' : '0 4px 32px rgba(0,0,0,0.12)',
+        transform: forDownload ? 'none' : 'scale(1)',
+      }}
+    >
+      <div
+        style={{
+          width: '80px',
+          background: '#c0392b',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'space-around',
+          padding: '20px 0',
+          flexShrink: 0,
+        }}
+      >
+        {[0, 1, 2].map((i) => (
+          <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+            <div
+              style={{
+                writingMode: 'vertical-rl',
+                textOrientation: 'mixed',
+                transform: 'rotate(180deg)',
+                color: 'white',
+                fontFamily: 'Arial, sans-serif',
+                fontWeight: 'bold',
+                fontSize: '13px',
+                letterSpacing: '2px',
+                textTransform: 'lowercase',
+              }}
+            >
+              mediwaste
+            </div>
+            <div
+              style={{
+                width: '32px',
+                height: '32px',
+                background: 'white',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <div
+                style={{
+                  width: '20px',
+                  height: '20px',
+                  background: '#c0392b',
+                  clipPath: 'polygon(50% 0%, 50% 40%, 90% 40%, 90% 60%, 50% 60%, 50% 100%, 50% 60%, 10% 60%, 10% 40%, 50% 40%)',
+                }}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ flex: 1, padding: '48px 48px 40px 48px', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ marginBottom: '28px' }}>
+          <h1
+            style={{
+              fontSize: '36px',
+              fontWeight: 'bold',
+              lineHeight: '1.15',
+              color: '#111',
+              margin: '0 0 12px 0',
+              fontFamily: 'Arial, sans-serif',
+            }}
+          >
+            MEDICAL WASTE<br />DISPOSAL<br />CERTIFICATE
+          </h1>
+          <p style={{ fontSize: '13px', color: '#444', margin: 0, fontFamily: 'Arial, sans-serif' }}>
+            Certificate Registration No.: <strong>{data.certificate_number}</strong>
+          </p>
+        </div>
+
+        <div style={{ marginBottom: '24px', fontFamily: 'Arial, sans-serif', fontSize: '14px', color: '#333' }}>
+          <p style={{ fontWeight: 'bold', margin: '0 0 4px 0' }}>The Certification Body</p>
+          <p style={{ margin: '0 0 2px 0' }}>of {companyName}</p>
+          <p style={{ margin: 0 }}>certifies that the organization</p>
+        </div>
+
+        <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+          <p
+            style={{
+              fontSize: '22px',
+              fontWeight: 'bold',
+              fontFamily: 'Arial, sans-serif',
+              color: '#111',
+              margin: 0,
+            }}
+          >
+            {data.customer_name}
+          </p>
+        </div>
+
+        <div style={{ marginBottom: '20px', fontFamily: 'Arial, sans-serif', fontSize: '14px', color: '#333' }}>
+          <p style={{ margin: '0 0 10px 0' }}>for the scope</p>
+          <div
+            style={{
+              border: '1px solid #ddd',
+              borderRadius: '8px',
+              padding: '14px 18px',
+              background: '#fafafa',
+            }}
+          >
+            <p style={{ fontWeight: 'bold', marginBottom: '8px', margin: '0 0 8px 0' }}>Waste Management Services:</p>
+            <ul style={{ margin: 0, padding: '0 0 0 16px' }}>
+              {data.waste_types_covered.map((wt, i) => (
+                <li key={i} style={{ marginBottom: '4px', color: '#c0392b', fontSize: '13px' }}>
+                  <span style={{ color: '#333' }}>{wt}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        <div style={{ fontFamily: 'Arial, sans-serif', fontSize: '14px', color: '#333', marginBottom: '16px' }}>
+          <p style={{ margin: '0 0 8px 0' }}>has established and applies an Environmental Management System.</p>
+          <p style={{ margin: '0 0 8px 0' }}>An audit was performed and has furnished proof that the requirements according to</p>
+          <p style={{ fontWeight: 'bold', fontSize: '15px', textAlign: 'center', margin: '12px 0' }}>
+            HTM 07-01: Safe Management of Healthcare Waste
+          </p>
+          <p style={{ margin: '0 0 16px 0' }}>are fulfilled.</p>
+          <p style={{ margin: 0 }}>
+            The certificate is valid from{' '}
+            <strong>{fmt(data.issue_date)}</strong> until{' '}
+            <strong>{fmt(data.expiry_date)}</strong>.
+          </p>
+        </div>
+
+        {licenceNo && (
+          <div
+            style={{
+              border: '1px solid #ddd',
+              borderRadius: '8px',
+              padding: '12px 16px',
+              marginBottom: '24px',
+              background: '#fafafa',
+              fontFamily: 'Arial, sans-serif',
+            }}
+          >
+            <p
+              style={{
+                fontSize: '11px',
+                fontWeight: 'bold',
+                letterSpacing: '1px',
+                color: '#666',
+                textTransform: 'uppercase',
+                margin: '0 0 8px 0',
+              }}
+            >
+              LICENSING INFORMATION
+            </p>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: '#333' }}>
+              <span>Carrier Licence No:</span>
+              <strong>{licenceNo}</strong>
+            </div>
+          </div>
+        )}
+
+        <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
+          <div
+            style={{
+              border: '1px solid #2ecc71',
+              borderRadius: '8px',
+              padding: '12px 20px',
+              minWidth: '200px',
+            }}
+          >
+            <p
+              style={{
+                fontFamily: "'Dancing Script', cursive, Georgia, serif",
+                fontSize: '22px',
+                color: '#333',
+                margin: '0 0 8px 0',
+                fontStyle: 'italic',
+              }}
+            >
+              {signatoryName}
+            </p>
+            <p style={{ fontWeight: 'bold', fontSize: '13px', fontFamily: 'Arial, sans-serif', margin: '0 0 2px 0', color: '#111' }}>
+              {signatoryName}
+            </p>
+            <p style={{ fontSize: '12px', fontFamily: 'Arial, sans-serif', margin: 0, color: '#666' }}>
+              {signatoryTitle}
+            </p>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+            <QRCode value={verifyUrl} size={100} />
+            <p style={{ fontSize: '10px', color: '#999', fontFamily: 'Arial, sans-serif', margin: 0 }}>
+              Verify Online
+            </p>
+          </div>
+        </div>
+
+        <div
+          style={{
+            position: 'absolute',
+            bottom: '16px',
+            right: '48px',
+            fontSize: '11px',
+            color: '#aaa',
+            fontFamily: 'Arial, sans-serif',
+          }}
+        >
+          Page 1 of 1
+        </div>
+      </div>
+    </div>
+  );
+}

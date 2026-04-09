@@ -22,6 +22,7 @@ import {
   Newspaper,
   ListChecks,
   FileSignature,
+  Award,
 } from 'lucide-react';
 
 interface AdminLayoutProps {
@@ -129,6 +130,7 @@ export default function AdminLayout({ children, pageTitle, breadcrumbs }: AdminL
       items: [
         { label: 'Invoicing', path: '/admin/invoices', icon: <Receipt size={18} /> },
         { label: 'Waste Transfer Notes', path: '/admin/waste-transfer-notes', icon: <ListChecks size={18} /> },
+        { label: 'Certificates', path: '/admin/certificates', icon: <Award size={18} /> },
       ],
     },
     {
