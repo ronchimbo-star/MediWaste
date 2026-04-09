@@ -62,7 +62,7 @@ export default function CertificatePreview({ data, settings, forDownload = false
   const signatoryTitle = data.authorised_signatory_title || settings?.default_signatory_title || '';
   const verifyUrl = `${window.location.origin}/compliance/${data.qr_code_token}`;
 
-  const sidebarCount = [0, 1, 2];
+  const sidebarCount = [0, 1, 2, 3, 4];
 
   return (
     <div
@@ -223,25 +223,32 @@ export default function CertificatePreview({ data, settings, forDownload = false
         )}
 
         <div style={{ marginTop: 'auto', paddingBottom: '32px', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '24px' }}>
-          <div
-            style={{
-              border: '1.5px solid #111',
-              borderRadius: '8px',
-              padding: '16px 24px',
-              minWidth: '240px',
-            }}
-          >
-            <div style={{ marginBottom: '12px' }}>
-              <SignatureSVG name={signatoryName} />
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '12px' }}>
+            <div
+              style={{
+                border: '1.5px solid #111',
+                borderRadius: '8px',
+                padding: '16px 24px',
+                minWidth: '240px',
+              }}
+            >
+              <div style={{ marginBottom: '12px' }}>
+                <SignatureSVG name={signatoryName} />
+              </div>
+              <div style={{ borderTop: '1px solid #ddd', paddingTop: '10px' }}>
+                <p style={{ fontWeight: 'bold', fontSize: '13px', fontFamily: 'Arial, sans-serif', margin: '0 0 2px 0', color: '#111' }}>
+                  {signatoryName}
+                </p>
+                <p style={{ fontSize: '12px', fontFamily: 'Arial, sans-serif', margin: 0, color: '#666' }}>
+                  {signatoryTitle}
+                </p>
+              </div>
             </div>
-            <div style={{ borderTop: '1px solid #ddd', paddingTop: '10px' }}>
-              <p style={{ fontWeight: 'bold', fontSize: '13px', fontFamily: 'Arial, sans-serif', margin: '0 0 2px 0', color: '#111' }}>
-                {signatoryName}
-              </p>
-              <p style={{ fontSize: '12px', fontFamily: 'Arial, sans-serif', margin: 0, color: '#666' }}>
-                {signatoryTitle}
-              </p>
-            </div>
+            <img
+              src="/mediwaste-logo.png"
+              alt="MediWaste"
+              style={{ width: '140px', height: 'auto', display: 'block', objectFit: 'contain' }}
+            />
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
