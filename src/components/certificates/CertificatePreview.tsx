@@ -123,19 +123,27 @@ export default function CertificatePreview({ data, settings, forDownload = false
 
       <div style={{ flex: 1, padding: '52px 52px 44px 52px', display: 'flex', flexDirection: 'column' }}>
         <div style={{ marginBottom: '28px', textAlign: 'right' }}>
-          <h1
-            style={{
-              fontSize: '38px',
-              fontWeight: '900',
-              lineHeight: '1.15',
-              color: '#111',
-              margin: '0 0 14px 0',
-              fontFamily: 'Arial, sans-serif',
-              letterSpacing: '-0.5px',
-            }}
-          >
-            MEDICAL WASTE<br />DISPOSAL<br />CERTIFICATE
-          </h1>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'flex-end', gap: '14px', marginBottom: '14px' }}>
+            <img
+              src="/mediwaste-favicon.png"
+              alt="MediWaste Icon"
+              style={{ width: '52px', height: '52px', objectFit: 'contain', flexShrink: 0, marginTop: '4px' }}
+            />
+            <h1
+              style={{
+                fontSize: '38px',
+                fontWeight: '900',
+                lineHeight: '1.15',
+                color: '#111',
+                margin: 0,
+                fontFamily: 'Arial, sans-serif',
+                letterSpacing: '-0.5px',
+                textAlign: 'left',
+              }}
+            >
+              MEDICAL WASTE<br />DISPOSAL<br />CERTIFICATE
+            </h1>
+          </div>
           <p style={{ fontSize: '13px', color: '#555', margin: 0, fontFamily: 'Arial, sans-serif' }}>
             Certificate Registration No.: <strong style={{ color: '#111' }}>{data.certificate_number}</strong>
           </p>
