@@ -25,6 +25,8 @@ interface Props {
   data: CertificateData;
   settings: CertificateSettings | null;
   forDownload?: boolean;
+  logoDataUrl?: string;
+  faviconDataUrl?: string;
 }
 
 function fmt(date: string) {
@@ -44,23 +46,46 @@ function SignatureSVG({ name }: { name: string }) {
       height="60"
       style={{ display: 'block', overflow: 'visible' }}
     >
-      <defs>
-        <style>{`
-          @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap');
-          .sig { font-family: 'Dancing Script', cursive; font-size: 32px; font-weight: 700; fill: #1a1a1a; }
-        `}</style>
-      </defs>
-      <text className="sig" x="4" y="44">{firstName}</text>
-      {lastName && <text className="sig" x={firstName.length * 14 + 10} y="44">{lastName}</text>}
+      <text
+        x="4"
+        y="44"
+        style={{
+          fontFamily: 'Georgia, serif',
+          fontSize: '32px',
+          fontWeight: '700',
+          fontStyle: 'italic',
+          fill: '#1a1a1a',
+        }}
+      >
+        {firstName}
+      </text>
+      {lastName && (
+        <text
+          x={firstName.length * 14 + 10}
+          y="44"
+          style={{
+            fontFamily: 'Georgia, serif',
+            fontSize: '32px',
+            fontWeight: '700',
+            fontStyle: 'italic',
+            fill: '#1a1a1a',
+          }}
+        >
+          {lastName}
+        </text>
+      )}
     </svg>
   );
 }
 
-export default function CertificatePreview({ data, settings, forDownload = false }: Props) {
+export default function CertificatePreview({ data, settings, forDownload = false, logoDataUrl, faviconDataUrl }: Props) {
   const licenceNo = data.waste_carrier_licence || settings?.waste_carrier_licence || '';
   const signatoryName = data.authorised_signatory_name || settings?.default_signatory_name || '';
   const signatoryTitle = data.authorised_signatory_title || settings?.default_signatory_title || '';
   const verifyUrl = `${window.location.origin}/compliance/${data.qr_code_token}`;
+
+  const logoSrc = logoDataUrl || '/mediwaste-logo.png';
+  const faviconSrc = faviconDataUrl || '/mediwaste-favicon.png';
 
   const sidebarCount = [0, 1, 2, 3, 4];
 
@@ -105,7 +130,7 @@ export default function CertificatePreview({ data, settings, forDownload = false
             }}
           >
             <img
-              src="/mediwaste-logo.png"
+              src={logoSrc}
               alt="MediWaste"
               style={{
                 width: '180px',
@@ -125,7 +150,7 @@ export default function CertificatePreview({ data, settings, forDownload = false
         <div style={{ marginBottom: '28px', textAlign: 'right' }}>
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'flex-end', gap: '14px', marginBottom: '14px' }}>
             <img
-              src="/mediwaste-favicon.png"
+              src={faviconSrc}
               alt="MediWaste Icon"
               style={{ width: '88px', height: '88px', objectFit: 'contain', flexShrink: 0, marginTop: '4px' }}
             />
@@ -256,7 +281,7 @@ export default function CertificatePreview({ data, settings, forDownload = false
               </div>
             </div>
             <img
-              src="/mediwaste-logo.png"
+              src={logoSrc}
               alt="MediWaste"
               style={{ width: '200px', height: 'auto', display: 'block', objectFit: 'contain' }}
             />

@@ -1,16 +1,21 @@
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../../lib/supabase';
 import AdminLayout from '../../components/admin/AdminLayout';
 import CertificatePreview from '../../components/certificates/CertificatePreview';
-import { Download, FileEdit as Edit, ChevronLeft, ExternalLink } from 'lucide-react';
-import { downloadCertificateAsPDF } from '../../utils/certificateDownload';
+import { Download, FileEdit as Edit, ChevronLeft, ExternalLink, Loader } from 'lucide-react';
+import { downloadCertificateAsPDF, imageToDataUrl } from '../../utils/certificateDownload';
 
 export default function CertificatePreviewPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [logoDataUrl, setLogoDataUrl] = useState<string>('');
+  const [faviconDataUrl, setFaviconDataUrl] = useState<string>('');
+  const [imagesReady, setImagesReady] = useState(false);
+  const [downloading, setDownloading] = useState(false);
 
-  const { data: cert, isLoading } = useQuery({
+  const { data: cert, isLoading: certLoading } = useQuery({
     queryKey: ['certificate', id],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -23,7 +28,7 @@ export default function CertificatePreviewPage() {
     },
   });
 
-  const { data: settings } = useQuery({
+  const { data: settings, isLoading: settingsLoading } = useQuery({
     queryKey: ['certificate-settings'],
     queryFn: async () => {
       const { data } = await supabase.from('mw_certificate_settings').select('*').eq('id', 'default').maybeSingle();
@@ -31,10 +36,30 @@ export default function CertificatePreviewPage() {
     },
   });
 
+  useEffect(() => {
+    let cancelled = false;
+    Promise.all([
+      imageToDataUrl('/mediwaste-logo.png'),
+      imageToDataUrl('/mediwaste-favicon.png'),
+    ]).then(([logo, favicon]) => {
+      if (!cancelled) {
+        setLogoDataUrl(logo);
+        setFaviconDataUrl(favicon);
+        setImagesReady(true);
+      }
+    });
+    return () => { cancelled = true; };
+  }, []);
+
+  const isLoading = certLoading || settingsLoading;
+
   if (isLoading) {
     return (
       <AdminLayout pageTitle="Certificate Preview">
-        <div className="p-12 text-center text-gray-400">Loading...</div>
+        <div className="p-12 flex items-center justify-center gap-3 text-gray-400">
+          <Loader size={18} className="animate-spin" />
+          <span className="text-sm">Loading certificate...</span>
+        </div>
       </AdminLayout>
     );
   }
@@ -60,7 +85,56 @@ export default function CertificatePreviewPage() {
     certification_statement: cert.certification_statement || settings?.default_certification_statement || '',
   };
 
-  const handleDownload = () => downloadCertificateAsPDF(cert.certificate_number);
+  const handleDownloadPDF = async () => {
+    setDownloading(true);
+    try {
+      await downloadCertificateAsPDF(cert.certificate_number);
+    } finally {
+      setDownloading(false);
+    }
+  };
+
+  const handleDownloadPNG = async () => {
+    setDownloading(true);
+    try {
+      const el = document.getElementById('certificate-render');
+      if (!el) return;
+      const canvas = document.createElement('canvas');
+      const scale = 2;
+      canvas.width = el.offsetWidth * scale;
+      canvas.height = el.offsetHeight * scale;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
+      const svgData = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="${canvas.width}" height="${canvas.height}">
+          <foreignObject width="${el.offsetWidth}" height="${el.offsetHeight}" transform="scale(${scale})">
+            ${el.outerHTML}
+          </foreignObject>
+        </svg>`;
+      const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+      const url = URL.createObjectURL(svgBlob);
+      const img = new Image();
+      img.onload = () => {
+        ctx.drawImage(img, 0, 0);
+        URL.revokeObjectURL(url);
+        const link = document.createElement('a');
+        link.download = `certificate-${cert.certificate_number}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        setDownloading(false);
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        setDownloading(false);
+        handleDownloadPDF();
+      };
+      img.src = url;
+    } catch {
+      setDownloading(false);
+      handleDownloadPDF();
+    }
+  };
 
   return (
     <AdminLayout
@@ -98,24 +172,38 @@ export default function CertificatePreviewPage() {
               Edit
             </button>
             <button
-              onClick={handleDownload}
-              className="flex items-center gap-2 border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+              onClick={handleDownloadPNG}
+              disabled={downloading || !imagesReady}
+              className="flex items-center gap-2 border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <Download size={15} />
+              {downloading ? <Loader size={15} className="animate-spin" /> : <Download size={15} />}
               Download PNG
             </button>
             <button
-              onClick={handleDownload}
-              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+              onClick={handleDownloadPDF}
+              disabled={downloading || !imagesReady}
+              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <Download size={15} />
+              {downloading ? <Loader size={15} className="animate-spin" /> : <Download size={15} />}
               Download PDF
             </button>
           </div>
         </div>
 
         <div className="flex justify-center overflow-auto">
-          <CertificatePreview data={previewData} settings={settings || null} />
+          {imagesReady ? (
+            <CertificatePreview
+              data={previewData}
+              settings={settings || null}
+              logoDataUrl={logoDataUrl}
+              faviconDataUrl={faviconDataUrl}
+            />
+          ) : (
+            <div className="flex items-center justify-center gap-3 text-gray-400 py-24">
+              <Loader size={18} className="animate-spin" />
+              <span className="text-sm">Preparing certificate...</span>
+            </div>
+          )}
         </div>
       </div>
     </AdminLayout>
