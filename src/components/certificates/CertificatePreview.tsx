@@ -63,11 +63,7 @@ export default function CertificatePreview({ data, settings, forDownload = false
   const signatoryTitle = data.authorised_signatory_title || settings?.default_signatory_title || '';
   const verifyUrl = `${window.location.origin}/compliance/${data.qr_code_token}`;
 
-  const sidebarItems = [
-    { text: 'mediwaste' },
-    { text: 'mediwaste' },
-    { text: 'mediwaste' },
-  ];
+  const sidebarCount = [0, 1, 2];
 
   return (
     <div
@@ -95,42 +91,20 @@ export default function CertificatePreview({ data, settings, forDownload = false
           flexShrink: 0,
         }}
       >
-        {sidebarItems.map((_, i) => (
-          <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
-            <div
+        {sidebarCount.map((_, i) => (
+          <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <img
+              src="/mediwaste-logo-white2.png"
+              alt="MediWaste"
+              crossOrigin="anonymous"
               style={{
-                writingMode: 'vertical-rl',
-                textOrientation: 'mixed',
-                transform: 'rotate(180deg)',
-                color: 'white',
-                fontFamily: 'Arial, sans-serif',
-                fontWeight: '900',
-                fontSize: '14px',
-                letterSpacing: '3px',
-                textTransform: 'lowercase',
+                width: '64px',
+                height: 'auto',
+                objectFit: 'contain',
+                transform: 'rotate(-90deg)',
+                display: 'block',
               }}
-            >
-              mediwaste
-            </div>
-            <div
-              style={{
-                width: '44px',
-                height: '44px',
-                background: 'white',
-                borderRadius: '50%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexShrink: 0,
-              }}
-            >
-              <img
-                src="/mediwaste-logo.png"
-                alt="MW"
-                style={{ width: '34px', height: '34px', objectFit: 'contain' }}
-                crossOrigin="anonymous"
-              />
-            </div>
+            />
           </div>
         ))}
       </div>

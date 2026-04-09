@@ -140,22 +140,7 @@ export default function CompliancePage() {
             <img src="/mediwaste-logo.png" alt="MediWaste" className="h-7 w-auto" />
             <span className="text-sm text-gray-400 hidden sm:block">Compliance Verification</span>
           </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handleDownload}
-              className="flex items-center gap-1.5 text-sm border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 px-3 py-1.5 rounded-lg transition-colors"
-            >
-              <Download size={14} />
-              PNG
-            </button>
-            <button
-              onClick={handleDownload}
-              className="flex items-center gap-1.5 text-sm bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-lg transition-colors"
-            >
-              <Download size={14} />
-              PDF
-            </button>
-          </div>
+          <div />
         </div>
       </header>
 
