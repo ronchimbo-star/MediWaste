@@ -80,31 +80,41 @@ export default function CertificatePreview({ data, settings, forDownload = false
     >
       <div
         style={{
-          width: '80px',
+          width: '90px',
           background: '#c0392b',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'space-evenly',
-          padding: '40px 0',
+          padding: '60px 0',
           flexShrink: 0,
-          overflow: 'hidden',
+          overflow: 'visible',
         }}
       >
         {sidebarCount.map((_, i) => (
-          <img
+          <div
             key={i}
-            src="/mediwaste-logo.png"
-            alt="MediWaste"
             style={{
-              width: '68px',
-              height: 'auto',
-              objectFit: 'contain',
-              transform: 'rotate(-90deg)',
-              display: 'block',
-              filter: 'brightness(0) invert(1)',
+              width: '90px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
             }}
-          />
+          >
+            <img
+              src="/mediwaste-logo.png"
+              alt="MediWaste"
+              style={{
+                width: '220px',
+                height: 'auto',
+                objectFit: 'contain',
+                transform: 'rotate(-90deg)',
+                transformOrigin: 'center center',
+                display: 'block',
+                filter: 'brightness(0) invert(1)',
+              }}
+            />
+          </div>
         ))}
       </div>
 

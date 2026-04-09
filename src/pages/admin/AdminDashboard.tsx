@@ -346,6 +346,23 @@ export default function AdminDashboard() {
           </div>
 
           <div className="flex flex-col gap-6">
+            <div className="grid grid-cols-2 gap-4">
+              <div className={`bg-white rounded-xl border p-5 ${(serviceDueSoonCount || 0) > 0 ? 'border-amber-200 bg-amber-50' : 'border-gray-200'}`}>
+                <div className={`flex items-center gap-2 mb-2 text-sm font-medium ${(serviceDueSoonCount || 0) > 0 ? 'text-amber-600' : 'text-gray-500'}`}>
+                  <Calendar size={16} />
+                  Services Due (7d)
+                </div>
+                <p className="text-3xl font-bold text-gray-900">{serviceDueSoonCount ?? '—'}</p>
+              </div>
+              <div className={`bg-white rounded-xl border p-5 ${(unreadQuotes || 0) > 0 ? 'border-orange-200 bg-orange-50' : 'border-gray-200'}`}>
+                <div className={`flex items-center gap-2 mb-2 text-sm font-medium ${(unreadQuotes || 0) > 0 ? 'text-orange-600' : 'text-gray-500'}`}>
+                  <FileText size={16} />
+                  New Quote Requests
+                </div>
+                <p className="text-3xl font-bold text-gray-900">{unreadQuotes ?? '—'}</p>
+              </div>
+            </div>
+
             <div className="bg-white rounded-xl border border-gray-200">
               <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
                 <h3 className="font-bold text-gray-900">Notifications</h3>
@@ -416,23 +433,6 @@ export default function AdminDashboard() {
                     <p className="text-xs text-gray-500 leading-snug">{desc}</p>
                   </button>
                 ))}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className={`bg-white rounded-xl border p-5 ${(serviceDueSoonCount || 0) > 0 ? 'border-amber-200 bg-amber-50' : 'border-gray-200'}`}>
-                <div className={`flex items-center gap-2 mb-2 text-sm font-medium ${(serviceDueSoonCount || 0) > 0 ? 'text-amber-600' : 'text-gray-500'}`}>
-                  <Calendar size={16} />
-                  Services Due (7d)
-                </div>
-                <p className="text-3xl font-bold text-gray-900">{serviceDueSoonCount ?? '—'}</p>
-              </div>
-              <div className={`bg-white rounded-xl border p-5 ${(unreadQuotes || 0) > 0 ? 'border-orange-200 bg-orange-50' : 'border-gray-200'}`}>
-                <div className={`flex items-center gap-2 mb-2 text-sm font-medium ${(unreadQuotes || 0) > 0 ? 'text-orange-600' : 'text-gray-500'}`}>
-                  <FileText size={16} />
-                  New Quote Requests
-                </div>
-                <p className="text-3xl font-bold text-gray-900">{unreadQuotes ?? '—'}</p>
               </div>
             </div>
           </div>
