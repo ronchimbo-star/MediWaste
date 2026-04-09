@@ -127,7 +127,7 @@ export default function CertificatePreview({ data, settings, forDownload = false
             <img
               src="/mediwaste-favicon.png"
               alt="MediWaste Icon"
-              style={{ width: '52px', height: '52px', objectFit: 'contain', flexShrink: 0, marginTop: '4px' }}
+              style={{ width: '88px', height: '88px', objectFit: 'contain', flexShrink: 0, marginTop: '4px' }}
             />
             <h1
               style={{
