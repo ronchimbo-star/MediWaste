@@ -80,32 +80,62 @@ export default function CertificatePreview({ data, settings, forDownload = false
     >
       <div
         style={{
-          width: '88px',
+          width: '80px',
           background: '#c0392b',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'space-evenly',
-          padding: '32px 0',
+          padding: '40px 0',
           flexShrink: 0,
-          overflow: 'visible',
+          overflow: 'hidden',
         }}
       >
         {sidebarCount.map((_, i) => (
-          <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'visible' }}>
-            <img
-              src="/mediwaste-logo-white2.png"
-              alt="MediWaste"
-              crossOrigin="anonymous"
+          <div
+            key={i}
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '8px',
+              transform: 'rotate(180deg)',
+            }}
+          >
+            <div
               style={{
-                height: '72px',
-                width: 'auto',
-                objectFit: 'contain',
-                transform: 'rotate(-90deg)',
-                display: 'block',
+                writingMode: 'vertical-rl',
+                textOrientation: 'mixed',
+                color: 'white',
+                fontFamily: 'Arial, sans-serif',
+                fontWeight: '700',
+                fontSize: '13px',
+                letterSpacing: '2px',
+                textTransform: 'lowercase',
+                userSelect: 'none',
+              }}
+            >
+              mediwaste
+            </div>
+            <div
+              style={{
+                width: '36px',
+                height: '36px',
+                background: 'white',
+                borderRadius: '50%',
+                overflow: 'hidden',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
                 flexShrink: 0,
               }}
-            />
+            >
+              <img
+                src="/mediwaste-favicon.png"
+                alt=""
+                style={{ width: '28px', height: '28px', objectFit: 'contain', display: 'block' }}
+              />
+            </div>
           </div>
         ))}
       </div>
@@ -131,8 +161,7 @@ export default function CertificatePreview({ data, settings, forDownload = false
         </div>
 
         <div style={{ marginBottom: '20px', fontFamily: 'Arial, sans-serif', fontSize: '14px', color: '#333' }}>
-          <p style={{ fontWeight: 'bold', margin: '0 0 3px 0' }}>The Certification Body</p>
-          <p style={{ margin: '0 0 2px 0' }}>of Circular Horizons International LTD t/a MediWaste</p>
+          <p style={{ fontWeight: 'bold', margin: '0 0 2px 0' }}>Circular Horizons International LTD t/a MediWaste</p>
           <p style={{ margin: 0 }}>certifies that the organization</p>
         </div>
 
