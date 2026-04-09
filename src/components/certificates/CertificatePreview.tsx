@@ -82,7 +82,7 @@ export default function CertificatePreview({ data, settings, forDownload = false
         style={{
           width: '90px',
           minHeight: '1123px',
-          background: '#c0392b',
+          background: '#FF0000',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
