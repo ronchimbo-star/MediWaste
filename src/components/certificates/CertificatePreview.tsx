@@ -57,7 +57,6 @@ function SignatureSVG({ name }: { name: string }) {
 }
 
 export default function CertificatePreview({ data, settings, forDownload = false }: Props) {
-  const companyName = settings?.waste_carrier_company_name || 'MediWaste';
   const licenceNo = data.waste_carrier_licence || settings?.waste_carrier_licence || '';
   const signatoryName = data.authorised_signatory_name || settings?.default_signatory_name || '';
   const signatoryTitle = data.authorised_signatory_title || settings?.default_signatory_title || '';
@@ -89,20 +88,22 @@ export default function CertificatePreview({ data, settings, forDownload = false
           justifyContent: 'space-evenly',
           padding: '32px 0',
           flexShrink: 0,
+          overflow: 'visible',
         }}
       >
         {sidebarCount.map((_, i) => (
-          <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'visible' }}>
             <img
               src="/mediwaste-logo-white2.png"
               alt="MediWaste"
               crossOrigin="anonymous"
               style={{
-                width: '64px',
-                height: 'auto',
+                height: '72px',
+                width: 'auto',
                 objectFit: 'contain',
                 transform: 'rotate(-90deg)',
                 display: 'block',
+                flexShrink: 0,
               }}
             />
           </div>
@@ -131,7 +132,7 @@ export default function CertificatePreview({ data, settings, forDownload = false
 
         <div style={{ marginBottom: '20px', fontFamily: 'Arial, sans-serif', fontSize: '14px', color: '#333' }}>
           <p style={{ fontWeight: 'bold', margin: '0 0 3px 0' }}>The Certification Body</p>
-          <p style={{ margin: '0 0 2px 0' }}>of {companyName}</p>
+          <p style={{ margin: '0 0 2px 0' }}>of Circular Horizons International LTD t/a MediWaste</p>
           <p style={{ margin: 0 }}>certifies that the organization</p>
         </div>
 
