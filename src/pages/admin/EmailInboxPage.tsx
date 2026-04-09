@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../lib/supabase';
 import { useToastContext } from '../../contexts/ToastContext';
 import { Mail, MailOpen, Star, Archive, RefreshCw, Search, User, Paperclip, ChevronLeft, ExternalLink } from 'lucide-react';
+import AdminLayout from '../../components/admin/AdminLayout';
 
 interface Email {
   id: string;
@@ -162,7 +163,7 @@ export default function EmailInboxPage() {
   const unreadCount = emails.filter((e) => e.status === 'unread').length;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <AdminLayout pageTitle="Email Inbox" breadcrumbs={[{ label: 'Dashboard', path: '/admin' }, { label: 'Email Inbox' }]}>
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="mb-6 flex items-center justify-between">
           <div>
@@ -312,7 +313,7 @@ export default function EmailInboxPage() {
           </div>
         </div>
       </div>
-    </div>
+    </AdminLayout>
   );
 }
 

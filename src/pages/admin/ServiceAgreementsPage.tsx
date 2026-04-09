@@ -4,6 +4,7 @@ import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/useAuth';
 import { Plus, Search, FileText, CheckCircle, XCircle, Clock, ExternalLink, FileEdit as Edit, Trash2, Filter } from 'lucide-react';
 import { useToastContext } from '../../contexts/ToastContext';
+import AdminLayout from '../../components/admin/AdminLayout';
 
 interface ServiceAgreement {
   id: string;
@@ -160,17 +161,19 @@ export default function ServiceAgreementsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading agreements...</p>
+      <AdminLayout pageTitle="Service Agreements" breadcrumbs={[{ label: 'Dashboard', path: '/admin' }, { label: 'Service Agreements' }]}>
+        <div className="flex items-center justify-center py-20">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading agreements...</p>
+          </div>
         </div>
-      </div>
+      </AdminLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <AdminLayout pageTitle="Service Agreements" breadcrumbs={[{ label: 'Dashboard', path: '/admin' }, { label: 'Service Agreements' }]}>
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
@@ -405,6 +408,6 @@ export default function ServiceAgreementsPage() {
           </div>
         </div>
       )}
-    </div>
+    </AdminLayout>
   );
 }

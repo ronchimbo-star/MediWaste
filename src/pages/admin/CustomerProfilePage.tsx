@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../lib/supabase';
 import { useToastContext } from '../../contexts/ToastContext';
-import { ArrowLeft, Plus, FileEdit as Edit2, Trash2, CheckCircle, Phone, Mail, MapPin, Building, X, ChevronDown, ChevronUp, Bell } from 'lucide-react';
+import { Plus, FileEdit as Edit2, Trash2, CheckCircle, Phone, Mail, MapPin, Building, X, ChevronDown, ChevronUp, Bell } from 'lucide-react';
+import AdminLayout from '../../components/admin/AdminLayout';
 
 type ServiceStatus = 'active' | 'paused' | 'cancelled';
 type PaymentStatus = 'pending' | 'paid' | 'overdue' | 'cancelled';
@@ -79,7 +80,6 @@ function isOverdue(d: string | null) {
 
 export default function CustomerProfilePage() {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
   const qc = useQueryClient();
   const { toast } = useToastContext();
 
@@ -393,19 +393,25 @@ export default function CustomerProfilePage() {
     setShowEditModal(true);
   }
 
+  const breadcrumbs = [{ label: 'Dashboard', path: '/admin' }, { label: 'Customers', path: '/admin/customers' }, { label: customer?.company_name || customer?.contact_name || 'Profile' }];
+
   if (loadingCustomer) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin" />
-      </div>
+      <AdminLayout pageTitle="Customer Profile" breadcrumbs={[{ label: 'Dashboard', path: '/admin' }, { label: 'Customers', path: '/admin/customers' }, { label: 'Loading...' }]}>
+        <div className="flex items-center justify-center h-64">
+          <div className="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin" />
+        </div>
+      </AdminLayout>
     );
   }
 
   if (!customer) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-gray-600">Customer not found.</p>
-      </div>
+      <AdminLayout pageTitle="Customer Profile" breadcrumbs={[{ label: 'Dashboard', path: '/admin' }, { label: 'Customers', path: '/admin/customers' }, { label: 'Not Found' }]}>
+        <div className="flex items-center justify-center h-64">
+          <p className="text-gray-600">Customer not found.</p>
+        </div>
+      </AdminLayout>
     );
   }
 
@@ -416,16 +422,10 @@ export default function CustomerProfilePage() {
   const activeReminders = (reminders || []).filter(r => !r.is_dismissed);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <button
-            onClick={() => navigate('/admin/customers')}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
-          >
-            <ArrowLeft size={18} />
-            <span className="font-medium">Back to Customers</span>
-          </button>
+    <AdminLayout pageTitle={customer.company_name || customer.contact_name} breadcrumbs={breadcrumbs}>
+      <div className="p-6">
+        <div className="flex items-center justify-between mb-6">
+          <div />
           <div className="flex items-center gap-3">
             <span className={`px-3 py-1 text-sm font-semibold rounded-full ${statusBadge(customer.status)}`}>
               {customer.status}
@@ -439,7 +439,6 @@ export default function CustomerProfilePage() {
             </button>
           </div>
         </div>
-      </header>
 
       <div className="container mx-auto px-4 py-6">
         <div className="mb-6">
@@ -941,6 +940,7 @@ export default function CustomerProfilePage() {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </AdminLayout>
   );
 }

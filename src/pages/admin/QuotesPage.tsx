@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FileText, Plus, Eye, FileEdit as Edit, Trash2, Search, Filter, CheckCircle, XCircle, Clock } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
-import Header from '../../components/Header';
 import { useToastContext } from '../../contexts/ToastContext';
+import AdminLayout from '../../components/admin/AdminLayout';
 
 interface Quote {
   id: string;
@@ -93,9 +93,7 @@ export default function QuotesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header />
-
+    <AdminLayout pageTitle="Quotes" breadcrumbs={[{ label: 'Dashboard', path: '/admin' }, { label: 'Quotes' }]}>
       <div className="container mx-auto px-4 py-8">
         <div className="bg-white rounded-lg shadow-sm">
           <div className="p-6 border-b border-gray-200">
@@ -231,6 +229,6 @@ export default function QuotesPage() {
           </div>
         </div>
       </div>
-    </div>
+    </AdminLayout>
   );
 }

@@ -1,13 +1,12 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../lib/supabase';
 import { Eye, Check, Archive, Trash2, X, AlertTriangle } from 'lucide-react';
+import AdminLayout from '../../components/admin/AdminLayout';
 
 type EnquiryStatus = 'pending' | 'read' | 'actioned' | 'archived';
 
 export default function ContactEnquiriesPage() {
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [selectedEnquiry, setSelectedEnquiry] = useState<any>(null);
   const [filterStatus, setFilterStatus] = useState<EnquiryStatus | 'all'>('all');
@@ -74,19 +73,7 @@ export default function ContactEnquiriesPage() {
   });
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-200">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-900">MediWaste Admin</h1>
-          <button
-            onClick={() => navigate('/admin')}
-            className="text-orange-600 hover:text-orange-700 font-medium"
-          >
-            ← Back to Dashboard
-          </button>
-        </div>
-      </header>
-
+    <AdminLayout pageTitle="Contact Enquiries" breadcrumbs={[{ label: 'Dashboard', path: '/admin' }, { label: 'Contact Enquiries' }]}>
       <div className="container mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-8">
           <h2 className="text-3xl font-bold text-gray-900">Contact Enquiries</h2>
@@ -340,6 +327,6 @@ export default function ContactEnquiriesPage() {
           </div>
         </div>
       )}
-    </div>
+    </AdminLayout>
   );
 }

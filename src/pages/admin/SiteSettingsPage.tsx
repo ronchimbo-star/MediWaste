@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../lib/supabase';
+import AdminLayout from '../../components/admin/AdminLayout';
 
 export default function SiteSettingsPage() {
   const navigate = useNavigate();
@@ -51,26 +52,16 @@ export default function SiteSettingsPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-gray-600">Loading...</p>
-      </div>
+      <AdminLayout pageTitle="Site Settings" breadcrumbs={[{ label: 'Dashboard', path: '/admin' }, { label: 'Settings' }]}>
+        <div className="flex items-center justify-center py-20">
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </AdminLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-200">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-900">MediWaste Admin</h1>
-          <button
-            onClick={() => navigate('/admin')}
-            className="text-orange-600 hover:text-orange-700 font-medium"
-          >
-            ← Back to Dashboard
-          </button>
-        </div>
-      </header>
-
+    <AdminLayout pageTitle="Site Settings" breadcrumbs={[{ label: 'Dashboard', path: '/admin' }, { label: 'Settings' }]}>
       <div className="container mx-auto px-4 py-8">
         <h2 className="text-3xl font-bold text-gray-900 mb-8">Site Settings</h2>
 
@@ -379,6 +370,6 @@ export default function SiteSettingsPage() {
           </div>
         </form>
       </div>
-    </div>
+    </AdminLayout>
   );
 }

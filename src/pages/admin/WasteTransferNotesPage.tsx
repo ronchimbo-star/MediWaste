@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
-import { Plus, Download, Eye, X, ArrowLeft } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Plus, Download, Eye, X } from 'lucide-react';
 import { useToastContext } from '../../contexts/ToastContext';
+import AdminLayout from '../../components/admin/AdminLayout';
 
 interface WasteTransferNote {
   id: string;
@@ -37,7 +37,6 @@ const emptyCreateForm = {
 };
 
 export default function WasteTransferNotesPage() {
-  const navigate = useNavigate();
   const { toast } = useToastContext();
   const [wtns, setWtns] = useState<WasteTransferNote[]>([]);
   const [loading, setLoading] = useState(true);
@@ -124,9 +123,9 @@ export default function WasteTransferNotesPage() {
   };
 
   return (
+    <AdminLayout pageTitle="Waste Transfer Notes" breadcrumbs={[{ label: 'Dashboard', path: '/admin' }, { label: 'Waste Transfer Notes' }]}>
     <div className="p-6">
-      <div className="mb-6 flex items-center gap-4">
-        <button onClick={() => navigate('/admin')} className="flex items-center gap-1 text-gray-500 hover:text-gray-700 text-sm"><ArrowLeft size={16} />Dashboard</button>
+      <div className="mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Waste Transfer Notes</h1>
           <p className="text-gray-600 mt-1">Manage waste transfer documentation</p>
@@ -216,6 +215,7 @@ export default function WasteTransferNotesPage() {
           </table>
         </div>
       )}
+      </div>
 
       {showModal && selectedWtn && (
         <WTNViewModal
@@ -293,7 +293,7 @@ export default function WasteTransferNotesPage() {
           </div>
         </div>
       )}
-    </div>
+    </AdminLayout>
   );
 }
 

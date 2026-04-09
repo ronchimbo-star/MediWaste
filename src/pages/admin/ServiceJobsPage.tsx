@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../lib/supabase';
-import { Plus, Calendar, User, MapPin, X, ArrowLeft, FileEdit as Edit2, Trash2 } from 'lucide-react';
+import { Plus, Calendar, User, MapPin, X, FileEdit as Edit2, Trash2 } from 'lucide-react';
 import { useToastContext } from '../../contexts/ToastContext';
+import AdminLayout from '../../components/admin/AdminLayout';
 
 interface ServiceJob {
   id: string;
@@ -31,7 +31,6 @@ function statusBadge(s: string) {
 }
 
 export default function ServiceJobsPage() {
-  const navigate = useNavigate();
   const { toast } = useToastContext();
   const qc = useQueryClient();
   const [filterStatus, setFilterStatus] = useState('all');
@@ -110,9 +109,9 @@ export default function ServiceJobsPage() {
   const filtered = (jobs || []).filter(j => filterStatus === 'all' || j.status === filterStatus);
 
   return (
+    <AdminLayout pageTitle="Service Schedule" breadcrumbs={[{ label: 'Dashboard', path: '/admin' }, { label: 'Service Schedule' }]}>
     <div className="p-6">
-      <div className="mb-6 flex items-center gap-4">
-        <button onClick={() => navigate('/admin')} className="flex items-center gap-1 text-gray-500 hover:text-gray-700 text-sm"><ArrowLeft size={16} />Dashboard</button>
+      <div className="mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Service Schedule</h1>
           <p className="text-gray-600 mt-1">Manage and track service jobs</p>
@@ -158,6 +157,7 @@ export default function ServiceJobsPage() {
           ))}
         </div>
       )}
+      </div>
 
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -215,6 +215,6 @@ export default function ServiceJobsPage() {
           </div>
         </div>
       )}
-    </div>
+    </AdminLayout>
   );
 }

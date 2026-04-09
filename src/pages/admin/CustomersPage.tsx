@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
-import { Plus, Search, FileEdit as Edit2, Trash2, Eye, ArrowLeft } from 'lucide-react';
+import { Plus, Search, FileEdit as Edit2, Trash2, Eye } from 'lucide-react';
 import { useToastContext } from '../../contexts/ToastContext';
+import AdminLayout from '../../components/admin/AdminLayout';
 
 interface Customer {
   id: string;
@@ -171,16 +172,11 @@ export default function CustomersPage() {
   };
 
   return (
+    <AdminLayout pageTitle="Customers" breadcrumbs={[{ label: 'Dashboard', path: '/admin' }, { label: 'Customers' }]}>
     <div className="p-6">
-      <div className="mb-6 flex items-center gap-4">
-        <button onClick={() => navigate('/admin')} className="flex items-center gap-1 text-gray-500 hover:text-gray-700 text-sm">
-          <ArrowLeft size={16} />
-          Dashboard
-        </button>
-        <div>
+      <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-900">Customer Management</h1>
           <p className="text-gray-600 mt-1">Manage your customer accounts and information</p>
-        </div>
       </div>
 
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
@@ -432,5 +428,6 @@ export default function CustomersPage() {
         </div>
       )}
     </div>
+    </AdminLayout>
   );
 }

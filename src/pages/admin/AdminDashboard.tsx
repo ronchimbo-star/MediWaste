@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useQuery } from '@tanstack/react-query';
 import { Bell, Mail, FileText, CheckCircle, XCircle, Clock, Users, AlertTriangle, Calendar } from 'lucide-react';
+import AdminLayout from '../../components/admin/AdminLayout';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -125,25 +126,8 @@ export default function AdminDashboard() {
     refetchNotifications();
   };
 
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    navigate('/login');
-  };
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-200">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-900">MediWaste Admin</h1>
-          <button
-            onClick={handleSignOut}
-            className="text-red-600 hover:text-red-700 font-medium"
-          >
-            Sign Out
-          </button>
-        </div>
-      </header>
-
+    <AdminLayout pageTitle="Dashboard">
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-8">
           <h2 className="text-3xl font-bold text-gray-900">Dashboard</h2>
@@ -453,6 +437,6 @@ export default function AdminDashboard() {
           </div>
         </div>
       </div>
-    </div>
+    </AdminLayout>
   );
 }

@@ -3,6 +3,7 @@ import { supabase } from '../../lib/supabase';
 import { Plus, FileText, DollarSign } from 'lucide-react';
 import CreateInvoiceModal from '../../components/CreateInvoiceModal';
 import RecordPaymentModal from '../../components/RecordPaymentModal';
+import AdminLayout from '../../components/admin/AdminLayout';
 
 interface Invoice {
   id: string;
@@ -66,6 +67,7 @@ export default function InvoicingPage() {
   );
 
   return (
+    <AdminLayout pageTitle="Invoicing" breadcrumbs={[{ label: 'Dashboard', path: '/admin' }, { label: 'Invoicing' }]}>
     <div className="p-6">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Invoicing</h1>
@@ -232,5 +234,6 @@ export default function InvoicingPage() {
         />
       )}
     </div>
+    </AdminLayout>
   );
 }

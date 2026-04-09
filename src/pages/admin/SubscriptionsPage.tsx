@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../lib/supabase';
-import { Plus, Search, FileEdit as Edit2, Trash2, X, ArrowLeft } from 'lucide-react';
+import { Plus, Search, FileEdit as Edit2, Trash2, X } from 'lucide-react';
 import { useToastContext } from '../../contexts/ToastContext';
+import AdminLayout from '../../components/admin/AdminLayout';
 
 interface Subscription {
   id: string;
@@ -35,7 +35,6 @@ function statusBadge(s: string) {
 }
 
 export default function SubscriptionsPage() {
-  const navigate = useNavigate();
   const { toast } = useToastContext();
   const qc = useQueryClient();
   const [search, setSearch] = useState('');
@@ -128,9 +127,9 @@ export default function SubscriptionsPage() {
   );
 
   return (
+    <AdminLayout pageTitle="Subscription Management" breadcrumbs={[{ label: 'Dashboard', path: '/admin' }, { label: 'Subscription Management' }]}>
     <div className="p-6">
-      <div className="mb-6 flex items-center gap-4">
-        <button onClick={() => navigate('/admin')} className="flex items-center gap-1 text-gray-500 hover:text-gray-700 text-sm"><ArrowLeft size={16} />Dashboard</button>
+      <div className="mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Subscription Management</h1>
           <p className="text-gray-600 mt-1">Manage customer subscriptions and service plans</p>
@@ -191,6 +190,7 @@ export default function SubscriptionsPage() {
           </div>
         </div>
       )}
+      </div>
 
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -266,6 +266,6 @@ export default function SubscriptionsPage() {
           </div>
         </div>
       )}
-    </div>
+    </AdminLayout>
   );
 }

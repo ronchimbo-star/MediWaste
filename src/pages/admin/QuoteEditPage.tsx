@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { Save, Plus, Trash2, ArrowLeft, Send, Copy } from 'lucide-react';
+import { Save, Plus, Trash2, Send, Copy } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
-import Header from '../../components/Header';
 import { useToastContext } from '../../contexts/ToastContext';
+import AdminLayout from '../../components/admin/AdminLayout';
 
 interface LineItem {
   id?: string;
@@ -265,19 +265,11 @@ export default function QuoteEditPage() {
   const { subtotal, taxAmount, total } = calculateTotals();
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header />
-
+    <AdminLayout pageTitle={id ? 'Edit Quote' : 'New Quote'} breadcrumbs={[{ label: 'Dashboard', path: '/admin' }, { label: 'Quotes', path: '/admin/quotes' }, { label: id ? 'Edit Quote' : 'New Quote' }]}>
       <div className="container mx-auto px-4 py-8">
         <div className="bg-white rounded-lg shadow-sm p-6">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-4">
-              <button
-                onClick={() => navigate('/admin/quotes')}
-                className="text-gray-600 hover:text-gray-900"
-              >
-                <ArrowLeft className="w-6 h-6" />
-              </button>
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">
                   {id ? 'Edit Quote' : 'Create Quote'}
@@ -508,6 +500,6 @@ export default function QuoteEditPage() {
           </div>
         </div>
       )}
-    </div>
+    </AdminLayout>
   );
 }

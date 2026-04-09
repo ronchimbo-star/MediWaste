@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../../lib/supabase';
-import { ArrowLeft, Mail, Download, Users, AlertTriangle, Clock, CheckCircle } from 'lucide-react';
+import { Mail, Download, Users, AlertTriangle, Clock, CheckCircle } from 'lucide-react';
+import AdminLayout from '../../components/admin/AdminLayout';
 
 type ListType = 'active' | 'payment_due' | 'service_due' | 'all_opted_in';
 
@@ -202,35 +203,26 @@ export default function MailingListsPage() {
   const emails = getEmailsFromList();
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <button onClick={() => navigate('/admin')} className="flex items-center gap-2 text-gray-600 hover:text-gray-900 font-medium">
-            <ArrowLeft size={18} />
-            Back to Dashboard
-          </button>
-          <div className="flex gap-3">
-            <button
-              onClick={copyEmails}
-              disabled={emails.length === 0}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm disabled:opacity-40"
-            >
-              <Mail size={16} />
-              {copied ? 'Copied!' : `Copy ${emails.length} Emails`}
-            </button>
-            <button
-              onClick={downloadCSV}
-              disabled={currentList.length === 0}
-              className="flex items-center gap-2 px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-800 transition-colors text-sm disabled:opacity-40"
-            >
-              <Download size={16} />
-              Export CSV
-            </button>
-          </div>
-        </div>
-      </header>
-
+    <AdminLayout pageTitle="Mailing Lists" breadcrumbs={[{ label: 'Dashboard', path: '/admin' }, { label: 'Mailing Lists' }]}>
       <div className="container mx-auto px-4 py-8">
+        <div className="mb-4 flex justify-end gap-3">
+          <button
+            onClick={copyEmails}
+            disabled={emails.length === 0}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm disabled:opacity-40"
+          >
+            <Mail size={16} />
+            {copied ? 'Copied!' : `Copy ${emails.length} Emails`}
+          </button>
+          <button
+            onClick={downloadCSV}
+            disabled={currentList.length === 0}
+            className="flex items-center gap-2 px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-800 transition-colors text-sm disabled:opacity-40"
+          >
+            <Download size={16} />
+            Export CSV
+          </button>
+        </div>
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Mailing Lists</h1>
           <p className="text-gray-500 mt-1">Manage and export targeted customer lists for communications</p>
@@ -366,6 +358,6 @@ export default function MailingListsPage() {
           )}
         </div>
       </div>
-    </div>
+    </AdminLayout>
   );
 }

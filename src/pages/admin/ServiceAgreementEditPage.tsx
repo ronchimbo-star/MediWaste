@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useParams, Link } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/useAuth';
-import { ArrowLeft, Save, Send, ExternalLink, Plus, Trash2, Eye, X } from 'lucide-react';
+import { Save, Send, ExternalLink, Plus, Trash2, Eye, X } from 'lucide-react';
 import { useToastContext } from '../../contexts/ToastContext';
+import AdminLayout from '../../components/admin/AdminLayout';
 
 interface WasteItem {
   description: string;
@@ -235,28 +236,22 @@ export default function ServiceAgreementEditPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
+      <AdminLayout pageTitle={id && id !== 'create' ? 'Edit Agreement' : 'New Agreement'} breadcrumbs={[{ label: 'Dashboard', path: '/admin' }, { label: 'Service Agreements', path: '/admin/service-agreements' }, { label: id && id !== 'create' ? 'Edit Agreement' : 'New Agreement' }]}>
+        <div className="flex items-center justify-center py-20">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading...</p>
+          </div>
         </div>
-      </div>
+      </AdminLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <AdminLayout pageTitle={id && id !== 'create' ? 'Edit Agreement' : 'New Agreement'} breadcrumbs={[{ label: 'Dashboard', path: '/admin' }, { label: 'Service Agreements', path: '/admin/service-agreements' }, { label: id && id !== 'create' ? 'Edit Agreement' : 'New Agreement' }]}>
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
-          <Link
-            to="/admin/service-agreements"
-            className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Agreements
-          </Link>
-
           <div className="flex justify-between items-start">
             <div>
               <h1 className="text-3xl font-bold text-gray-900 mb-2">
@@ -806,6 +801,6 @@ export default function ServiceAgreementEditPage() {
           </div>
         </div>
       )}
-    </div>
+    </AdminLayout>
   );
 }

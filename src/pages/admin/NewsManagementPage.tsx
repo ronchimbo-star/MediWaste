@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useToastContext } from '../../contexts/ToastContext';
+import AdminLayout from '../../components/admin/AdminLayout';
 
 interface NewsArticle {
   id: string;
@@ -15,7 +16,6 @@ interface NewsArticle {
 }
 
 export default function NewsManagementPage() {
-  const navigate = useNavigate();
   const { toast } = useToastContext();
   const [articles, setArticles] = useState<NewsArticle[]>([]);
   const [loading, setLoading] = useState(true);
@@ -104,20 +104,9 @@ export default function NewsManagementPage() {
   const draftCount = articles.filter(a => a.status === 'draft').length;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-200">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-900">MediWaste Admin</h1>
-          <button
-            onClick={() => navigate('/admin')}
-            className="text-orange-600 hover:text-orange-700 font-medium"
-          >
-            ← Back to Dashboard
-          </button>
-        </div>
-      </header>
-
+    <AdminLayout pageTitle="News Management" breadcrumbs={[{ label: 'Dashboard', path: '/admin' }, { label: 'News' }]}>
       <div className="container mx-auto px-4 py-8">
+
         <div className="flex justify-between items-center mb-8">
           <div>
             <h2 className="text-3xl font-bold text-gray-900">News Management</h2>
@@ -312,6 +301,6 @@ export default function NewsManagementPage() {
           )}
         </div>
       </div>
-    </div>
+    </AdminLayout>
   );
 }

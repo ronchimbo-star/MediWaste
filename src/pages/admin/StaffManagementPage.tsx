@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../lib/supabase';
-import { Plus, FileEdit as Edit2, Trash2, X, ArrowLeft, Search } from 'lucide-react';
+import { Plus, FileEdit as Edit2, Trash2, X, Search } from 'lucide-react';
 import { useToastContext } from '../../contexts/ToastContext';
+import AdminLayout from '../../components/admin/AdminLayout';
 
 interface Staff {
   id: string;
@@ -23,7 +23,6 @@ const emptyForm = {
 };
 
 export default function StaffManagementPage() {
-  const navigate = useNavigate();
   const { toast } = useToastContext();
   const qc = useQueryClient();
   const [showModal, setShowModal] = useState(false);
@@ -89,11 +88,9 @@ export default function StaffManagementPage() {
   );
 
   return (
+    <AdminLayout pageTitle="Staff Management" breadcrumbs={[{ label: 'Dashboard', path: '/admin' }, { label: 'Staff Management' }]}>
     <div className="p-6">
-      <div className="mb-6 flex items-center gap-4">
-        <button onClick={() => navigate('/admin')} className="flex items-center gap-1 text-gray-500 hover:text-gray-700 text-sm">
-          <ArrowLeft size={16} />Dashboard
-        </button>
+      <div className="mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Staff Management</h1>
           <p className="text-gray-600 mt-1">Manage your team members</p>
@@ -147,6 +144,7 @@ export default function StaffManagementPage() {
           </table>
         </div>
       )}
+      </div>
 
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -185,6 +183,6 @@ export default function StaffManagementPage() {
           </div>
         </div>
       )}
-    </div>
+    </AdminLayout>
   );
 }

@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
-import { ArrowLeft, Save, Eye, Code, Trash2, Plus } from 'lucide-react';
+import { Save, Eye, Code, Trash2, Plus } from 'lucide-react';
 import { useToastContext } from '../../contexts/ToastContext';
+import AdminLayout from '../../components/admin/AdminLayout';
 
 interface Category {
   id: string;
@@ -225,24 +226,19 @@ export default function NewsEditPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-gray-600">Loading article...</div>
-      </div>
+      <AdminLayout pageTitle={id ? 'Edit Article' : 'New Article'} breadcrumbs={[{ label: 'Dashboard', path: '/admin' }, { label: 'News', path: '/admin/news' }, { label: id ? 'Edit Article' : 'New Article' }]}>
+        <div className="flex items-center justify-center py-20">
+          <div className="text-gray-600">Loading article...</div>
+        </div>
+      </AdminLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <AdminLayout pageTitle={id ? 'Edit Article' : 'New Article'} breadcrumbs={[{ label: 'Dashboard', path: '/admin' }, { label: 'News', path: '/admin/news' }, { label: id ? 'Edit Article' : 'New Article' }]}>
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="mb-6 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <button
-              onClick={() => navigate('/admin/news')}
-              className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
-            >
-              <ArrowLeft className="h-5 w-5" />
-              Back to News
-            </button>
             <h1 className="text-2xl font-bold text-gray-900">
               {isEditMode ? 'Edit Article' : 'Create Article'}
             </h1>
@@ -534,6 +530,6 @@ export default function NewsEditPage() {
           </div>
         </div>
       </div>
-    </div>
+    </AdminLayout>
   );
 }
