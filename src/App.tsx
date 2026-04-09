@@ -252,6 +252,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route path="/admin/invoicing" element={<Navigate to="/admin/invoices" replace />} />
         <Route
           path="/admin/waste-transfer-notes"
           element={

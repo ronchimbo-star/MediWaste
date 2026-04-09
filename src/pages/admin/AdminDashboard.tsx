@@ -374,15 +374,7 @@ export default function AdminDashboard() {
               className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:border-orange-500 transition-colors text-left"
             >
               <h3 className="text-xl font-bold text-gray-900 mb-2">Invoicing</h3>
-              <p className="text-gray-600">Create and manage invoices</p>
-            </button>
-
-            <button
-              onClick={() => navigate('/admin/invoicing')}
-              className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:border-orange-500 transition-colors text-left"
-            >
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Payments</h3>
-              <p className="text-gray-600">Track payments and receipts</p>
+              <p className="text-gray-600">Create invoices and record payments</p>
             </button>
 
             <button

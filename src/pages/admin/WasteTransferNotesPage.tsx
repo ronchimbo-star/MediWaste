@@ -200,7 +200,7 @@ export default function WasteTransferNotesPage() {
                           <Eye className="w-4 h-4" />
                         </button>
                         <button
-                          onClick={() => toast.info('PDF download coming soon')}
+                          onClick={() => { setSelectedWtn(wtn); setShowModal(true); }}
                           className="text-green-600 hover:text-green-900"
                           title="Download PDF"
                         >
@@ -303,7 +303,6 @@ interface WTNViewModalProps {
 }
 
 function WTNViewModal({ wtn, onClose }: WTNViewModalProps) {
-  const { toast } = useToastContext();
   const [customerAddress, setCustomerAddress] = useState<any>(null);
 
   useEffect(() => {
@@ -457,11 +456,11 @@ function WTNViewModal({ wtn, onClose }: WTNViewModalProps) {
               Close
             </button>
             <button
-              onClick={() => toast.info('PDF download coming soon')}
+              onClick={() => window.print()}
               className="flex items-center gap-2 px-4 py-2 bg-[#F59E0B] text-white rounded-lg hover:bg-[#D97706] transition-colors"
             >
               <Download className="w-4 h-4" />
-              Download PDF
+              Print / Save PDF
             </button>
           </div>
         </div>
