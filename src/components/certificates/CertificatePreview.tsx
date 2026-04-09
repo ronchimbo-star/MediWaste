@@ -92,56 +92,24 @@ export default function CertificatePreview({ data, settings, forDownload = false
         }}
       >
         {sidebarCount.map((_, i) => (
-          <div
+          <img
             key={i}
+            src="/mediwaste-logo.png"
+            alt="MediWaste"
             style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: '8px',
-              transform: 'rotate(180deg)',
+              width: '60px',
+              height: 'auto',
+              objectFit: 'contain',
+              transform: 'rotate(-90deg)',
+              display: 'block',
+              filter: 'brightness(0) invert(1)',
             }}
-          >
-            <div
-              style={{
-                writingMode: 'vertical-rl',
-                textOrientation: 'mixed',
-                color: 'white',
-                fontFamily: 'Arial, sans-serif',
-                fontWeight: '700',
-                fontSize: '13px',
-                letterSpacing: '2px',
-                textTransform: 'lowercase',
-                userSelect: 'none',
-              }}
-            >
-              mediwaste
-            </div>
-            <div
-              style={{
-                width: '36px',
-                height: '36px',
-                background: 'white',
-                borderRadius: '50%',
-                overflow: 'hidden',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexShrink: 0,
-              }}
-            >
-              <img
-                src="/mediwaste-favicon.png"
-                alt=""
-                style={{ width: '28px', height: '28px', objectFit: 'contain', display: 'block' }}
-              />
-            </div>
-          </div>
+          />
         ))}
       </div>
 
       <div style={{ flex: 1, padding: '52px 52px 44px 52px', display: 'flex', flexDirection: 'column' }}>
-        <div style={{ marginBottom: '28px' }}>
+        <div style={{ marginBottom: '28px', textAlign: 'right' }}>
           <h1
             style={{
               fontSize: '38px',
@@ -244,7 +212,7 @@ export default function CertificatePreview({ data, settings, forDownload = false
           </div>
         )}
 
-        <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '24px' }}>
+        <div style={{ marginTop: 'auto', marginBottom: '16px', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '24px' }}>
           <div
             style={{
               border: '1px solid #2ecc71',
@@ -265,7 +233,7 @@ export default function CertificatePreview({ data, settings, forDownload = false
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
-            <QRCodeCanvas value={verifyUrl} size={160} />
+            <QRCodeCanvas value={verifyUrl} size={200} />
             <p style={{ fontSize: '11px', color: '#999', fontFamily: 'Arial, sans-serif', margin: 0 }}>
               Verify Online
             </p>
