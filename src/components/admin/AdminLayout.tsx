@@ -99,9 +99,9 @@ export default function AdminLayout({ children, pageTitle, breadcrumbs }: AdminL
     queryKey: ['nav-badge-emails'],
     queryFn: async () => {
       const { count } = await supabase
-        .from('email_messages')
+        .from('mw_emails')
         .select('id', { count: 'exact', head: true })
-        .eq('is_read', false);
+        .eq('status', 'unread');
       return count || 0;
     },
     refetchInterval: 60000,

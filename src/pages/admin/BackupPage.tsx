@@ -13,18 +13,26 @@ interface TableExport {
 const EXPORT_TABLES: { table: string; label: string }[] = [
   { table: 'mw_customers', label: 'Customers' },
   { table: 'mw_subscriptions', label: 'Subscriptions' },
+  { table: 'mw_service_plans', label: 'Service Plans' },
   { table: 'mw_invoices', label: 'Invoices' },
+  { table: 'mw_invoice_line_items', label: 'Invoice Line Items' },
+  { table: 'mw_payments', label: 'Payments' },
   { table: 'mw_service_jobs', label: 'Service Jobs' },
   { table: 'mw_collection_requests', label: 'Collection Requests' },
   { table: 'mw_collection_request_items', label: 'Collection Request Items' },
-  { table: 'mw_service_agreements', label: 'Service Agreements' },
+  { table: 'mw_collection_request_supplies', label: 'Collection Request Supplies' },
   { table: 'mw_certificates', label: 'Certificates' },
   { table: 'mw_waste_transfer_notes', label: 'Waste Transfer Notes' },
+  { table: 'mw_wtn_items', label: 'WTN Items' },
+  { table: 'mw_resources', label: 'Resources' },
   { table: 'mw_admin_notes', label: 'Admin Notes' },
+  { table: 'mw_reminders', label: 'Reminders' },
+  { table: 'mw_staff', label: 'Staff' },
   { table: 'quote_requests', label: 'Quote Requests' },
   { table: 'quotes', label: 'Quotes' },
   { table: 'contact_enquiries', label: 'Contact Enquiries' },
-  { table: 'email_messages', label: 'Email Messages' },
+  { table: 'mw_emails', label: 'Email Messages' },
+  { table: 'mw_email_sync_log', label: 'Email Sync Log' },
 ];
 
 export default function BackupPage() {
