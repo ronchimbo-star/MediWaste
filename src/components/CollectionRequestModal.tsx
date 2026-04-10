@@ -125,18 +125,6 @@ export default function CollectionRequestModal({ customerId, customerName, custo
     setWasteItems(wasteItems.map((item, idx) => idx === i ? { ...item, [field]: value } : item));
   }
 
-  function toggleSupply(value: string) {
-    if (supplies.find(s => s.supply_type === value)) {
-      setSupplies(supplies.filter(s => s.supply_type !== value));
-    } else {
-      setSupplies([...supplies, { supply_type: value, quantity: 1 }]);
-    }
-  }
-
-  function updateSupplyQty(value: string, qty: number) {
-    setSupplies(supplies.map(s => s.supply_type === value ? { ...s, quantity: qty } : s));
-  }
-
   function toggleDay(day: string) {
     setSelectedDays(prev => prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day]);
   }
@@ -348,32 +336,36 @@ export default function CollectionRequestModal({ customerId, customerName, custo
                   <p className="text-sm font-semibold text-gray-700">Request supplies from driver?</p>
                   <span className="text-xs text-gray-400">(optional)</span>
                 </div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  {SUPPLY_TYPES.map(s => {
-                    const active = supplies.find(x => x.supply_type === s.value);
-                    return (
-                      <div key={s.value}>
-                        <button
-                          onClick={() => toggleSupply(s.value)}
-                          className={`w-full text-left px-3 py-2 rounded-lg border text-xs font-medium transition-colors ${active ? 'border-red-500 bg-red-50 text-red-700' : 'border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50'}`}
-                        >
-                          {s.label}
-                        </button>
-                        {active && (
-                          <div className="mt-1 flex items-center gap-1">
-                            <span className="text-xs text-gray-500">Qty:</span>
-                            <input
-                              type="number"
-                              min="1"
-                              value={active.quantity}
-                              onChange={e => updateSupplyQty(s.value, parseInt(e.target.value) || 1)}
-                              className="w-16 px-2 py-0.5 border border-gray-300 rounded text-xs focus:ring-1 focus:ring-red-400"
-                            />
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
+                <div className="space-y-2">
+                  {supplies.map((s, i) => (
+                    <div key={i} className="flex items-center gap-2">
+                      <select
+                        value={s.supply_type}
+                        onChange={e => setSupplies(supplies.map((x, idx) => idx === i ? { ...x, supply_type: e.target.value } : x))}
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-red-400 focus:border-transparent bg-white"
+                      >
+                        <option value="">Select supply...</option>
+                        {SUPPLY_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                      </select>
+                      <input
+                        type="number"
+                        min="1"
+                        value={s.quantity}
+                        onChange={e => setSupplies(supplies.map((x, idx) => idx === i ? { ...x, quantity: parseInt(e.target.value) || 1 } : x))}
+                        className="w-20 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-red-400 focus:border-transparent text-center"
+                      />
+                      <button onClick={() => setSupplies(supplies.filter((_, idx) => idx !== i))} className="text-gray-400 hover:text-red-500 flex-shrink-0">
+                        <Trash2 size={15} />
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    onClick={() => setSupplies([...supplies, { supply_type: '', quantity: 1 }])}
+                    className="flex items-center gap-2 text-sm text-red-600 hover:text-red-700 font-medium"
+                  >
+                    <Plus size={15} />
+                    Add supply item
+                  </button>
                 </div>
               </div>
             </>
