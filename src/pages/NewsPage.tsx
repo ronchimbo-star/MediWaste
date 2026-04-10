@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Calendar, ArrowRight } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
@@ -16,38 +16,44 @@ interface NewsArticle {
   tags: string[];
 }
 
+function ArticleSkeleton() {
+  return (
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden animate-pulse">
+      <div className="aspect-video bg-gray-200" />
+      <div className="p-6">
+        <div className="h-4 bg-gray-200 rounded w-1/3 mb-3" />
+        <div className="h-6 bg-gray-200 rounded w-full mb-2" />
+        <div className="h-6 bg-gray-200 rounded w-4/5 mb-4" />
+        <div className="h-4 bg-gray-200 rounded w-full mb-2" />
+        <div className="h-4 bg-gray-200 rounded w-3/4" />
+      </div>
+    </div>
+  );
+}
+
+function formatDate(dateString: string) {
+  return new Date(dateString).toLocaleDateString('en-GB', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+}
+
 export default function NewsPage() {
-  const [articles, setArticles] = useState<NewsArticle[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function fetchArticles() {
-      try {
-        const { data, error } = await supabase
-          .from('news_articles')
-          .select('id, title, slug, excerpt, featured_image, published_at, tags')
-          .eq('status', 'published')
-          .order('published_at', { ascending: false });
-
-        if (error) throw error;
-        setArticles(data || []);
-      } catch (err) {
-        console.error('Error fetching articles:', err);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchArticles();
-  }, []);
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-GB', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
-    });
-  };
+  const { data: articles = [], isLoading } = useQuery<NewsArticle[]>({
+    queryKey: ['public-news-articles'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('news_articles')
+        .select('id, title, slug, excerpt, featured_image, published_at, tags')
+        .eq('status', 'published')
+        .order('published_at', { ascending: false });
+      if (error) throw error;
+      return data || [];
+    },
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+  });
 
   return (
     <div className="min-h-screen bg-white">
@@ -68,10 +74,9 @@ export default function NewsPage() {
       </div>
 
       <div className="container mx-auto px-4 py-16">
-        {loading ? (
-          <div className="text-center py-12">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
-            <p className="mt-4 text-gray-600">Loading articles...</p>
+        {isLoading ? (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {Array.from({ length: 6 }).map((_, i) => <ArticleSkeleton key={i} />)}
           </div>
         ) : articles.length === 0 ? (
           <div className="text-center py-12">

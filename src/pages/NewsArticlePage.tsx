@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Calendar, Share2, Facebook, Twitter, Linkedin, Mail, ArrowLeft } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import SEO from '../components/SEO';
@@ -43,120 +44,103 @@ interface NewsAdvert {
   position?: number;
 }
 
+function ArticleSkeleton() {
+  return (
+    <div className="min-h-screen bg-white">
+      <Header />
+      <article className="py-12">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto animate-pulse">
+            <div className="h-5 bg-gray-200 rounded w-28 mb-8" />
+            <div className="mb-8">
+              <div className="h-4 bg-gray-200 rounded w-32 mb-4" />
+              <div className="flex flex-wrap gap-2 mb-6">
+                <div className="h-6 bg-gray-200 rounded-full w-20" />
+                <div className="h-6 bg-gray-200 rounded-full w-24" />
+              </div>
+            </div>
+            <div className="h-10 bg-gray-200 rounded w-full mb-3" />
+            <div className="h-10 bg-gray-200 rounded w-4/5 mb-8" />
+            <div className="aspect-video bg-gray-200 rounded-lg mb-12" />
+            <div className="space-y-4">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="h-4 bg-gray-200 rounded" />
+              ))}
+            </div>
+          </div>
+        </div>
+      </article>
+      <Footer />
+    </div>
+  );
+}
+
+function splitContent(content: string) {
+  const tempDiv = document.createElement('div');
+  tempDiv.innerHTML = content;
+  const elements = Array.from(tempDiv.children);
+
+  if (elements.length === 0) {
+    return { part1: content, part2: '', part3: '' };
+  }
+
+  const total = elements.length;
+  const first = Math.floor(total / 3);
+  const second = Math.floor((total * 2) / 3);
+
+  return {
+    part1: elements.slice(0, first).map(el => el.outerHTML).join(''),
+    part2: elements.slice(first, second).map(el => el.outerHTML).join(''),
+    part3: elements.slice(second).map(el => el.outerHTML).join(''),
+  };
+}
+
 export default function NewsArticlePage() {
   const { slug } = useParams<{ slug: string }>();
-  const [article, setArticle] = useState<NewsArticle | null>(null);
-  const [adverts, setAdverts] = useState<NewsAdvert[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [showShareMenu, setShowShareMenu] = useState(false);
 
-  useEffect(() => {
-    if (slug) {
-      fetchArticle();
-      fetchAdverts();
-    }
-  }, [slug]);
-
-  const fetchArticle = async () => {
-    try {
-      setLoading(true);
+  const { data: article, isLoading: articleLoading, isError } = useQuery<NewsArticle | null>({
+    queryKey: ['news-article', slug],
+    queryFn: async () => {
       const { data, error } = await supabase
         .from('news_articles')
         .select('*')
         .eq('slug', slug)
         .eq('status', 'published')
         .maybeSingle();
-
       if (error) throw error;
-      if (!data) {
-        setError('Article not found');
-        return;
-      }
-      setArticle(data);
-    } catch (err) {
-      console.error('Error fetching article:', err);
-      setError('Failed to load article');
-    } finally {
-      setLoading(false);
-    }
-  };
+      return data;
+    },
+    enabled: !!slug,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+  });
 
-  const fetchAdverts = async () => {
-    try {
+  const { data: adverts = [] } = useQuery<NewsAdvert[]>({
+    queryKey: ['news-adverts'],
+    queryFn: async () => {
       const { data } = await supabase
         .from('news_adverts')
         .select('*')
         .eq('status', 'active')
         .order('position', { ascending: true })
         .limit(2);
+      return data || [];
+    },
+    staleTime: 10 * 60 * 1000,
+    gcTime: 20 * 60 * 1000,
+  });
 
-      if (data) {
-        setAdverts(data);
-      }
-    } catch (err) {
-      console.error('Error fetching adverts:', err);
-    }
-  };
+  if (articleLoading) return <ArticleSkeleton />;
 
-  const splitContent = (content: string) => {
-    const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = content;
-    const elements = Array.from(tempDiv.children);
-
-    if (elements.length === 0) {
-      return {
-        part1: content,
-        part2: '',
-        part3: '',
-      };
-    }
-
-    const totalElements = elements.length;
-    const firstThird = Math.floor(totalElements / 3);
-    const secondThird = Math.floor((totalElements * 2) / 3);
-
-    return {
-      part1: elements.slice(0, firstThird).map(el => el.outerHTML).join(''),
-      part2: elements.slice(firstThird, secondThird).map(el => el.outerHTML).join(''),
-      part3: elements.slice(secondThird).map(el => el.outerHTML).join(''),
-    };
-  };
-
-  const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
-  const shareTitle = article?.title || '';
-
-  const shareLinks = {
-    facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`,
-    twitter: `https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareTitle)}`,
-    linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`,
-    email: `mailto:?subject=${encodeURIComponent(shareTitle)}&body=${encodeURIComponent(shareUrl)}`,
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-white">
-        <Header />
-        <div className="container mx-auto px-4 py-24 text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
-          <p className="mt-4 text-gray-600">Loading article...</p>
-        </div>
-        <Footer />
-      </div>
-    );
-  }
-
-  if (error || !article) {
+  if (isError || !article) {
     return (
       <div className="min-h-screen bg-white">
         <Header />
         <div className="container mx-auto px-4 py-24 text-center">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">Article Not Found</h1>
           <p className="text-gray-600 mb-8">The article you're looking for doesn't exist or has been removed.</p>
-          <Link
-            to="/news"
-            className="inline-flex items-center text-red-600 hover:text-red-700 font-semibold"
-          >
+          <Link to="/news" className="inline-flex items-center text-red-600 hover:text-red-700 font-semibold">
             <ArrowLeft className="w-5 h-5 mr-2" />
             Back to News
           </Link>
@@ -167,6 +151,16 @@ export default function NewsArticlePage() {
   }
 
   const contentParts = splitContent(article.content);
+  const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
+  const shareTitle = article.title;
+
+  const shareLinks = {
+    facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`,
+    twitter: `https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareTitle)}`,
+    linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`,
+    email: `mailto:?subject=${encodeURIComponent(shareTitle)}&body=${encodeURIComponent(shareUrl)}`,
+  };
+
   const articleSchema = {
     '@context': 'https://schema.org',
     '@type': 'NewsArticle',
@@ -184,21 +178,12 @@ export default function NewsArticlePage() {
       '@type': 'WebPage',
       '@id': `https://mediwaste.co.uk/news/${article.slug}`,
     },
-    author: {
-      '@type': 'Organization',
-      name: 'MediWaste',
-      url: 'https://mediwaste.co.uk',
-    },
+    author: { '@type': 'Organization', name: 'MediWaste', url: 'https://mediwaste.co.uk' },
     publisher: {
       '@type': 'Organization',
       name: 'MediWaste',
       url: 'https://mediwaste.co.uk',
-      logo: {
-        '@type': 'ImageObject',
-        url: 'https://mediwaste.co.uk/mediwaste-logo.png',
-        width: 200,
-        height: 60,
-      },
+      logo: { '@type': 'ImageObject', url: 'https://mediwaste.co.uk/mediwaste-logo.png', width: 200, height: 60 },
     },
     keywords: article.seo_keywords?.join(', ') || '',
   };
@@ -219,10 +204,7 @@ export default function NewsArticlePage() {
       <article className="py-12">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
-            <Link
-              to="/news"
-              className="inline-flex items-center text-red-600 hover:text-red-700 font-semibold mb-8 transition-colors"
-            >
+            <Link to="/news" className="inline-flex items-center text-red-600 hover:text-red-700 font-semibold mb-8 transition-colors">
               <ArrowLeft className="w-5 h-5 mr-2" />
               Back to News
             </Link>
@@ -231,9 +213,7 @@ export default function NewsArticlePage() {
               <div className="flex items-center gap-4 text-sm text-gray-600 mb-4">
                 <div className="flex items-center gap-2">
                   <Calendar className="w-4 h-4" />
-                  <time dateTime={article.published_at}>
-                    {formatDate(article.published_at)}
-                  </time>
+                  <time dateTime={article.published_at}>{formatDate(article.published_at)}</time>
                 </div>
 
                 <div className="relative">
@@ -249,37 +229,19 @@ export default function NewsArticlePage() {
                   {showShareMenu && (
                     <div className="absolute top-full left-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg p-4 z-10 min-w-[200px]">
                       <div className="flex flex-col gap-2">
-                        <a
-                          href={shareLinks.facebook}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded transition-colors"
-                        >
+                        <a href={shareLinks.facebook} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded transition-colors">
                           <Facebook className="w-5 h-5 text-blue-600" />
                           <span className="text-sm font-medium">Facebook</span>
                         </a>
-                        <a
-                          href={shareLinks.twitter}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded transition-colors"
-                        >
+                        <a href={shareLinks.twitter} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded transition-colors">
                           <Twitter className="w-5 h-5 text-sky-500" />
                           <span className="text-sm font-medium">Twitter</span>
                         </a>
-                        <a
-                          href={shareLinks.linkedin}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded transition-colors"
-                        >
+                        <a href={shareLinks.linkedin} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded transition-colors">
                           <Linkedin className="w-5 h-5 text-blue-700" />
                           <span className="text-sm font-medium">LinkedIn</span>
                         </a>
-                        <a
-                          href={shareLinks.email}
-                          className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded transition-colors"
-                        >
+                        <a href={shareLinks.email} className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded transition-colors">
                           <Mail className="w-5 h-5 text-gray-600" />
                           <span className="text-sm font-medium">Email</span>
                         </a>
@@ -292,10 +254,7 @@ export default function NewsArticlePage() {
               {article.tags && article.tags.length > 0 && (
                 <div className="flex flex-wrap gap-2 mb-6">
                   {article.tags.map((tag, index) => (
-                    <span
-                      key={index}
-                      className="text-xs px-3 py-1 bg-red-50 text-red-700 rounded-full font-medium"
-                    >
+                    <span key={index} className="text-xs px-3 py-1 bg-red-50 text-red-700 rounded-full font-medium">
                       {tag}
                     </span>
                   ))}
@@ -327,16 +286,10 @@ export default function NewsArticlePage() {
             </div>
 
             {adverts[0] && (
-              <div
-                className="my-12 p-8 rounded-lg shadow-sm border border-gray-200"
-                style={{ backgroundColor: adverts[0].background_color || '#f9fafb' }}
-              >
+              <div className="my-12 p-8 rounded-lg shadow-sm border border-gray-200" style={{ backgroundColor: adverts[0].background_color || '#f9fafb' }}>
                 <h3 className="text-2xl font-bold text-gray-900 mb-3">{adverts[0].title}</h3>
                 <p className="text-gray-700 mb-4">{adverts[0].description}</p>
-                <Link
-                  to={adverts[0].link_url}
-                  className="inline-block bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-full font-semibold transition-colors"
-                >
+                <Link to={adverts[0].link_url} className="inline-block bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-full font-semibold transition-colors">
                   {adverts[0].link_text}
                 </Link>
               </div>
@@ -347,16 +300,10 @@ export default function NewsArticlePage() {
             </div>
 
             {adverts[1] && (
-              <div
-                className="my-12 p-8 rounded-lg shadow-sm border border-gray-200"
-                style={{ backgroundColor: adverts[1].background_color || '#f9fafb' }}
-              >
+              <div className="my-12 p-8 rounded-lg shadow-sm border border-gray-200" style={{ backgroundColor: adverts[1].background_color || '#f9fafb' }}>
                 <h3 className="text-2xl font-bold text-gray-900 mb-3">{adverts[1].title}</h3>
                 <p className="text-gray-700 mb-4">{adverts[1].description}</p>
-                <Link
-                  to={adverts[1].link_url}
-                  className="inline-block bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-full font-semibold transition-colors"
-                >
+                <Link to={adverts[1].link_url} className="inline-block bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-full font-semibold transition-colors">
                   {adverts[1].link_text}
                 </Link>
               </div>
@@ -367,10 +314,7 @@ export default function NewsArticlePage() {
             </div>
 
             <div className="mt-12 pt-8 border-t border-gray-200">
-              <Link
-                to="/news"
-                className="inline-flex items-center text-red-600 hover:text-red-700 font-semibold transition-colors"
-              >
+              <Link to="/news" className="inline-flex items-center text-red-600 hover:text-red-700 font-semibold transition-colors">
                 <ArrowLeft className="w-5 h-5 mr-2" />
                 Back to all articles
               </Link>
