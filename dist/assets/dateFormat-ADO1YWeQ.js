@@ -1,0 +1,1 @@
+function a(t){return new Date(t).toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"})}function r(t,n){return(typeof t=="string"?new Date(t):t).toLocaleDateString("en-GB",{day:"2-digit",month:"long",year:"numeric"})}export{r as a,a as f};
