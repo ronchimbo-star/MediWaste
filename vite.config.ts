@@ -30,4 +30,18 @@ export default defineConfig({
       allow: ['..'],
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom'],
+          'vendor-router': ['react-router-dom'],
+          'vendor-query': ['@tanstack/react-query'],
+          'vendor-supabase': ['@supabase/supabase-js'],
+          'vendor-ui': ['lucide-react', 'react-helmet-async'],
+        },
+      },
+    },
+    chunkSizeWarningLimit: 600,
+  },
 });

@@ -1,4 +1,15 @@
 User-agent: *
 Allow: /
 
+Disallow: /admin/
+Disallow: /admin
+Disallow: /staff/
+Disallow: /staff
+Disallow: /customer/
+Disallow: /customer
+Disallow: /login
+Disallow: /quote/*
+
+Crawl-delay: 1
+
 Sitemap: https://mediwaste.co.uk/sitemap.xml

@@ -94,21 +94,34 @@ export default function LocationServicePage() {
     return <NotFound />;
   }
 
+  const canonicalUrl = `https://mediwaste.co.uk/${page.slug}`;
+
   const locationSchema = {
     '@context': 'https://schema.org',
     '@type': 'Service',
     serviceType: 'Clinical Waste Disposal',
+    url: canonicalUrl,
     provider: {
       '@type': 'LocalBusiness',
       name: 'MediWaste',
       telephone: '+447757664788',
-      email: 'hello@mediwaste.co.uk'
+      email: 'hello@mediwaste.co.uk',
+      url: 'https://mediwaste.co.uk',
+      address: {
+        '@type': 'PostalAddress',
+        addressCountry: 'GB',
+        addressRegion: page.region,
+      },
     },
     areaServed: {
-      '@type': 'State',
-      name: page.region
+      '@type': 'AdministrativeArea',
+      name: page.region,
+      containsPlace: page.towns_covered?.map(town => ({
+        '@type': 'City',
+        name: town,
+      })) || [],
     },
-    description: page.meta_description
+    description: page.meta_description,
   };
 
   return (
@@ -116,7 +129,7 @@ export default function LocationServicePage() {
       <SEO
         title={page.meta_title}
         description={page.meta_description}
-        canonical={`https://mediwaste.co.uk/${page.slug}`}
+        canonical={canonicalUrl}
         schema={locationSchema}
       />
       <Header />

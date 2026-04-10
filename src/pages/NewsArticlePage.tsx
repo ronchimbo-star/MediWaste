@@ -18,6 +18,7 @@ interface NewsArticle {
   featured_image_alt?: string;
   featured_image_caption?: string;
   published_at: string;
+  updated_at?: string;
   tags?: string[];
   seo_title?: string;
   seo_description?: string;
@@ -171,17 +172,35 @@ export default function NewsArticlePage() {
     '@type': 'NewsArticle',
     headline: article.title,
     description: article.excerpt,
-    image: article.og_image || article.featured_image,
+    image: {
+      '@type': 'ImageObject',
+      url: article.og_image || article.featured_image,
+      width: 1200,
+      height: 630,
+    },
     datePublished: article.published_at,
+    dateModified: article.updated_at || article.published_at,
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': `https://mediwaste.co.uk/news/${article.slug}`,
+    },
     author: {
       '@type': 'Organization',
       name: 'MediWaste',
+      url: 'https://mediwaste.co.uk',
     },
     publisher: {
       '@type': 'Organization',
       name: 'MediWaste',
       url: 'https://mediwaste.co.uk',
+      logo: {
+        '@type': 'ImageObject',
+        url: 'https://mediwaste.co.uk/mediwaste-logo.png',
+        width: 200,
+        height: 60,
+      },
     },
+    keywords: article.seo_keywords?.join(', ') || '',
   };
 
   return (
@@ -193,6 +212,7 @@ export default function NewsArticlePage() {
         keywords={article.seo_keywords?.join(', ') || ''}
         ogImage={article.og_image || article.featured_image}
         schema={articleSchema}
+        type="article"
       />
       <Header />
 
@@ -292,6 +312,8 @@ export default function NewsArticlePage() {
                 src={article.featured_image}
                 alt={article.featured_image_alt || article.title}
                 className="w-full rounded-lg shadow-md"
+                fetchPriority="high"
+                decoding="async"
               />
               {article.featured_image_caption && (
                 <p className="text-sm text-gray-600 mt-3 text-center italic">

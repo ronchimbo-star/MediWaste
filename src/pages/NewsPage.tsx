@@ -91,6 +91,8 @@ export default function NewsPage() {
                       src={article.featured_image}
                       alt={article.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      loading="lazy"
+                      decoding="async"
                     />
                   </div>
                 )}

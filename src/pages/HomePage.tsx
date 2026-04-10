@@ -42,6 +42,8 @@ export default function HomePage() {
               src="/Medical-Waste-Hero.jpg"
               alt="Clinical waste disposal containers and medical waste management services"
               className="w-full h-full object-cover"
+              fetchPriority="high"
+              decoding="async"
             />
             <div className="absolute inset-0 bg-gradient-to-r from-gray-900 via-gray-900/60 to-transparent"></div>
           </div>
@@ -182,6 +184,8 @@ export default function HomePage() {
             src="/clinical-waste-segregation-best-practices.jpg"
             alt="Clinical waste segregation"
             className="w-full h-full object-cover"
+            loading="lazy"
+            decoding="async"
           />
           <div className="absolute inset-0 bg-red-600/75"></div>
         </div>
