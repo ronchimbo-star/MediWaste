@@ -1,3 +1,18 @@
+export async function imageToDataUrl(src: string): Promise<string> {
+  try {
+    const res = await fetch(src);
+    const blob = await res.blob();
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  } catch {
+    return src;
+  }
+}
+
 export async function downloadCertificateAsPDF(certNumber: string): Promise<void> {
   const el = document.getElementById('certificate-render');
   if (!el) return;

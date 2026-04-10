@@ -1,9 +1,11 @@
+import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import CertificatePreview from '../components/certificates/CertificatePreview';
 import { downloadCertificateAsPDF } from '../utils/certificateDownload';
-import { Download, Award, FileText, CheckCircle, XCircle, Clock, MapPin, Phone, Mail, Building, AlertTriangle } from 'lucide-react';
+import CollectionRequestModal from '../components/CollectionRequestModal';
+import { Download, Award, FileText, CheckCircle, XCircle, Clock, MapPin, Phone, Mail, Building, AlertTriangle, Truck } from 'lucide-react';
 
 interface WasteTransferNote {
   id: string;
@@ -41,6 +43,7 @@ function fmt(date: string) {
 
 export default function CompliancePage() {
   const { token } = useParams<{ token: string }>();
+  const [showRequestModal, setShowRequestModal] = useState(false);
 
   const { data: cert, isLoading, error } = useQuery({
     queryKey: ['compliance-cert', token],
@@ -84,6 +87,7 @@ export default function CompliancePage() {
   });
 
   const handleDownload = () => downloadCertificateAsPDF(cert?.certificate_number || '');
+  const customer = cert?.mw_customers;
 
   if (isLoading) {
     return (
@@ -115,8 +119,6 @@ export default function CompliancePage() {
     );
   }
 
-  const customer = cert.mw_customers;
-
   const previewData = {
     certificate_number: cert.certificate_number,
     qr_code_token: cert.qr_code_token,
@@ -140,7 +142,16 @@ export default function CompliancePage() {
             <img src="/mediwaste-logo.png" alt="MediWaste" className="h-7 w-auto" />
             <span className="text-sm text-gray-400 hidden sm:block">Compliance Verification</span>
           </div>
-          <div />
+          {cert && !isExpired && customer && (
+            <button
+              onClick={() => setShowRequestModal(true)}
+              className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm"
+            >
+              <Truck size={15} />
+              <span className="hidden sm:inline">Request Collection</span>
+              <span className="sm:hidden">Request</span>
+            </button>
+          )}
         </div>
       </header>
 
@@ -314,6 +325,24 @@ export default function CompliancePage() {
         </div>
       </main>
 
+      {cert && !isExpired && customer && (
+        <div className="max-w-5xl mx-auto px-4 pb-8">
+          <div className="bg-red-600 rounded-2xl p-6 text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <h3 className="font-bold text-lg">Need an additional collection?</h3>
+              <p className="text-red-100 text-sm mt-1">Running low on space? Request a one-off collection outside your regular schedule.</p>
+            </div>
+            <button
+              onClick={() => setShowRequestModal(true)}
+              className="flex-shrink-0 flex items-center gap-2 bg-white text-red-600 hover:bg-red-50 px-5 py-2.5 rounded-xl font-semibold text-sm transition-colors"
+            >
+              <Truck size={16} />
+              Request Collection
+            </button>
+          </div>
+        </div>
+      )}
+
       <footer className="border-t border-gray-200 bg-white mt-12">
         <div className="max-w-5xl mx-auto px-4 py-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-400">
           <div className="flex items-center gap-3">
@@ -328,6 +357,15 @@ export default function CompliancePage() {
           </div>
         </div>
       </footer>
+
+      {showRequestModal && customer && (
+        <CollectionRequestModal
+          customerId={customer.id}
+          customerName={customer.company_name}
+          customerAddress={customer.collection_address || customer.billing_address || undefined}
+          onClose={() => setShowRequestModal(false)}
+        />
+      )}
     </div>
   );
 }
