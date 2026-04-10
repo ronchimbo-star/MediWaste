@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../../lib/supabase';
+import FloatingActionWidget from './FloatingActionWidget';
 import {
   LayoutDashboard,
   Users,
@@ -23,6 +24,9 @@ import {
   ListChecks,
   FileSignature,
   Award,
+  StickyNote,
+  HardDrive,
+  FolderOpen,
 } from 'lucide-react';
 
 interface AdminLayoutProps {
@@ -145,8 +149,11 @@ export default function AdminLayout({ children, pageTitle, breadcrumbs }: AdminL
     {
       title: 'Admin',
       items: [
+        { label: 'Notes', path: '/admin/notes', icon: <StickyNote size={18} /> },
+        { label: 'Resources', path: '/admin/resources', icon: <FolderOpen size={18} /> },
         { label: 'Staff', path: '/admin/staff', icon: <UserCheck size={18} /> },
         { label: 'News', path: '/admin/news', icon: <Newspaper size={18} /> },
+        { label: 'Backup', path: '/admin/backup', icon: <HardDrive size={18} /> },
         { label: 'Settings', path: '/admin/settings', icon: <Settings size={18} /> },
       ],
     },
@@ -287,6 +294,8 @@ export default function AdminLayout({ children, pageTitle, breadcrumbs }: AdminL
           {children}
         </main>
       </div>
+
+      <FloatingActionWidget />
     </div>
   );
 }

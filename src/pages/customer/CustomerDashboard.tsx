@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/useAuth';
-import { Calendar, FileText, DollarSign, Package } from 'lucide-react';
+import { Calendar, FileText, DollarSign, Package, Truck, ShieldCheck, Recycle, FlaskConical, Syringe, Pill, Leaf } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useToastContext } from '../../contexts/ToastContext';
+import CollectionRequestModal from '../../components/CollectionRequestModal';
 
 interface Subscription {
   id: string;
@@ -24,6 +25,17 @@ interface Invoice {
   due_date: string;
 }
 
+const WASTE_TYPES_COVERED = [
+  { icon: <Syringe size={14} />, label: 'Sharps & needles' },
+  { icon: <Recycle size={14} />, label: 'Clinical waste bags' },
+  { icon: <Pill size={14} />, label: 'Pharmaceutical waste' },
+  { icon: <FlaskConical size={14} />, label: 'Cytotoxic waste' },
+  { icon: <Leaf size={14} />, label: 'Anatomical waste' },
+  { icon: <ShieldCheck size={14} />, label: 'Dental waste' },
+  { icon: <Package size={14} />, label: 'Laboratory waste' },
+  { icon: <Recycle size={14} />, label: 'Offensive waste' },
+];
+
 export default function CustomerDashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -32,6 +44,7 @@ export default function CustomerDashboard() {
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showCollectionModal, setShowCollectionModal] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -107,13 +120,13 @@ export default function CustomerDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-gray-900">
             Welcome, {customerInfo?.contact_name}!
           </h1>
-          <p className="text-gray-600 mt-1">Customer Portal - Account #{customerInfo?.customer_number}</p>
+          <p className="text-gray-600 mt-1">Customer Portal — Account #{customerInfo?.customer_number}</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
@@ -159,84 +172,123 @@ export default function CustomerDashboard() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">My Subscriptions</h2>
-            {subscriptions.length === 0 ? (
-              <p className="text-gray-500 text-center py-8">No active subscriptions</p>
-            ) : (
-              <div className="space-y-3">
-                {subscriptions.map((sub) => (
-                  <div key={sub.id} className="border border-gray-200 rounded-lg p-4">
-                    <div className="flex justify-between items-start mb-2">
-                      <div>
-                        <h3 className="font-semibold text-gray-900">{sub.service_plan.name}</h3>
-                        <p className="text-sm text-gray-600">{sub.service_frequency}</p>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 space-y-6">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-4">My Subscriptions</h2>
+              {subscriptions.length === 0 ? (
+                <p className="text-gray-500 text-center py-8">No active subscriptions</p>
+              ) : (
+                <div className="space-y-3">
+                  {subscriptions.map((sub) => (
+                    <div key={sub.id} className="border border-gray-200 rounded-lg p-4">
+                      <div className="flex justify-between items-start mb-2">
+                        <div>
+                          <h3 className="font-semibold text-gray-900">{sub.service_plan.name}</h3>
+                          <p className="text-sm text-gray-600">{sub.service_frequency}</p>
+                        </div>
+                        <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusBadge(sub.status)}`}>
+                          {sub.status}
+                        </span>
                       </div>
-                      <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusBadge(sub.status)}`}>
-                        {sub.status}
-                      </span>
+                      <p className="text-sm text-gray-600">
+                        Started: {new Date(sub.start_date).toLocaleDateString()}
+                      </p>
+                      <p className="text-lg font-bold text-gray-900 mt-2">
+                        £{Number(sub.service_plan.price).toFixed(2)}/month
+                      </p>
                     </div>
-                    <p className="text-sm text-gray-600">
-                      Started: {new Date(sub.start_date).toLocaleDateString()}
-                    </p>
-                    <p className="text-lg font-bold text-gray-900 mt-2">
-                      £{Number(sub.service_plan.price).toFixed(2)}/month
-                    </p>
-                  </div>
-                ))}
-              </div>
-            )}
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-4">Recent Invoices</h2>
+              {invoices.length === 0 ? (
+                <p className="text-gray-500 text-center py-8">No invoices yet</p>
+              ) : (
+                <div className="space-y-3">
+                  {invoices.map((invoice) => (
+                    <div key={invoice.id} className="border border-gray-200 rounded-lg p-4">
+                      <div className="flex justify-between items-start mb-2">
+                        <div>
+                          <h3 className="font-semibold text-gray-900">{invoice.invoice_number}</h3>
+                          <p className="text-sm text-gray-600">
+                            Due: {new Date(invoice.due_date).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusBadge(invoice.status)}`}>
+                          {invoice.status}
+                        </span>
+                      </div>
+                      <p className="text-lg font-bold text-gray-900">
+                        £{Number(invoice.total_amount).toFixed(2)}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <button
+                onClick={() => setShowCollectionModal(true)}
+                className="bg-red-600 text-white rounded-lg p-6 hover:bg-red-700 transition-colors text-left"
+              >
+                <Truck className="w-8 h-8 mb-2" />
+                <h3 className="text-lg font-semibold mb-1">Request a Collection</h3>
+                <p className="text-sm opacity-90">Schedule an additional or urgent collection</p>
+              </button>
+              <button
+                onClick={() => toast.info('Document viewing coming soon')}
+                className="bg-blue-600 text-white rounded-lg p-6 hover:bg-blue-700 transition-colors text-left"
+              >
+                <FileText className="w-8 h-8 mb-2" />
+                <h3 className="text-lg font-semibold mb-1">View Documents</h3>
+                <p className="text-sm opacity-90">Access waste transfer notes & receipts</p>
+              </button>
+            </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Recent Invoices</h2>
-            {invoices.length === 0 ? (
-              <p className="text-gray-500 text-center py-8">No invoices yet</p>
-            ) : (
-              <div className="space-y-3">
-                {invoices.map((invoice) => (
-                  <div key={invoice.id} className="border border-gray-200 rounded-lg p-4">
-                    <div className="flex justify-between items-start mb-2">
-                      <div>
-                        <h3 className="font-semibold text-gray-900">{invoice.invoice_number}</h3>
-                        <p className="text-sm text-gray-600">
-                          Due: {new Date(invoice.due_date).toLocaleDateString()}
-                        </p>
-                      </div>
-                      <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusBadge(invoice.status)}`}>
-                        {invoice.status}
-                      </span>
-                    </div>
-                    <p className="text-lg font-bold text-gray-900">
-                      £{Number(invoice.total_amount).toFixed(2)}
-                    </p>
-                  </div>
+          <div className="space-y-4">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+              <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide mb-3">What waste types are covered?</h3>
+              <ul className="space-y-2">
+                {WASTE_TYPES_COVERED.map((w) => (
+                  <li key={w.label} className="flex items-center gap-2.5 text-sm text-gray-700">
+                    <span className="text-red-500 flex-shrink-0">{w.icon}</span>
+                    {w.label}
+                  </li>
                 ))}
+              </ul>
+              <div className="mt-4 pt-4 border-t border-gray-100">
+                <button
+                  onClick={() => setShowCollectionModal(true)}
+                  className="w-full flex items-center justify-center gap-2 py-2.5 bg-red-600 text-white rounded-lg text-sm font-semibold hover:bg-red-700 transition-colors"
+                >
+                  <Truck size={15} />
+                  Request a Collection
+                </button>
               </div>
-            )}
-          </div>
-        </div>
+            </div>
 
-        <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-          <button
-            onClick={() => toast.info('Ad-hoc service booking coming soon')}
-            className="bg-[#F59E0B] text-white rounded-lg p-6 hover:bg-[#D97706] transition-colors text-left"
-          >
-            <Calendar className="w-8 h-8 mb-2" />
-            <h3 className="text-lg font-semibold mb-1">Book Ad-hoc Service</h3>
-            <p className="text-sm opacity-90">Schedule a one-time collection</p>
-          </button>
-          <button
-            onClick={() => toast.info('Document viewing coming soon')}
-            className="bg-blue-600 text-white rounded-lg p-6 hover:bg-blue-700 transition-colors text-left"
-          >
-            <FileText className="w-8 h-8 mb-2" />
-            <h3 className="text-lg font-semibold mb-1">View Documents</h3>
-            <p className="text-sm opacity-90">Access waste transfer notes & receipts</p>
-          </button>
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+              <p className="text-xs font-semibold text-amber-800 uppercase tracking-wide mb-1">Need help?</p>
+              <p className="text-sm text-amber-700">Call us on <strong>0800 123 4567</strong> or email <strong>info@mediwaste.co.uk</strong></p>
+            </div>
+          </div>
         </div>
       </div>
+
+      {showCollectionModal && customerInfo && (
+        <CollectionRequestModal
+          customerId={customerInfo.id}
+          customerName={customerInfo.company_name || customerInfo.contact_name}
+          customerAddress={customerInfo.collection_address}
+          onClose={() => setShowCollectionModal(false)}
+        />
+      )}
     </div>
   );
 }

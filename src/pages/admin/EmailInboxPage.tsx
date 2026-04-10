@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../lib/supabase';
 import { useToastContext } from '../../contexts/ToastContext';
-import { Mail, MailOpen, Star, Archive, RefreshCw, Search, User, Paperclip, ChevronLeft, ExternalLink } from 'lucide-react';
+import { Mail, MailOpen, Star, Archive, RefreshCw, Search, User, Paperclip, ChevronLeft, ExternalLink, Settings, ChevronDown, ChevronUp } from 'lucide-react';
 import AdminLayout from '../../components/admin/AdminLayout';
 
 interface Email {
@@ -38,6 +38,70 @@ interface SyncLog {
   error_message: string | null;
 }
 
+const FREQUENCY_OPTIONS = [
+  { value: 5, label: 'Every 5 minutes' },
+  { value: 15, label: 'Every 15 minutes' },
+  { value: 30, label: 'Every 30 minutes' },
+  { value: 60, label: 'Every hour' },
+  { value: 120, label: 'Every 2 hours' },
+  { value: 360, label: 'Every 6 hours' },
+  { value: 720, label: 'Every 12 hours' },
+  { value: 1440, label: 'Once a day' },
+];
+
+function SyncConfigPanel({ config, onSave, saving }: { config: any; onSave: (vals: any) => void; saving: boolean }) {
+  const [enabled, setEnabled] = useState<boolean>(config.enabled ?? false);
+  const [freq, setFreq] = useState<number>(config.sync_frequency_minutes ?? 30);
+  const [maxResults, setMaxResults] = useState<number>(config.max_results_per_sync ?? 100);
+
+  return (
+    <div className="mb-5 bg-gray-50 border border-gray-200 rounded-xl p-4">
+      <h3 className="text-sm font-semibold text-gray-800 mb-3">Auto-Sync Schedule</h3>
+      <div className="flex flex-wrap items-end gap-4">
+        <label className="flex items-center gap-2 cursor-pointer">
+          <div className={`relative w-10 h-5 rounded-full transition-colors ${enabled ? 'bg-green-500' : 'bg-gray-300'}`} onClick={() => setEnabled(!enabled)}>
+            <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${enabled ? 'translate-x-5' : 'translate-x-0.5'}`} />
+          </div>
+          <span className="text-sm text-gray-700">{enabled ? 'Auto-sync enabled' : 'Auto-sync disabled'}</span>
+        </label>
+        <div>
+          <label className="block text-xs font-medium text-gray-600 mb-1">Frequency</label>
+          <select
+            value={freq}
+            onChange={e => setFreq(parseInt(e.target.value))}
+            disabled={!enabled}
+            className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-amber-400 focus:border-transparent bg-white disabled:opacity-50"
+          >
+            {FREQUENCY_OPTIONS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
+          </select>
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-gray-600 mb-1">Max emails per sync</label>
+          <select
+            value={maxResults}
+            onChange={e => setMaxResults(parseInt(e.target.value))}
+            className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-amber-400 focus:border-transparent bg-white"
+          >
+            {[25, 50, 100, 200, 500].map(n => <option key={n} value={n}>{n}</option>)}
+          </select>
+        </div>
+        <button
+          onClick={() => onSave({ enabled, sync_frequency_minutes: freq, max_results_per_sync: maxResults })}
+          disabled={saving}
+          className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg text-sm font-medium hover:bg-amber-600 transition-colors disabled:opacity-50"
+        >
+          {saving ? 'Saving...' : 'Save Schedule'}
+        </button>
+      </div>
+      {enabled && (
+        <p className="text-xs text-gray-400 mt-2">
+          Note: Auto-sync requires a separate cron job or scheduled Supabase function to call the sync endpoint on the configured interval.
+        </p>
+      )}
+    </div>
+  );
+}
+
 const STATUS_TABS = [
   { key: 'all', label: 'All' },
   { key: 'unread', label: 'Unread' },
@@ -53,6 +117,7 @@ export default function EmailInboxPage() {
   const [directionFilter, setDirectionFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [syncing, setSyncing] = useState(false);
+  const [showSyncConfig, setShowSyncConfig] = useState(false);
 
   const { data: emails = [], isLoading } = useQuery({
     queryKey: ['emails', statusFilter, directionFilter],
@@ -86,6 +151,26 @@ export default function EmailInboxPage() {
         .maybeSingle();
       return data as SyncLog | null;
     },
+  });
+
+  const { data: syncConfig } = useQuery({
+    queryKey: ['gmail-sync-config'],
+    queryFn: async () => {
+      const { data } = await supabase.from('mw_gmail_sync_config').select('*').eq('id', 'default').maybeSingle();
+      return data;
+    },
+  });
+
+  const updateSyncConfig = useMutation({
+    mutationFn: async (values: { enabled: boolean; sync_frequency_minutes: number; max_results_per_sync: number }) => {
+      const { error } = await supabase.from('mw_gmail_sync_config').update({ ...values, updated_at: new Date().toISOString() }).eq('id', 'default');
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['gmail-sync-config'] });
+      toast.success('Sync settings saved');
+    },
+    onError: () => toast.error('Failed to save sync settings'),
   });
 
   const updateStatusMutation = useMutation({
@@ -174,15 +259,33 @@ export default function EmailInboxPage() {
               )}
             </p>
           </div>
-          <button
-            onClick={handleSync}
-            disabled={syncing}
-            className="flex items-center gap-2 px-4 py-2 bg-[#F59E0B] text-white rounded-lg hover:bg-[#D97706] transition-colors disabled:opacity-60"
-          >
-            <RefreshCw className={`w-4 h-4 ${syncing ? 'animate-spin' : ''}`} />
-            {syncing ? 'Syncing...' : 'Sync Now'}
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowSyncConfig(!showSyncConfig)}
+              className={`flex items-center gap-2 px-3 py-2 border rounded-lg text-sm transition-colors ${showSyncConfig ? 'border-gray-400 bg-gray-100 text-gray-800' : 'border-gray-200 text-gray-500 hover:bg-gray-50'}`}
+            >
+              <Settings size={15} />
+              Schedule
+              {showSyncConfig ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+            </button>
+            <button
+              onClick={handleSync}
+              disabled={syncing}
+              className="flex items-center gap-2 px-4 py-2 bg-[#F59E0B] text-white rounded-lg hover:bg-[#D97706] transition-colors disabled:opacity-60"
+            >
+              <RefreshCw className={`w-4 h-4 ${syncing ? 'animate-spin' : ''}`} />
+              {syncing ? 'Syncing...' : 'Sync Now'}
+            </button>
+          </div>
         </div>
+
+        {showSyncConfig && syncConfig && (
+          <SyncConfigPanel
+            config={syncConfig}
+            onSave={vals => updateSyncConfig.mutate(vals)}
+            saving={updateSyncConfig.isPending}
+          />
+        )}
 
         <div className="flex gap-6 h-[calc(100vh-200px)]">
           <div className="w-96 flex flex-col bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">

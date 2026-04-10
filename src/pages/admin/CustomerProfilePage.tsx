@@ -5,6 +5,7 @@ import { supabase } from '../../lib/supabase';
 import { useToastContext } from '../../contexts/ToastContext';
 import { Plus, FileEdit as Edit2, Trash2, CheckCircle, Phone, Mail, MapPin, Building, X, ChevronDown, ChevronUp, Bell } from 'lucide-react';
 import AdminLayout from '../../components/admin/AdminLayout';
+import NotesPanel from '../../components/admin/NotesPanel';
 
 type ServiceStatus = 'active' | 'paused' | 'cancelled';
 type PaymentStatus = 'pending' | 'paid' | 'overdue' | 'cancelled';
@@ -83,7 +84,7 @@ export default function CustomerProfilePage() {
   const qc = useQueryClient();
   const { toast } = useToastContext();
 
-  const [activeTab, setActiveTab] = useState<'overview' | 'services' | 'payments' | 'reminders'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'services' | 'payments' | 'reminders' | 'notes'>('overview');
   const [showServiceModal, setShowServiceModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showReminderModal, setShowReminderModal] = useState(false);
@@ -479,7 +480,7 @@ export default function CustomerProfilePage() {
         </div>
 
         <div className="flex gap-1 mb-6 bg-white rounded-xl border border-gray-200 p-1 w-fit">
-          {(['overview', 'services', 'payments', 'reminders'] as const).map(tab => (
+          {(['overview', 'services', 'payments', 'reminders', 'notes'] as const).map(tab => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -702,6 +703,10 @@ export default function CustomerProfilePage() {
               </div>
             )}
           </div>
+        )}
+
+        {activeTab === 'notes' && (
+          <NotesPanel customerId={id} title={`Notes for ${customer.company_name || customer.contact_name}`} />
         )}
       </div>
 

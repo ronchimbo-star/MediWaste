@@ -76,6 +76,7 @@ interface Props {
   customerId: string;
   customerName: string;
   customerAddress?: string;
+  source?: string;
   onClose: () => void;
 }
 
@@ -91,7 +92,7 @@ function maxDate() {
   return d.toISOString().split('T')[0];
 }
 
-export default function CollectionRequestModal({ customerId, customerName, customerAddress, onClose }: Props) {
+export default function CollectionRequestModal({ customerId, customerName, customerAddress, source = 'customer_portal', onClose }: Props) {
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -149,7 +150,7 @@ export default function CollectionRequestModal({ customerId, customerName, custo
           contact_name: contactName || null,
           contact_phone: contactPhone || null,
           contact_email: contactEmail || null,
-          source: 'qr_form',
+          source,
         }])
         .select('id')
         .single();

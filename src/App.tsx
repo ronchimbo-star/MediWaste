@@ -46,6 +46,9 @@ import EmailInboxPage from './pages/admin/EmailInboxPage';
 import CertificatesPage from './pages/admin/CertificatesPage';
 import CertificateEditPage from './pages/admin/CertificateEditPage';
 import CertificatePreviewPage from './pages/admin/CertificatePreviewPage';
+import NotesPage from './pages/admin/NotesPage';
+import BackupPage from './pages/admin/BackupPage';
+import ResourcesPage from './pages/admin/ResourcesPage';
 import CompliancePage from './pages/CompliancePage';
 import CookieConsent from './components/CookieConsent';
 import ScrollToTop from './components/ScrollToTop';
@@ -327,6 +330,30 @@ function App() {
           element={
             <ProtectedRoute>
               <CertificatePreviewPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/notes"
+          element={
+            <ProtectedRoute>
+              <NotesPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/backup"
+          element={
+            <ProtectedRoute>
+              <BackupPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/resources"
+          element={
+            <ProtectedRoute>
+              <ResourcesPage />
             </ProtectedRoute>
           }
         />
