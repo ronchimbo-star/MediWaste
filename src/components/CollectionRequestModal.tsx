@@ -235,10 +235,10 @@ export default function CollectionRequestModal({ customerId, customerName, custo
 
       setSubmitted(true);
     } catch (err: unknown) {
-      console.error('[CollectionRequestModal] Submit error:', err);
-      const msg = err instanceof Error ? err.message
-        : (err as { message?: string })?.message
-        ?? JSON.stringify(err);
+      console.error('[CollectionRequestModal] Submit error:', JSON.stringify(err));
+      const e = err as { message?: string; code?: string; details?: string; hint?: string };
+      const parts = [e.message, e.details, e.hint].filter(Boolean);
+      const msg = parts.length > 0 ? parts.join(' — ') : JSON.stringify(err);
       setError(`Error: ${msg}`);
     } finally {
       setSubmitting(false);
