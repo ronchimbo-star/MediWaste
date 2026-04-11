@@ -77,8 +77,8 @@ interface SupplyItem {
 }
 
 interface Props {
-  customerId: string;
-  customerName: string;
+  customerId?: string;
+  customerName?: string;
   customerAddress?: string;
   source?: string;
   onClose: () => void;
@@ -129,7 +129,13 @@ function resolvedContainerType(item: WasteItem): string | null {
   return item.container_type;
 }
 
-export default function CollectionRequestModal({ customerId, customerName, customerAddress, source = 'customer_portal', onClose }: Props) {
+export default function CollectionRequestModal({
+  customerId,
+  customerName,
+  customerAddress,
+  source = 'public_form',
+  onClose,
+}: Props) {
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -186,9 +192,10 @@ export default function CollectionRequestModal({ customerId, customerName, custo
     setError('');
     try {
       const { data: reqRows, error: reqErr } = await supabase
-        .from('mw_collection_requests')
+        .from('collection_requests')
         .insert([{
-          customer_id: customerId,
+          customer_id: customerId || null,
+          customer_name: customerName || null,
           status: 'pending',
           preferred_date_from: dateMode === 'range' ? dateFrom || null : null,
           preferred_date_to: dateMode === 'range' ? dateTo || null : null,
@@ -200,7 +207,7 @@ export default function CollectionRequestModal({ customerId, customerName, custo
           contact_email: contactEmail || null,
           source,
         }])
-        .select('id');
+        .select('id, request_number');
 
       if (reqErr) throw reqErr;
       const req = reqRows?.[0];
@@ -209,7 +216,7 @@ export default function CollectionRequestModal({ customerId, customerName, custo
       const validWasteItems = wasteItems.filter(wasteItemValid);
       if (validWasteItems.length > 0) {
         const { error: itemsErr } = await supabase
-          .from('mw_collection_request_items')
+          .from('collection_request_items')
           .insert(validWasteItems.map(item => ({
             request_id: req.id,
             waste_type: resolvedWasteType(item),
@@ -224,13 +231,51 @@ export default function CollectionRequestModal({ customerId, customerName, custo
       const validSupplies = supplies.filter(s => s.supply_type && s.quantity > 0);
       if (validSupplies.length > 0) {
         const { error: supErr } = await supabase
-          .from('mw_collection_request_supplies')
+          .from('collection_request_supplies')
           .insert(validSupplies.map(s => ({
             request_id: req.id,
             supply_type: resolvedSupplyType(s),
             quantity: s.quantity,
           })));
         if (supErr) throw supErr;
+      }
+
+      try {
+        const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-collection-email`;
+        await fetch(apiUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          },
+          body: JSON.stringify({
+            request_number: req.request_number,
+            customer_name: customerName || contactName || 'Not provided',
+            customer_address: customerAddress || null,
+            contact_name: contactName || null,
+            contact_phone: contactPhone || null,
+            contact_email: contactEmail || null,
+            waste_items: validWasteItems.map(item => ({
+              waste_type: resolvedWasteType(item),
+              quantity: item.quantity,
+              volume_unit: item.volume_unit,
+              container_type: resolvedContainerType(item),
+              notes: item.notes || null,
+            })),
+            supplies: validSupplies.map(s => ({
+              supply_type: resolvedSupplyType(s),
+              quantity: s.quantity,
+            })),
+            preferred_date_from: dateMode === 'range' ? dateFrom : null,
+            preferred_date_to: dateMode === 'range' ? dateTo : null,
+            preferred_days: dateMode === 'days' ? selectedDays : null,
+            preferred_time_slot: timeSlot,
+            special_instructions: specialInstructions || null,
+            source,
+          }),
+        });
+      } catch (emailErr) {
+        console.error('Failed to send email notification:', emailErr);
       }
 
       setSubmitted(true);
@@ -279,7 +324,9 @@ export default function CollectionRequestModal({ customerId, customerName, custo
         <div className="p-5 border-b border-gray-100 flex items-start justify-between flex-shrink-0">
           <div>
             <h2 className="text-lg font-bold text-gray-900">Request Additional Collection</h2>
-            <p className="text-sm text-gray-500 mt-0.5">{customerName}{customerAddress ? ` — ${customerAddress}` : ''}</p>
+            <p className="text-sm text-gray-500 mt-0.5">
+              {customerName ? `${customerName}${customerAddress ? ` — ${customerAddress}` : ''}` : 'Fill in the form below to request a collection'}
+            </p>
           </div>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 ml-4 flex-shrink-0">
             <X size={20} />

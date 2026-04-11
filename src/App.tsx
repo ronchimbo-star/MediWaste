@@ -57,6 +57,7 @@ const CertificatePreviewPage = lazy(() => import('./pages/admin/CertificatePrevi
 const NotesPage = lazy(() => import('./pages/admin/NotesPage'));
 const BackupPage = lazy(() => import('./pages/admin/BackupPage'));
 const ResourcesPage = lazy(() => import('./pages/admin/ResourcesPage'));
+const CollectionRequestsPage = lazy(() => import('./pages/admin/CollectionRequestsPage'));
 
 function PageLoader() {
   return (
@@ -155,6 +156,7 @@ function App() {
           <Route path="/admin/notes" element={<ProtectedRoute><NotesPage /></ProtectedRoute>} />
           <Route path="/admin/backup" element={<ProtectedRoute><BackupPage /></ProtectedRoute>} />
           <Route path="/admin/resources" element={<ProtectedRoute><ResourcesPage /></ProtectedRoute>} />
+          <Route path="/admin/collection-requests" element={<ProtectedRoute><CollectionRequestsPage /></ProtectedRoute>} />
           <Route path="/staff/dashboard" element={<ProtectedRoute><StaffDashboard /></ProtectedRoute>} />
           <Route path="/customer/dashboard" element={<ProtectedRoute><CustomerDashboard /></ProtectedRoute>} />
           <Route path="*" element={<NotFound />} />

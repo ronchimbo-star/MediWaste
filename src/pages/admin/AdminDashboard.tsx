@@ -44,6 +44,26 @@ export default function AdminDashboard() {
     },
   });
 
+  const { data: pendingCollectionRequests } = useQuery({
+    queryKey: ['pending-collection-requests-count'],
+    queryFn: async () => {
+      const { count } = await supabase.from('collection_requests').select('*', { count: 'exact', head: true }).eq('status', 'pending');
+      return count || 0;
+    },
+  });
+
+  const { data: recentCollectionRequests } = useQuery({
+    queryKey: ['recent-collection-requests'],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('collection_requests')
+        .select('id, request_number, customer_name, contact_name, status, created_at, source, mw_customers(company_name)')
+        .order('created_at', { ascending: false })
+        .limit(5);
+      return data || [];
+    },
+  });
+
   const { data: overduePaymentCount } = useQuery({
     queryKey: ['overdue-payment-count'],
     queryFn: async () => {
@@ -167,6 +187,7 @@ export default function AdminDashboard() {
     { label: 'Invoicing', icon: CreditCard, path: '/admin/invoices', desc: 'Invoices & payment records' },
     { label: 'Service Agreements', icon: FileCheck, path: '/admin/service-agreements', desc: 'Contracts & agreements' },
     { label: 'Service Jobs', icon: Briefcase, path: '/admin/jobs', desc: 'Schedule & track jobs' },
+    { label: 'Collection Requests', icon: Truck, path: '/admin/collection-requests', desc: 'Ad-hoc collection requests', badge: pendingCollectionRequests },
     { label: 'Waste Transfer Notes', icon: Truck, path: '/admin/waste-transfer-notes', desc: 'Generate & manage WTNs' },
     { label: 'Certificates', icon: ShieldCheck, path: '/admin/certificates', desc: 'Compliance certificates' },
     { label: 'Mailing Lists', icon: List, path: '/admin/mailing-lists', desc: 'Export & manage lists' },
@@ -189,10 +210,10 @@ export default function AdminDashboard() {
             </p>
           </div>
           <div className="flex items-center gap-3">
-            {((unreadQuotes || 0) + (unreadContacts || 0) + unreadNotifications) > 0 && (
+            {((unreadQuotes || 0) + (unreadContacts || 0) + (pendingCollectionRequests || 0) + unreadNotifications) > 0 && (
               <div className="flex items-center gap-2 bg-orange-50 border border-orange-200 text-orange-700 px-4 py-2 rounded-full text-sm font-semibold">
                 <Bell className="w-4 h-4" />
-                {(unreadQuotes || 0) + (unreadContacts || 0) + unreadNotifications} unread
+                {(unreadQuotes || 0) + (unreadContacts || 0) + (pendingCollectionRequests || 0) + unreadNotifications} unread
               </div>
             )}
           </div>
@@ -346,7 +367,7 @@ export default function AdminDashboard() {
           </div>
 
           <div className="flex flex-col gap-6">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               <div className={`bg-white rounded-xl border p-5 ${(serviceDueSoonCount || 0) > 0 ? 'border-amber-200 bg-amber-50' : 'border-gray-200'}`}>
                 <div className={`flex items-center gap-2 mb-2 text-sm font-medium ${(serviceDueSoonCount || 0) > 0 ? 'text-amber-600' : 'text-gray-500'}`}>
                   <Calendar size={16} />
@@ -357,9 +378,20 @@ export default function AdminDashboard() {
               <div className={`bg-white rounded-xl border p-5 ${(unreadQuotes || 0) > 0 ? 'border-orange-200 bg-orange-50' : 'border-gray-200'}`}>
                 <div className={`flex items-center gap-2 mb-2 text-sm font-medium ${(unreadQuotes || 0) > 0 ? 'text-orange-600' : 'text-gray-500'}`}>
                   <FileText size={16} />
-                  New Quote Requests
+                  New Quotes
                 </div>
                 <p className="text-3xl font-bold text-gray-900">{unreadQuotes ?? '—'}</p>
+              </div>
+              <div
+                className={`bg-white rounded-xl border p-5 cursor-pointer hover:shadow-sm transition-shadow ${(pendingCollectionRequests || 0) > 0 ? 'border-red-200 bg-red-50' : 'border-gray-200'}`}
+                onClick={() => navigate('/admin/collection-requests')}
+              >
+                <div className={`flex items-center gap-2 mb-2 text-sm font-medium ${(pendingCollectionRequests || 0) > 0 ? 'text-red-600' : 'text-gray-500'}`}>
+                  <Truck size={16} />
+                  Collections
+                </div>
+                <p className="text-3xl font-bold text-gray-900">{pendingCollectionRequests ?? '—'}</p>
+                <p className="text-xs text-gray-500 mt-0.5">pending</p>
               </div>
             </div>
 
@@ -407,6 +439,45 @@ export default function AdminDashboard() {
                 </div>
               ) : (
                 <p className="px-5 py-8 text-sm text-gray-400 text-center">No notifications</p>
+              )}
+            </div>
+
+            <div className="bg-white rounded-xl border border-gray-200">
+              <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+                <h3 className="font-bold text-gray-900">Recent Collection Requests</h3>
+                <button onClick={() => navigate('/admin/collection-requests')} className="text-xs text-orange-600 hover:text-orange-700 font-semibold">
+                  View All →
+                </button>
+              </div>
+              {recentCollectionRequests && recentCollectionRequests.length > 0 ? (
+                <div className="divide-y divide-gray-100">
+                  {recentCollectionRequests.map((req: any) => {
+                    const name = req.mw_customers?.company_name || req.customer_name || req.contact_name || 'Anonymous';
+                    const statusColors: Record<string, string> = {
+                      pending: 'bg-amber-100 text-amber-700',
+                      approved: 'bg-blue-100 text-blue-700',
+                      completed: 'bg-green-100 text-green-700',
+                      cancelled: 'bg-gray-100 text-gray-600',
+                    };
+                    return (
+                      <div
+                        key={req.id}
+                        className="px-5 py-3 hover:bg-gray-50 cursor-pointer flex items-center justify-between gap-3"
+                        onClick={() => navigate('/admin/collection-requests')}
+                      >
+                        <div className="min-w-0 flex-1">
+                          <p className="font-semibold text-gray-900 text-sm truncate">{name}</p>
+                          <p className="text-xs text-gray-500">{req.request_number} · {new Date(req.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}</p>
+                        </div>
+                        <span className={`text-xs font-semibold px-2 py-1 rounded-full flex-shrink-0 ${statusColors[req.status] ?? 'bg-gray-100 text-gray-600'}`}>
+                          {req.status}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="px-5 py-8 text-sm text-gray-400 text-center">No collection requests yet</p>
               )}
             </div>
 
