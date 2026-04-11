@@ -171,10 +171,11 @@ export default function CollectionRequestModal({ customerId, customerName, custo
         if (itemsErr) throw itemsErr;
       }
 
-      if (supplies.length > 0) {
+      const validSupplies = supplies.filter(s => s.supply_type && s.quantity > 0);
+      if (validSupplies.length > 0) {
         const { error: supErr } = await supabase
           .from('mw_collection_request_supplies')
-          .insert(supplies.map(s => ({
+          .insert(validSupplies.map(s => ({
             request_id: req.id,
             supply_type: s.supply_type,
             quantity: s.quantity,
@@ -504,8 +505,8 @@ export default function CollectionRequestModal({ customerId, customerName, custo
               <div className="bg-gray-50 rounded-xl border border-gray-200 p-4 text-sm text-gray-600 space-y-1.5">
                 <p className="font-semibold text-gray-700 text-xs uppercase tracking-wide mb-2">Request Summary</p>
                 <p><span className="text-gray-500">Items:</span> {wasteItems.filter(i => i.waste_type).map(i => `${i.quantity} ${i.volume_unit} ${i.waste_type}`).join(', ')}</p>
-                {supplies.length > 0 && (
-                  <p><span className="text-gray-500">Supplies:</span> {supplies.map(s => `${s.quantity}x ${SUPPLY_TYPES.find(t => t.value === s.supply_type)?.label}`).join(', ')}</p>
+                {supplies.filter(s => s.supply_type).length > 0 && (
+                  <p><span className="text-gray-500">Supplies:</span> {supplies.filter(s => s.supply_type).map(s => `${s.quantity}x ${SUPPLY_TYPES.find(t => t.value === s.supply_type)?.label ?? s.supply_type}`).join(', ')}</p>
                 )}
                 {dateMode === 'range' ? (
                   <p><span className="text-gray-500">Dates:</span> {dateFrom}{dateTo ? ` – ${dateTo}` : ''}</p>
