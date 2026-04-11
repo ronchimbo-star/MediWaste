@@ -34,47 +34,13 @@ function fmt(date: string) {
   return new Date(date).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
 
-function SignatureSVG({ name }: { name: string }) {
-  const words = name.trim().split(/\s+/);
-  const firstName = words[0] || '';
-  const lastName = words.slice(1).join(' ');
-
+function SignatureImage() {
   return (
-    <svg
-      viewBox="0 0 220 60"
-      width="220"
-      height="60"
-      style={{ display: 'block', overflow: 'visible' }}
-    >
-      <text
-        x="4"
-        y="44"
-        style={{
-          fontFamily: 'Georgia, serif',
-          fontSize: '32px',
-          fontWeight: '700',
-          fontStyle: 'italic',
-          fill: '#1a1a1a',
-        }}
-      >
-        {firstName}
-      </text>
-      {lastName && (
-        <text
-          x={firstName.length * 14 + 10}
-          y="44"
-          style={{
-            fontFamily: 'Georgia, serif',
-            fontSize: '32px',
-            fontWeight: '700',
-            fontStyle: 'italic',
-            fill: '#1a1a1a',
-          }}
-        >
-          {lastName}
-        </text>
-      )}
-    </svg>
+    <img
+      src="/signature.png"
+      alt="Authorised signature"
+      style={{ display: 'block', width: '180px', height: '50px', objectFit: 'contain', objectPosition: 'left center' }}
+    />
   );
 }
 
@@ -269,7 +235,7 @@ export default function CertificatePreview({ data, settings, forDownload = false
               }}
             >
               <div style={{ marginBottom: '12px' }}>
-                <SignatureSVG name={signatoryName} />
+                <SignatureImage />
               </div>
               <div style={{ borderTop: '1px solid #ddd', paddingTop: '10px' }}>
                 <p style={{ fontWeight: 'bold', fontSize: '13px', fontFamily: 'Arial, sans-serif', margin: '0 0 2px 0', color: '#111' }}>
