@@ -177,7 +177,7 @@ export default function CertificatePreviewPage() {
               className="flex items-center gap-2 border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {downloading ? <Loader size={15} className="animate-spin" /> : <Download size={15} />}
-              Download PNG
+              {downloading ? 'Preparing...' : 'Download PNG'}
             </button>
             <button
               onClick={handleDownloadPDF}
@@ -185,7 +185,7 @@ export default function CertificatePreviewPage() {
               className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {downloading ? <Loader size={15} className="animate-spin" /> : <Download size={15} />}
-              Download PDF
+              {downloading ? 'Preparing...' : 'Download PDF'}
             </button>
           </div>
         </div>

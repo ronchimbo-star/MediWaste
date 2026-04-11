@@ -99,7 +99,17 @@ export async function downloadCertificateAsPDF(certNumber: string): Promise<void
   printWindow.document.write(html);
   printWindow.document.close();
   printWindow.focus();
-  setTimeout(() => {
-    printWindow.print();
-  }, 800);
+
+  await new Promise<void>((resolve) => {
+    printWindow.onload = () => {
+      setTimeout(() => {
+        printWindow.print();
+        resolve();
+      }, 300);
+    };
+    setTimeout(() => {
+      printWindow.print();
+      resolve();
+    }, 600);
+  });
 }

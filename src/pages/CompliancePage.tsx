@@ -5,7 +5,7 @@ import { supabase } from '../lib/supabase';
 import CertificatePreview from '../components/certificates/CertificatePreview';
 import { downloadCertificateAsPDF } from '../utils/certificateDownload';
 import CollectionRequestModal from '../components/CollectionRequestModal';
-import { Download, Award, FileText, CheckCircle, XCircle, Clock, MapPin, Phone, Mail, Building, AlertTriangle, Truck } from 'lucide-react';
+import { Download, Award, FileText, CheckCircle, XCircle, Clock, MapPin, Phone, Mail, Building, AlertTriangle, Truck, Loader } from 'lucide-react';
 
 interface WasteTransferNote {
   id: string;
@@ -44,6 +44,7 @@ function fmt(date: string) {
 export default function CompliancePage() {
   const { token } = useParams<{ token: string }>();
   const [showRequestModal, setShowRequestModal] = useState(false);
+  const [downloading, setDownloading] = useState(false);
 
   const { data: cert, isLoading, error } = useQuery({
     queryKey: ['compliance-cert', token],
@@ -86,7 +87,14 @@ export default function CompliancePage() {
     },
   });
 
-  const handleDownload = () => downloadCertificateAsPDF(cert?.certificate_number || '');
+  const handleDownload = async () => {
+    setDownloading(true);
+    try {
+      await downloadCertificateAsPDF(cert?.certificate_number || '');
+    } finally {
+      setDownloading(false);
+    }
+  };
   const customer = cert?.mw_customers;
 
   if (isLoading) {
@@ -252,17 +260,19 @@ export default function CompliancePage() {
                 <div className="flex gap-2">
                   <button
                     onClick={handleDownload}
-                    className="flex items-center gap-1.5 text-xs border border-gray-200 bg-white hover:bg-gray-50 text-gray-600 px-2.5 py-1.5 rounded-lg transition-colors"
+                    disabled={downloading}
+                    className="flex items-center gap-1.5 text-xs border border-gray-200 bg-white hover:bg-gray-50 text-gray-600 px-2.5 py-1.5 rounded-lg transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                   >
-                    <Download size={12} />
+                    {downloading ? <Loader size={12} className="animate-spin" /> : <Download size={12} />}
                     PNG
                   </button>
                   <button
                     onClick={handleDownload}
-                    className="flex items-center gap-1.5 text-xs bg-red-600 hover:bg-red-700 text-white px-2.5 py-1.5 rounded-lg transition-colors"
+                    disabled={downloading}
+                    className="flex items-center gap-1.5 text-xs bg-red-600 hover:bg-red-700 text-white px-2.5 py-1.5 rounded-lg transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                   >
-                    <Download size={12} />
-                    PDF
+                    {downloading ? <Loader size={12} className="animate-spin" /> : <Download size={12} />}
+                    {downloading ? 'Preparing...' : 'PDF'}
                   </button>
                 </div>
               </div>
