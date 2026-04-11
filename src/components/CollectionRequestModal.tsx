@@ -185,7 +185,7 @@ export default function CollectionRequestModal({ customerId, customerName, custo
     setSubmitting(true);
     setError('');
     try {
-      const { data: req, error: reqErr } = await supabase
+      const { data: reqRows, error: reqErr } = await supabase
         .from('mw_collection_requests')
         .insert([{
           customer_id: customerId,
@@ -200,10 +200,11 @@ export default function CollectionRequestModal({ customerId, customerName, custo
           contact_email: contactEmail || null,
           source,
         }])
-        .select('id')
-        .single();
+        .select('id');
 
-      if (reqErr || !req) throw reqErr || new Error('Failed to create request');
+      if (reqErr) throw reqErr;
+      const req = reqRows?.[0];
+      if (!req) throw new Error('Failed to create request');
 
       const validWasteItems = wasteItems.filter(wasteItemValid);
       if (validWasteItems.length > 0) {
