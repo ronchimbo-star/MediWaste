@@ -41,6 +41,7 @@ const SUPPLY_TYPES = [
   { label: 'Blue pharmaceutical bags', value: 'blue_pharma_bags' },
   { label: 'Rigid containers', value: 'rigid_containers' },
   { label: 'Cable ties / sealers', value: 'cable_ties' },
+  { label: 'Other (describe below)', value: 'other' },
 ];
 
 const DAYS_OF_WEEK = [
@@ -61,14 +62,17 @@ const TIME_SLOTS = [
 
 interface WasteItem {
   waste_type: string;
+  other_description: string;
   quantity: number;
   volume_unit: string;
   container_type: string;
+  container_other: string;
   notes: string;
 }
 
 interface SupplyItem {
   supply_type: string;
+  supply_other: string;
   quantity: number;
 }
 
@@ -92,6 +96,39 @@ function maxDate() {
   return d.toISOString().split('T')[0];
 }
 
+function wasteItemLabel(item: WasteItem): string {
+  const type = item.waste_type === 'Other clinical waste' && item.other_description
+    ? `Other (${item.other_description})`
+    : item.waste_type;
+  return `${item.quantity} ${item.volume_unit} – ${type}`;
+}
+
+function supplyLabel(s: SupplyItem): string {
+  const label = s.supply_type === 'other' && s.supply_other
+    ? `Other (${s.supply_other})`
+    : SUPPLY_TYPES.find(t => t.value === s.supply_type)?.label ?? s.supply_type;
+  return `${s.quantity}x ${label}`;
+}
+
+function resolvedSupplyType(s: SupplyItem): string {
+  if (s.supply_type === 'other') return s.supply_other ? `other: ${s.supply_other}` : 'other';
+  return s.supply_type;
+}
+
+function resolvedWasteType(item: WasteItem): string {
+  if (item.waste_type === 'Other clinical waste' && item.other_description) {
+    return `Other clinical waste: ${item.other_description}`;
+  }
+  return item.waste_type;
+}
+
+function resolvedContainerType(item: WasteItem): string | null {
+  if (!item.container_type) return null;
+  if (item.container_type === 'Other' && item.container_other) return `Other: ${item.container_other}`;
+  if (item.container_type === 'Other') return 'Other';
+  return item.container_type;
+}
+
 export default function CollectionRequestModal({ customerId, customerName, customerAddress, source = 'customer_portal', onClose }: Props) {
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [submitting, setSubmitting] = useState(false);
@@ -99,7 +136,7 @@ export default function CollectionRequestModal({ customerId, customerName, custo
   const [error, setError] = useState('');
 
   const [wasteItems, setWasteItems] = useState<WasteItem[]>([
-    { waste_type: '', quantity: 1, volume_unit: 'bags', container_type: '', notes: '' },
+    { waste_type: '', other_description: '', quantity: 1, volume_unit: 'bags', container_type: '', container_other: '', notes: '' },
   ]);
 
   const [supplies, setSupplies] = useState<SupplyItem[]>([]);
@@ -115,7 +152,7 @@ export default function CollectionRequestModal({ customerId, customerName, custo
   const [contactEmail, setContactEmail] = useState('');
 
   function addWasteItem() {
-    setWasteItems([...wasteItems, { waste_type: '', quantity: 1, volume_unit: 'bags', container_type: '', notes: '' }]);
+    setWasteItems([...wasteItems, { waste_type: '', other_description: '', quantity: 1, volume_unit: 'bags', container_type: '', container_other: '', notes: '' }]);
   }
 
   function removeWasteItem(i: number) {
@@ -126,11 +163,22 @@ export default function CollectionRequestModal({ customerId, customerName, custo
     setWasteItems(wasteItems.map((item, idx) => idx === i ? { ...item, [field]: value } : item));
   }
 
+  function updateSupply(i: number, field: keyof SupplyItem, value: string | number) {
+    setSupplies(supplies.map((s, idx) => idx === i ? { ...s, [field]: value } : s));
+  }
+
   function toggleDay(day: string) {
     setSelectedDays(prev => prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day]);
   }
 
-  const canProceedStep1 = wasteItems.every(i => i.waste_type && i.quantity > 0);
+  function wasteItemValid(item: WasteItem): boolean {
+    if (!item.waste_type) return false;
+    if (item.waste_type === 'Other clinical waste' && !item.other_description.trim()) return false;
+    if (item.quantity <= 0) return false;
+    return true;
+  }
+
+  const canProceedStep1 = wasteItems.length > 0 && wasteItems.every(wasteItemValid);
   const canProceedStep2 = dateMode === 'range' ? !!dateFrom : selectedDays.length > 0;
 
   async function handleSubmit() {
@@ -157,15 +205,16 @@ export default function CollectionRequestModal({ customerId, customerName, custo
 
       if (reqErr || !req) throw reqErr || new Error('Failed to create request');
 
-      if (wasteItems.length > 0) {
+      const validWasteItems = wasteItems.filter(wasteItemValid);
+      if (validWasteItems.length > 0) {
         const { error: itemsErr } = await supabase
           .from('mw_collection_request_items')
-          .insert(wasteItems.map(item => ({
+          .insert(validWasteItems.map(item => ({
             request_id: req.id,
-            waste_type: item.waste_type,
+            waste_type: resolvedWasteType(item),
             quantity: item.quantity,
             volume_unit: item.volume_unit,
-            container_type: item.container_type || null,
+            container_type: resolvedContainerType(item),
             notes: item.notes || null,
           })));
         if (itemsErr) throw itemsErr;
@@ -177,7 +226,7 @@ export default function CollectionRequestModal({ customerId, customerName, custo
           .from('mw_collection_request_supplies')
           .insert(validSupplies.map(s => ({
             request_id: req.id,
-            supply_type: s.supply_type,
+            supply_type: resolvedSupplyType(s),
             quantity: s.quantity,
           })));
         if (supErr) throw supErr;
@@ -278,11 +327,24 @@ export default function CollectionRequestModal({ customerId, customerName, custo
                             {WASTE_TYPES.map(wt => <option key={wt} value={wt}>{wt}</option>)}
                           </select>
                         </div>
+                        {item.waste_type === 'Other clinical waste' && (
+                          <div className="sm:col-span-2">
+                            <label className="block text-xs font-medium text-gray-600 mb-1">Please describe the waste *</label>
+                            <input
+                              type="text"
+                              placeholder="e.g. mixed clinical dressings, plaster casts..."
+                              value={item.other_description}
+                              onChange={e => updateWasteItem(i, 'other_description', e.target.value)}
+                              className={`w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-red-400 focus:border-transparent ${!item.other_description.trim() ? 'border-red-300 bg-red-50' : 'border-gray-300'}`}
+                            />
+                          </div>
+                        )}
                         <div>
                           <label className="block text-xs font-medium text-gray-600 mb-1">Quantity *</label>
                           <input
                             type="number"
-                            min="1"
+                            min="0.1"
+                            step="0.1"
                             value={item.quantity}
                             onChange={e => updateWasteItem(i, 'quantity', parseFloat(e.target.value) || 1)}
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-red-400 focus:border-transparent"
@@ -299,7 +361,7 @@ export default function CollectionRequestModal({ customerId, customerName, custo
                           </select>
                         </div>
                         <div className="sm:col-span-2">
-                          <label className="block text-xs font-medium text-gray-600 mb-1">Container Type</label>
+                          <label className="block text-xs font-medium text-gray-600 mb-1">Container Type <span className="text-gray-400 font-normal">(optional)</span></label>
                           <select
                             value={item.container_type}
                             onChange={e => updateWasteItem(i, 'container_type', e.target.value)}
@@ -309,11 +371,23 @@ export default function CollectionRequestModal({ customerId, customerName, custo
                             {CONTAINER_TYPES.map(c => <option key={c} value={c}>{c}</option>)}
                           </select>
                         </div>
+                        {item.container_type === 'Other' && (
+                          <div className="sm:col-span-2">
+                            <label className="block text-xs font-medium text-gray-600 mb-1">Describe the container</label>
+                            <input
+                              type="text"
+                              placeholder="e.g. cardboard box, large drum..."
+                              value={item.container_other}
+                              onChange={e => updateWasteItem(i, 'container_other', e.target.value)}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-red-400 focus:border-transparent"
+                            />
+                          </div>
+                        )}
                         <div className="sm:col-span-2">
-                          <label className="block text-xs font-medium text-gray-600 mb-1">Additional notes for this item</label>
+                          <label className="block text-xs font-medium text-gray-600 mb-1">Additional notes <span className="text-gray-400 font-normal">(optional)</span></label>
                           <input
                             type="text"
-                            placeholder="e.g. stored in back office..."
+                            placeholder="e.g. stored in back office, fragile container..."
                             value={item.notes}
                             onChange={e => updateWasteItem(i, 'notes', e.target.value)}
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-red-400 focus:border-transparent"
@@ -338,31 +412,42 @@ export default function CollectionRequestModal({ customerId, customerName, custo
                   <p className="text-sm font-semibold text-gray-700">Request supplies from driver?</p>
                   <span className="text-xs text-gray-400">(optional)</span>
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {supplies.map((s, i) => (
-                    <div key={i} className="flex items-center gap-2">
-                      <select
-                        value={s.supply_type}
-                        onChange={e => setSupplies(supplies.map((x, idx) => idx === i ? { ...x, supply_type: e.target.value } : x))}
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-red-400 focus:border-transparent bg-white"
-                      >
-                        <option value="">Select supply...</option>
-                        {SUPPLY_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
-                      </select>
-                      <input
-                        type="number"
-                        min="1"
-                        value={s.quantity}
-                        onChange={e => setSupplies(supplies.map((x, idx) => idx === i ? { ...x, quantity: parseInt(e.target.value) || 1 } : x))}
-                        className="w-20 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-red-400 focus:border-transparent text-center"
-                      />
-                      <button onClick={() => setSupplies(supplies.filter((_, idx) => idx !== i))} className="text-gray-400 hover:text-red-500 flex-shrink-0">
-                        <Trash2 size={15} />
-                      </button>
+                    <div key={i} className="border border-gray-200 rounded-xl p-3 bg-gray-50">
+                      <div className="flex items-center gap-2 mb-2">
+                        <select
+                          value={s.supply_type}
+                          onChange={e => updateSupply(i, 'supply_type', e.target.value)}
+                          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-red-400 focus:border-transparent bg-white"
+                        >
+                          <option value="">Select supply...</option>
+                          {SUPPLY_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                        </select>
+                        <input
+                          type="number"
+                          min="1"
+                          value={s.quantity}
+                          onChange={e => updateSupply(i, 'quantity', parseInt(e.target.value) || 1)}
+                          className="w-20 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-red-400 focus:border-transparent text-center"
+                        />
+                        <button onClick={() => setSupplies(supplies.filter((_, idx) => idx !== i))} className="text-gray-400 hover:text-red-500 flex-shrink-0">
+                          <Trash2 size={15} />
+                        </button>
+                      </div>
+                      {s.supply_type === 'other' && (
+                        <input
+                          type="text"
+                          placeholder="Describe what you need..."
+                          value={s.supply_other}
+                          onChange={e => updateSupply(i, 'supply_other', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-red-400 focus:border-transparent"
+                        />
+                      )}
                     </div>
                   ))}
                   <button
-                    onClick={() => setSupplies([...supplies, { supply_type: '', quantity: 1 }])}
+                    onClick={() => setSupplies([...supplies, { supply_type: '', supply_other: '', quantity: 1 }])}
                     className="flex items-center gap-2 text-sm text-red-600 hover:text-red-700 font-medium"
                   >
                     <Plus size={15} />
@@ -406,7 +491,7 @@ export default function CollectionRequestModal({ customerId, customerName, custo
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">Latest date (optional)</label>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Latest date <span className="text-gray-400 font-normal">(optional)</span></label>
                       <input
                         type="date"
                         value={dateTo}
@@ -452,7 +537,7 @@ export default function CollectionRequestModal({ customerId, customerName, custo
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Special instructions</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">Special instructions <span className="text-gray-400 text-xs font-normal">(optional)</span></label>
                 <textarea
                   rows={3}
                   placeholder="e.g. access code, where waste is stored, any hazards the driver should know about..."
@@ -504,16 +589,27 @@ export default function CollectionRequestModal({ customerId, customerName, custo
 
               <div className="bg-gray-50 rounded-xl border border-gray-200 p-4 text-sm text-gray-600 space-y-1.5">
                 <p className="font-semibold text-gray-700 text-xs uppercase tracking-wide mb-2">Request Summary</p>
-                <p><span className="text-gray-500">Items:</span> {wasteItems.filter(i => i.waste_type).map(i => `${i.quantity} ${i.volume_unit} ${i.waste_type}`).join(', ')}</p>
+                <div>
+                  <span className="text-gray-500">Items: </span>
+                  {wasteItems.filter(wasteItemValid).length > 0
+                    ? wasteItems.filter(wasteItemValid).map((item, i) => (
+                        <span key={i}>{i > 0 && ', '}{wasteItemLabel(item)}</span>
+                      ))
+                    : <span className="text-gray-400 italic">None specified</span>
+                  }
+                </div>
                 {supplies.filter(s => s.supply_type).length > 0 && (
-                  <p><span className="text-gray-500">Supplies:</span> {supplies.filter(s => s.supply_type).map(s => `${s.quantity}x ${SUPPLY_TYPES.find(t => t.value === s.supply_type)?.label ?? s.supply_type}`).join(', ')}</p>
+                  <p><span className="text-gray-500">Supplies: </span>{supplies.filter(s => s.supply_type).map(supplyLabel).join(', ')}</p>
                 )}
                 {dateMode === 'range' ? (
-                  <p><span className="text-gray-500">Dates:</span> {dateFrom}{dateTo ? ` – ${dateTo}` : ''}</p>
+                  <p><span className="text-gray-500">Dates: </span>{dateFrom || '—'}{dateTo ? ` – ${dateTo}` : ''}</p>
                 ) : (
-                  <p><span className="text-gray-500">Days:</span> {selectedDays.join(', ')}</p>
+                  <p><span className="text-gray-500">Days: </span>{selectedDays.length > 0 ? selectedDays.join(', ') : '—'}</p>
                 )}
-                <p><span className="text-gray-500">Time slot:</span> {TIME_SLOTS.find(t => t.value === timeSlot)?.label}</p>
+                <p><span className="text-gray-500">Time slot: </span>{TIME_SLOTS.find(t => t.value === timeSlot)?.label ?? '—'}</p>
+                {specialInstructions && (
+                  <p><span className="text-gray-500">Instructions: </span>{specialInstructions}</p>
+                )}
               </div>
 
               {error && (
