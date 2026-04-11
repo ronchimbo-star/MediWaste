@@ -234,8 +234,12 @@ export default function CollectionRequestModal({ customerId, customerName, custo
       }
 
       setSubmitted(true);
-    } catch {
-      setError('Something went wrong. Please try again or call us directly.');
+    } catch (err: unknown) {
+      console.error('[CollectionRequestModal] Submit error:', err);
+      const msg = err instanceof Error ? err.message
+        : (err as { message?: string })?.message
+        ?? JSON.stringify(err);
+      setError(`Error: ${msg}`);
     } finally {
       setSubmitting(false);
     }
