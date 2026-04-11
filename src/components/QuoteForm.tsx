@@ -98,7 +98,7 @@ export default function QuoteForm() {
       };
 
       const { error: insertError } = await supabase
-        .from('quote_submissions')
+        .from('quote_requests')
         .insert(submissionData);
 
       if (insertError) throw insertError;
