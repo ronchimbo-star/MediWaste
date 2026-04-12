@@ -25,7 +25,7 @@ export default function SharpsWastePage() {
     <div className="min-h-screen bg-white">
       <SEO
         title="Sharps Waste Disposal UK | Needle & Syringe Disposal Service | Sharps Bins"
-        description="Expert sharps waste disposal services. Puncture-proof sharps bins for needles, syringes, and medical sharps. Licensed collection and incineration. Free sharps containers. Get a quote."
+        description="Licensed sharps waste disposal for needles, syringes and medical sharps. Puncture-proof bins supplied free. Compliant collection and incineration. Get a quote."
         canonical="https://mediwaste.co.uk/waste-services/sharps-waste"
         schema={serviceSchema}
       />

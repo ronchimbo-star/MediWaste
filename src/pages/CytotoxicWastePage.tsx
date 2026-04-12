@@ -9,8 +9,17 @@ export default function CytotoxicWastePage() {
     <div className="min-h-screen bg-white">
       <SEO
         title="Cytotoxic Waste Disposal UK | Chemotherapy Waste Collection Service"
-        description="Expert cytotoxic and cytostatic waste disposal. Licensed collection of chemotherapy waste, contaminated PPE, and cancer treatment materials. Purple bin disposal. Free quote."
+        description="Licensed cytotoxic and cytostatic waste disposal. Collection of chemotherapy waste, contaminated PPE and cancer treatment materials. Purple bin. Free quote."
         canonical="https://mediwaste.co.uk/waste-services/cytotoxic-waste"
+        schema={{
+          '@context': 'https://schema.org',
+          '@type': 'Service',
+          name: 'Cytotoxic Waste Disposal',
+          provider: { '@type': 'Organization', name: 'MediWaste', url: 'https://mediwaste.co.uk' },
+          serviceType: 'Cytotoxic Waste Collection and Disposal',
+          areaServed: { '@type': 'Country', name: 'United Kingdom' },
+          description: 'Specialist collection and high-temperature incineration of cytotoxic and cytostatic waste from cancer treatments.'
+        }}
       />
       <Header />
 

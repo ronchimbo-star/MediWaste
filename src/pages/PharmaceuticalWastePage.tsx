@@ -9,8 +9,17 @@ export default function PharmaceuticalWastePage() {
     <div className="min-h-screen bg-white">
       <SEO
         title="Pharmaceutical Waste Disposal UK | Medicine & Drug Disposal Service"
-        description="Expert pharmaceutical waste disposal services. Licensed collection and incineration of expired medicines, controlled drugs, and pharmaceutical waste. Blue bin disposal. Free quote."
+        description="Licensed pharmaceutical waste disposal for expired medicines, controlled drugs and pharmaceutical waste. Blue bin collection with compliant incineration. Free quote."
         canonical="https://mediwaste.co.uk/waste-services/pharmaceutical-waste"
+        schema={{
+          '@context': 'https://schema.org',
+          '@type': 'Service',
+          name: 'Pharmaceutical Waste Disposal',
+          provider: { '@type': 'Organization', name: 'MediWaste', url: 'https://mediwaste.co.uk' },
+          serviceType: 'Pharmaceutical Waste Collection and Disposal',
+          areaServed: { '@type': 'Country', name: 'United Kingdom' },
+          description: 'Licensed collection and incineration of expired medicines, controlled drugs and pharmaceutical waste.'
+        }}
       />
       <Header />
 

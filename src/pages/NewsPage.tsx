@@ -61,6 +61,18 @@ export default function NewsPage() {
         title="News & Updates | MediWaste Clinical Waste Disposal"
         description="Stay updated with the latest news, regulations, and insights on clinical waste management from MediWaste. Expert guidance for healthcare facilities."
         canonical="https://mediwaste.co.uk/news"
+        schema={{
+          '@context': 'https://schema.org',
+          '@type': 'Blog',
+          name: 'MediWaste News & Updates',
+          url: 'https://mediwaste.co.uk/news',
+          publisher: {
+            '@type': 'Organization',
+            name: 'MediWaste',
+            url: 'https://mediwaste.co.uk'
+          },
+          description: 'Latest news, regulations and insights on clinical waste management from MediWaste.'
+        }}
       />
       <Header />
 

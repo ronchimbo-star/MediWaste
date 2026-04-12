@@ -9,8 +9,17 @@ export default function AnatomicalWastePage() {
     <div className="min-h-screen bg-white">
       <SEO
         title="Anatomical Waste Disposal UK | Human Tissue & Pathology Waste Collection"
-        description="Expert anatomical waste disposal services. Dignified collection and incineration of human tissue, organs, and body parts. Licensed pathology waste disposal. Free quote."
+        description="Licensed anatomical waste disposal. Dignified collection and incineration of human tissue, organs and pathology waste. Fully compliant. Free quote."
         canonical="https://mediwaste.co.uk/waste-services/anatomical-waste"
+        schema={{
+          '@context': 'https://schema.org',
+          '@type': 'Service',
+          name: 'Anatomical Waste Disposal',
+          provider: { '@type': 'Organization', name: 'MediWaste', url: 'https://mediwaste.co.uk' },
+          serviceType: 'Anatomical Waste Collection and Disposal',
+          areaServed: { '@type': 'Country', name: 'United Kingdom' },
+          description: 'Dignified collection and incineration of human tissue, organs and pathology waste with full regulatory compliance.'
+        }}
       />
       <Header />
 

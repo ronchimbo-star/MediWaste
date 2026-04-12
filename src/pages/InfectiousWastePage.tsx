@@ -25,7 +25,7 @@ export default function InfectiousWastePage() {
     <div className="min-h-screen bg-white">
       <SEO
         title="Infectious Clinical Waste Disposal UK | Yellow Bag Waste Collection Service"
-        description="Expert infectious clinical waste disposal services. Licensed collection of contaminated dressings, swabs, PPE, and infectious materials. Yellow bag waste disposal with compliant incineration. Free quote."
+        description="Licensed infectious clinical waste disposal. Collection of contaminated dressings, swabs, PPE and infectious materials. Yellow bag waste with compliant incineration."
         canonical="https://mediwaste.co.uk/waste-services/infectious-waste"
         schema={serviceSchema}
       />

@@ -9,8 +9,17 @@ export default function DentalWastePage() {
     <div className="min-h-screen bg-white">
       <SEO
         title="Dental Waste Disposal UK | Amalgam Waste & Dental Clinical Waste Collection"
-        description="Expert dental waste disposal services. Licensed collection of dental amalgam, sharps, infectious waste, and dental clinical materials. Mercury waste disposal. Free quote."
+        description="Licensed dental waste disposal including amalgam, sharps and infectious dental materials. Mercury waste collection with compliant incineration. Free quote."
         canonical="https://mediwaste.co.uk/waste-services/dental-waste"
+        schema={{
+          '@context': 'https://schema.org',
+          '@type': 'Service',
+          name: 'Dental Waste Disposal',
+          provider: { '@type': 'Organization', name: 'MediWaste', url: 'https://mediwaste.co.uk' },
+          serviceType: 'Dental Waste Collection and Disposal',
+          areaServed: { '@type': 'Country', name: 'United Kingdom' },
+          description: 'Complete dental waste management including amalgam separation, sharps disposal and dental clinical waste collection.'
+        }}
       />
       <Header />
 

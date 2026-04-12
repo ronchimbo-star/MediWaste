@@ -10,6 +10,7 @@ export default function NotFound() {
       <SEO
         title="Page Not Found | MediWaste"
         description="The page you're looking for could not be found."
+        canonical="https://mediwaste.co.uk/404"
         noindex={true}
       />
       <Header />

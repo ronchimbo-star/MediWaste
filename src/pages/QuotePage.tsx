@@ -9,8 +9,22 @@ export default function QuotePage() {
     <>
       <SEO
         title="Get a Free Quote - Clinical Waste Disposal | MediWaste"
-        description="Request a free quote for clinical waste disposal services. Fast response, competitive pricing, and compliant waste management solutions for your healthcare facility."
+        description="Request a free clinical waste disposal quote. Fast response, competitive pricing and compliant waste management for your healthcare facility."
         canonical="https://mediwaste.co.uk/quote"
+        schema={{
+          '@context': 'https://schema.org',
+          '@type': 'Service',
+          name: 'Clinical Waste Disposal Quote',
+          provider: {
+            '@type': 'LocalBusiness',
+            name: 'MediWaste',
+            url: 'https://mediwaste.co.uk',
+            telephone: '+447757664788'
+          },
+          serviceType: 'Clinical Waste Disposal',
+          areaServed: { '@type': 'Country', name: 'United Kingdom' },
+          description: 'Licensed clinical and medical waste collection and disposal services for healthcare facilities across the UK.'
+        }}
       />
       <div className="min-h-screen bg-white">
         <Header />

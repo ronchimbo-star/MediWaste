@@ -131,7 +131,7 @@ export default function WasteServicesPage() {
     <div className="min-h-screen bg-white">
       <SEO
         title="Clinical Waste Disposal Services UK | Medical Waste Collection | Sharps Disposal"
-        description="Expert clinical waste disposal services - infectious waste, sharps disposal, pharmaceutical waste, cytotoxic waste, dental waste, and anatomical waste. Licensed UK medical waste collection with compliant incineration. Free quote."
+        description="Licensed clinical waste disposal: infectious waste, sharps, pharmaceutical, cytotoxic, dental and anatomical waste. Compliant UK medical waste collection. Free quote."
         canonical="https://mediwaste.co.uk/waste-services"
         schema={serviceSchema}
       />

@@ -158,6 +158,8 @@ export default function ServiceAgreementPage() {
         <SEO
           title="Service Agreement - MediWaste"
           description="View your MediWaste service agreement"
+          canonical="https://mediwaste.co.uk/service-agreement"
+          noindex={true}
         />
         <Header />
         <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -177,6 +179,8 @@ export default function ServiceAgreementPage() {
         <SEO
           title="Service Agreement Not Found - MediWaste"
           description="Service agreement not found"
+          canonical="https://mediwaste.co.uk/service-agreement"
+          noindex={true}
         />
         <Header />
         <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -200,6 +204,8 @@ export default function ServiceAgreementPage() {
       <SEO
         title={`Service Agreement #${agreement.agreement_number} - MediWaste`}
         description={`Service agreement for ${agreement.client_name}`}
+        canonical={`https://mediwaste.co.uk/service-agreement/${token}`}
+        noindex={true}
       />
       <div className="print:hidden">
         <Header />
