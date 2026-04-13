@@ -27,6 +27,7 @@ interface Props {
   forDownload?: boolean;
   logoDataUrl?: string;
   faviconDataUrl?: string;
+  signatureDataUrl?: string;
 }
 
 function fmt(date: string) {
@@ -34,17 +35,7 @@ function fmt(date: string) {
   return new Date(date).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
 
-function SignatureImage() {
-  return (
-    <img
-      src="/signature.png"
-      alt="Authorised signature"
-      style={{ display: 'block', width: '180px', height: '50px', objectFit: 'contain', objectPosition: 'left center' }}
-    />
-  );
-}
-
-export default function CertificatePreview({ data, settings, forDownload = false, logoDataUrl, faviconDataUrl }: Props) {
+export default function CertificatePreview({ data, settings, forDownload = false, logoDataUrl, faviconDataUrl, signatureDataUrl }: Props) {
   const licenceNo = data.waste_carrier_licence || settings?.waste_carrier_licence || '';
   const signatoryName = data.authorised_signatory_name || settings?.default_signatory_name || '';
   const signatoryTitle = data.authorised_signatory_title || settings?.default_signatory_title || '';
@@ -52,6 +43,7 @@ export default function CertificatePreview({ data, settings, forDownload = false
 
   const logoSrc = logoDataUrl || '/mediwaste-logo.png';
   const faviconSrc = faviconDataUrl || '/mediwaste-favicon.png';
+  const signatureSrc = signatureDataUrl || '/signature.png';
 
   const sidebarCount = [0, 1, 2, 3, 4];
 
@@ -235,7 +227,11 @@ export default function CertificatePreview({ data, settings, forDownload = false
               }}
             >
               <div style={{ marginBottom: '12px' }}>
-                <SignatureImage />
+                <img
+                  src={signatureSrc}
+                  alt="Authorised signature"
+                  style={{ display: 'block', width: '180px', height: '50px', objectFit: 'contain', objectPosition: 'left center' }}
+                />
               </div>
               <div style={{ borderTop: '1px solid #ddd', paddingTop: '10px' }}>
                 <p style={{ fontWeight: 'bold', fontSize: '13px', fontFamily: 'Arial, sans-serif', margin: '0 0 2px 0', color: '#111' }}>

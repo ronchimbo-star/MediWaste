@@ -12,6 +12,7 @@ export default function CertificatePreviewPage() {
   const navigate = useNavigate();
   const [logoDataUrl, setLogoDataUrl] = useState<string>('');
   const [faviconDataUrl, setFaviconDataUrl] = useState<string>('');
+  const [signatureDataUrl, setSignatureDataUrl] = useState<string>('');
   const [imagesReady, setImagesReady] = useState(false);
   const [downloading, setDownloading] = useState(false);
 
@@ -41,10 +42,12 @@ export default function CertificatePreviewPage() {
     Promise.all([
       imageToDataUrl('/mediwaste-logo.png'),
       imageToDataUrl('/mediwaste-favicon.png'),
-    ]).then(([logo, favicon]) => {
+      imageToDataUrl('/signature.png'),
+    ]).then(([logo, favicon, signature]) => {
       if (!cancelled) {
         setLogoDataUrl(logo);
         setFaviconDataUrl(favicon);
+        setSignatureDataUrl(signature);
         setImagesReady(true);
       }
     });
@@ -197,6 +200,7 @@ export default function CertificatePreviewPage() {
               settings={settings || null}
               logoDataUrl={logoDataUrl}
               faviconDataUrl={faviconDataUrl}
+              signatureDataUrl={signatureDataUrl}
             />
           ) : (
             <div className="flex items-center justify-center gap-3 text-gray-400 py-24">
