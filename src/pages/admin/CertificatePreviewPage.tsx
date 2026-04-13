@@ -5,7 +5,7 @@ import { supabase } from '../../lib/supabase';
 import AdminLayout from '../../components/admin/AdminLayout';
 import CertificatePreview from '../../components/certificates/CertificatePreview';
 import { Download, FileEdit as Edit, ChevronLeft, ExternalLink, Loader } from 'lucide-react';
-import { downloadCertificateAsPDF, imageToDataUrl } from '../../utils/certificateDownload';
+import { downloadCertificateAsPDF, downloadCertificateAsPNG, imageToDataUrl } from '../../utils/certificateDownload';
 
 export default function CertificatePreviewPage() {
   const { id } = useParams<{ id: string }>();
@@ -100,42 +100,9 @@ export default function CertificatePreviewPage() {
   const handleDownloadPNG = async () => {
     setDownloading(true);
     try {
-      const el = document.getElementById('certificate-render');
-      if (!el) return;
-      const canvas = document.createElement('canvas');
-      const scale = 2;
-      canvas.width = el.offsetWidth * scale;
-      canvas.height = el.offsetHeight * scale;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return;
-
-      const svgData = `
-        <svg xmlns="http://www.w3.org/2000/svg" width="${canvas.width}" height="${canvas.height}">
-          <foreignObject width="${el.offsetWidth}" height="${el.offsetHeight}" transform="scale(${scale})">
-            ${el.outerHTML}
-          </foreignObject>
-        </svg>`;
-      const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
-      const url = URL.createObjectURL(svgBlob);
-      const img = new Image();
-      img.onload = () => {
-        ctx.drawImage(img, 0, 0);
-        URL.revokeObjectURL(url);
-        const link = document.createElement('a');
-        link.download = `certificate-${cert.certificate_number}.png`;
-        link.href = canvas.toDataURL('image/png');
-        link.click();
-        setDownloading(false);
-      };
-      img.onerror = () => {
-        URL.revokeObjectURL(url);
-        setDownloading(false);
-        handleDownloadPDF();
-      };
-      img.src = url;
-    } catch {
+      await downloadCertificateAsPNG(cert.certificate_number);
+    } finally {
       setDownloading(false);
-      handleDownloadPDF();
     }
   };
 
