@@ -137,11 +137,9 @@ export default function CertificateEditPage() {
           .eq('id', id);
         if (error) throw error;
       } else {
-        const certNumber = await supabase.rpc('generate_certificate_number');
         const token = `${Date.now()}-${Math.random().toString(36).substring(2, 13)}`;
         const { error } = await supabase.from('mw_certificates').insert({
           ...payload,
-          certificate_number: certNumber.data,
           qr_code_token: token,
         });
         if (error) throw error;
