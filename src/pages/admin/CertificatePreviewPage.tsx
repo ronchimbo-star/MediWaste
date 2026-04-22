@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../../lib/supabase';
 import AdminLayout from '../../components/admin/AdminLayout';
 import CertificatePreview from '../../components/certificates/CertificatePreview';
-import { Download, FileEdit as Edit, ChevronLeft, ExternalLink, Loader } from 'lucide-react';
+import { FileEdit as Edit, ChevronLeft, ExternalLink, Loader, Image, FileText } from 'lucide-react';
 import { downloadCertificateAsPDF, downloadCertificateAsPNG, imageToDataUrl } from '../../utils/certificateDownload';
 
 export default function CertificatePreviewPage() {
@@ -13,8 +13,9 @@ export default function CertificatePreviewPage() {
   const [logoDataUrl, setLogoDataUrl] = useState<string>('');
   const [faviconDataUrl, setFaviconDataUrl] = useState<string>('');
   const [signatureDataUrl, setSignatureDataUrl] = useState<string>('');
+  const [whiteLogoDataUrl, setWhiteLogoDataUrl] = useState<string>('');
   const [imagesReady, setImagesReady] = useState(false);
-  const [downloading, setDownloading] = useState(false);
+  const [downloading, setDownloading] = useState<'png' | 'pdf' | null>(null);
 
   const { data: cert, isLoading: certLoading } = useQuery({
     queryKey: ['certificate', id],
@@ -43,11 +44,13 @@ export default function CertificatePreviewPage() {
       imageToDataUrl('/mediwaste-logo.png'),
       imageToDataUrl('/mediwaste-favicon.png'),
       imageToDataUrl('/signature.png'),
-    ]).then(([logo, favicon, signature]) => {
+      imageToDataUrl('/mediwaste-logo-white.png'),
+    ]).then(([logo, favicon, signature, whiteLogo]) => {
       if (!cancelled) {
         setLogoDataUrl(logo);
         setFaviconDataUrl(favicon);
         setSignatureDataUrl(signature);
+        setWhiteLogoDataUrl(whiteLogo);
         setImagesReady(true);
       }
     });
@@ -88,21 +91,21 @@ export default function CertificatePreviewPage() {
     certification_statement: cert.certification_statement || settings?.default_certification_statement || '',
   };
 
-  const handleDownloadPDF = async () => {
-    setDownloading(true);
-    try {
-      await downloadCertificateAsPDF(cert.certificate_number);
-    } finally {
-      setDownloading(false);
-    }
-  };
-
   const handleDownloadPNG = async () => {
-    setDownloading(true);
+    setDownloading('png');
     try {
       await downloadCertificateAsPNG(cert.certificate_number);
     } finally {
-      setDownloading(false);
+      setDownloading(null);
+    }
+  };
+
+  const handleDownloadPDF = async () => {
+    setDownloading('pdf');
+    try {
+      await downloadCertificateAsPDF(cert.certificate_number);
+    } finally {
+      setDownloading(null);
     }
   };
 
@@ -142,20 +145,20 @@ export default function CertificatePreviewPage() {
               Edit
             </button>
             <button
-              onClick={handleDownloadPNG}
-              disabled={downloading || !imagesReady}
+              onClick={handleDownloadPDF}
+              disabled={!!downloading || !imagesReady}
               className="flex items-center gap-2 border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {downloading ? <Loader size={15} className="animate-spin" /> : <Download size={15} />}
-              {downloading ? 'Preparing...' : 'Download PNG'}
+              {downloading === 'pdf' ? <Loader size={15} className="animate-spin" /> : <FileText size={15} />}
+              {downloading === 'pdf' ? 'Preparing...' : 'PDF'}
             </button>
             <button
-              onClick={handleDownloadPDF}
-              disabled={downloading || !imagesReady}
+              onClick={handleDownloadPNG}
+              disabled={!!downloading || !imagesReady}
               className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {downloading ? <Loader size={15} className="animate-spin" /> : <Download size={15} />}
-              {downloading ? 'Preparing...' : 'Download PDF'}
+              {downloading === 'png' ? <Loader size={15} className="animate-spin" /> : <Image size={15} />}
+              {downloading === 'png' ? 'Preparing...' : 'Download PNG'}
             </button>
           </div>
         </div>
@@ -168,6 +171,7 @@ export default function CertificatePreviewPage() {
               logoDataUrl={logoDataUrl}
               faviconDataUrl={faviconDataUrl}
               signatureDataUrl={signatureDataUrl}
+              whiteLogoDataUrl={whiteLogoDataUrl}
             />
           ) : (
             <div className="flex items-center justify-center gap-3 text-gray-400 py-24">
