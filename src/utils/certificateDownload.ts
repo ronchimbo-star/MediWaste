@@ -16,11 +16,28 @@ export async function imageToDataUrl(src: string): Promise<string> {
   }
 }
 
+function copyCanvasContent(original: HTMLElement, clone: HTMLElement) {
+  const origCanvases = original.querySelectorAll('canvas');
+  const cloneCanvases = clone.querySelectorAll('canvas');
+  origCanvases.forEach((origCanvas, i) => {
+    const cloneCanvas = cloneCanvases[i];
+    if (!cloneCanvas) return;
+    cloneCanvas.width = origCanvas.width;
+    cloneCanvas.height = origCanvas.height;
+    const ctx = cloneCanvas.getContext('2d');
+    if (ctx) {
+      ctx.drawImage(origCanvas, 0, 0);
+    }
+  });
+}
+
 async function renderToCanvas(scale = 3): Promise<HTMLCanvasElement> {
   const el = document.getElementById('certificate-render');
   if (!el) throw new Error('Certificate element not found');
 
   const clone = el.cloneNode(true) as HTMLElement;
+  copyCanvasContent(el, clone);
+
   clone.style.position = 'absolute';
   clone.style.left = '-9999px';
   clone.style.top = '0';
@@ -53,9 +70,6 @@ async function renderToCanvas(scale = 3): Promise<HTMLCanvasElement> {
     logging: false,
     width: clone.scrollWidth,
     height: clone.scrollHeight,
-    onclone: (_doc, clonedEl) => {
-      clonedEl.style.transform = 'none';
-    },
   });
 
   document.body.removeChild(clone);
