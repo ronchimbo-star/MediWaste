@@ -33,7 +33,7 @@ const QUANTITY_UNITS = ['kg', 'litres', 'units', 'bags'];
 const emptyCreateForm = {
   customer_id: '', job_id: '', waste_type: 'clinical_waste', waste_description: '',
   quantity: '', quantity_unit: 'kg', container_type: 'yellow_bag', container_count: '1',
-  carrier_signature: 'WeClean4U Ltd',
+  carrier_signature: 'Circular Horizons International LTD',
 };
 
 export default function WasteTransferNotesPage() {
@@ -354,7 +354,7 @@ function WTNViewModal({ wtn, onClose }: WTNViewModalProps) {
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <p className="font-semibold">Company Name:</p>
-                  <p>WECLEAN4U LTD</p>
+                  <p>CIRCULAR HORIZONS INTERNATIONAL LTD</p>
                 </div>
                 <div>
                   <p className="font-semibold">Registration Number:</p>
@@ -362,7 +362,7 @@ function WTNViewModal({ wtn, onClose }: WTNViewModalProps) {
                 </div>
                 <div className="col-span-2">
                   <p className="font-semibold">Address:</p>
-                  <p>56 Craydene Road, Erith, DA8 2HA</p>
+                  <p>Unit 2 Capital Industrial Estate, Crabtree Manorway South, Belvedere, Kent, DA17 6BJ</p>
                 </div>
                 <div>
                   <p className="font-semibold">Registration Type:</p>
@@ -393,7 +393,7 @@ function WTNViewModal({ wtn, onClose }: WTNViewModalProps) {
               <div>
                 <h4 className="font-bold text-gray-900 mb-3">Processing Site</h4>
                 <div className="text-sm">
-                  <p className="text-gray-600 italic">To be determined by WeClean4U</p>
+                  <p className="text-gray-600 italic">To be determined by Circular Horizons International LTD</p>
                 </div>
               </div>
             </div>
@@ -428,7 +428,7 @@ function WTNViewModal({ wtn, onClose }: WTNViewModalProps) {
               <h4 className="font-bold text-gray-900 mb-3">Signatures</h4>
               <div className="grid grid-cols-2 gap-6">
                 <div>
-                  <p className="text-sm font-semibold mb-2">Carrier (WeClean4U):</p>
+                  <p className="text-sm font-semibold mb-2">Carrier (Circular Horizons International LTD):</p>
                   <div className="border border-gray-300 rounded p-3 bg-gray-50">
                     <p className="text-sm">{wtn.carrier_signature}</p>
                   </div>

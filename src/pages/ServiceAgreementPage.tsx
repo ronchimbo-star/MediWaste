@@ -291,7 +291,7 @@ export default function ServiceAgreementPage() {
                 <div className="mb-6">
                   <p className="font-semibold text-gray-900">Supplier:</p>
                   <p>Circular Horizons International LTD T/A MediWaste</p>
-                  <p>Unit A 82 James Carter Road, Mildenhall, IP28 7DE</p>
+                  <p>Unit 2 Capital Industrial Estate, Crabtree Manorway South, Belvedere, Kent, DA17 6BJ</p>
                   <p>Company No: 15821509</p>
                   <p>Contact: Sarah Benson – sarah.benson@mediwaste.co.uk / 01322 879 713</p>
                 </div>
