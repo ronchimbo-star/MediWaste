@@ -28,7 +28,6 @@ interface Props {
   logoDataUrl?: string;
   faviconDataUrl?: string;
   signatureDataUrl?: string;
-  whiteLogoDataUrl?: string;
 }
 
 function fmt(date: string) {
@@ -36,7 +35,7 @@ function fmt(date: string) {
   return new Date(date).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
 
-export default function CertificatePreview({ data, settings, forDownload = false, logoDataUrl, faviconDataUrl, signatureDataUrl, whiteLogoDataUrl }: Props) {
+export default function CertificatePreview({ data, settings, forDownload = false, logoDataUrl, faviconDataUrl, signatureDataUrl }: Props) {
   const licenceNo = data.waste_carrier_licence || settings?.waste_carrier_licence || '';
   const signatoryName = data.authorised_signatory_name || settings?.default_signatory_name || '';
   const signatoryTitle = data.authorised_signatory_title || settings?.default_signatory_title || '';
@@ -45,7 +44,6 @@ export default function CertificatePreview({ data, settings, forDownload = false
   const logoSrc = logoDataUrl || '/mediwaste-logo.png';
   const faviconSrc = faviconDataUrl || '/mediwaste-favicon.png';
   const signatureSrc = signatureDataUrl || '/signature.png';
-  const whiteLogoSrc = whiteLogoDataUrl || '/mediwaste-logo-white.png';
 
   const sidebarCount = [0, 1, 2, 3, 4];
 
@@ -90,9 +88,8 @@ export default function CertificatePreview({ data, settings, forDownload = false
             }}
           >
             <img
-              src={whiteLogoSrc}
+              src={logoSrc}
               alt="MediWaste"
-              crossOrigin="anonymous"
               style={{
                 width: '180px',
                 height: 'auto',
@@ -100,6 +97,7 @@ export default function CertificatePreview({ data, settings, forDownload = false
                 transform: 'rotate(-90deg)',
                 transformOrigin: 'center center',
                 display: 'block',
+                filter: 'brightness(0) invert(1)',
               }}
             />
           </div>
@@ -112,7 +110,6 @@ export default function CertificatePreview({ data, settings, forDownload = false
             <img
               src={faviconSrc}
               alt="MediWaste Icon"
-              crossOrigin="anonymous"
               style={{ width: '88px', height: '88px', objectFit: 'contain', flexShrink: 0, marginTop: '4px' }}
             />
             <h1
@@ -233,7 +230,6 @@ export default function CertificatePreview({ data, settings, forDownload = false
                 <img
                   src={signatureSrc}
                   alt="Authorised signature"
-                  crossOrigin="anonymous"
                   style={{ display: 'block', width: '180px', height: '50px', objectFit: 'contain', objectPosition: 'left center' }}
                 />
               </div>
@@ -249,7 +245,6 @@ export default function CertificatePreview({ data, settings, forDownload = false
             <img
               src={logoSrc}
               alt="MediWaste"
-              crossOrigin="anonymous"
               style={{ width: '200px', height: 'auto', display: 'block', objectFit: 'contain' }}
             />
           </div>

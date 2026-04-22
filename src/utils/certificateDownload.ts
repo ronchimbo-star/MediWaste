@@ -20,45 +20,20 @@ async function renderToCanvas(scale = 3): Promise<HTMLCanvasElement> {
   const el = document.getElementById('certificate-render');
   if (!el) throw new Error('Certificate element not found');
 
-  const clone = el.cloneNode(true) as HTMLElement;
-  clone.style.position = 'absolute';
-  clone.style.left = '-9999px';
-  clone.style.top = '0';
-  clone.style.transform = 'none';
-  clone.style.zIndex = '-1';
-  document.body.appendChild(clone);
+  const prev = el.style.transform;
+  el.style.transform = 'none';
 
-  const images = clone.querySelectorAll('img');
-  await Promise.all(
-    Array.from(images).map(
-      (img) =>
-        new Promise<void>((resolve) => {
-          if (img.complete) {
-            resolve();
-          } else {
-            img.onload = () => resolve();
-            img.onerror = () => resolve();
-          }
-        })
-    )
-  );
-
-  await new Promise((r) => setTimeout(r, 200));
-
-  const canvas = await html2canvas(clone, {
+  const canvas = await html2canvas(el, {
     scale,
     useCORS: true,
-    allowTaint: true,
+    allowTaint: false,
     backgroundColor: '#ffffff',
     logging: false,
-    width: clone.scrollWidth,
-    height: clone.scrollHeight,
-    onclone: (_doc, clonedEl) => {
-      clonedEl.style.transform = 'none';
-    },
+    windowWidth: el.scrollWidth,
+    windowHeight: el.scrollHeight,
   });
 
-  document.body.removeChild(clone);
+  el.style.transform = prev;
   return canvas;
 }
 
