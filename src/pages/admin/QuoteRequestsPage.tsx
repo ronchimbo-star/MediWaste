@@ -5,7 +5,7 @@ import { supabase } from '../../lib/supabase';
 import { Eye, Check, Archive, Trash2, X, FileText, UserPlus } from 'lucide-react';
 import AdminLayout from '../../components/admin/AdminLayout';
 
-type QuoteStatus = 'pending' | 'read' | 'actioned' | 'archived';
+type QuoteStatus = 'pending' | 'read' | 'draft_created' | 'actioned' | 'archived';
 
 export default function QuoteRequestsPage() {
   const navigate = useNavigate();
@@ -37,6 +37,9 @@ export default function QuoteRequestsPage() {
 
       if (status === 'read' && !quotes?.find(q => q.id === id)?.read_at) {
         updateData.read_at = new Date().toISOString();
+        updateData.is_read = true;
+      } else if (status === 'draft_created') {
+        updateData.agent_drafted_at = new Date().toISOString();
         updateData.is_read = true;
       } else if (status === 'actioned' && !quotes?.find(q => q.id === id)?.actioned_at) {
         updateData.actioned_at = new Date().toISOString();
@@ -127,7 +130,7 @@ export default function QuoteRequestsPage() {
         </div>
 
         <div className="flex gap-2 mb-6">
-          {(['all', 'pending', 'read', 'actioned', 'archived'] as const).map((status) => (
+          {(['all', 'pending', 'read', 'draft_created', 'actioned', 'archived'] as const).map((status) => (
             <button
               key={status}
               onClick={() => setFilterStatus(status)}
@@ -137,7 +140,7 @@ export default function QuoteRequestsPage() {
                   : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
               }`}
             >
-              {status.charAt(0).toUpperCase() + status.slice(1)}
+              {status === 'draft_created' ? 'Draft Created' : status.charAt(0).toUpperCase() + status.slice(1)}
             </button>
           ))}
         </div>
@@ -192,12 +195,14 @@ export default function QuoteRequestsPage() {
                             ? 'bg-yellow-100 text-yellow-800'
                             : quote.status === 'read'
                             ? 'bg-blue-100 text-blue-800'
+                            : quote.status === 'draft_created'
+                            ? 'bg-cyan-100 text-cyan-800'
                             : quote.status === 'actioned'
                             ? 'bg-green-100 text-green-800'
                             : 'bg-gray-100 text-gray-800'
                         }`}
                       >
-                        {quote.status}
+                        {quote.status === 'draft_created' ? 'Draft Created' : quote.status}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-600">
@@ -235,7 +240,7 @@ export default function QuoteRequestsPage() {
                             <Check size={18} />
                           </button>
                         )}
-                        {(quote.status === 'pending' || quote.status === 'read') && (
+                        {(quote.status === 'pending' || quote.status === 'read' || quote.status === 'draft_created') && (
                           <button
                             onClick={() => updateStatusMutation.mutate({ id: quote.id, status: 'actioned' })}
                             className="text-green-600 hover:text-green-700 p-1"
@@ -339,7 +344,21 @@ export default function QuoteRequestsPage() {
               {selectedQuote.message && (
                 <div className="mb-6">
                   <h4 className="font-semibold text-gray-900 mb-2">Message</h4>
-                  <p className="text-sm text-gray-600 bg-gray-50 p-4 rounded-lg">{selectedQuote.message}</p>
+                  <p className="text-sm text-gray-600 bg-gray-50 p-4 rounded-lg whitespace-pre-line">{selectedQuote.message}</p>
+                </div>
+              )}
+
+              {selectedQuote.agent_notes && (
+                <div className="mb-6">
+                  <h4 className="font-semibold text-gray-900 mb-2">Agent Notes</h4>
+                  <div className="bg-cyan-50 border border-cyan-200 rounded-lg p-4">
+                    <p className="text-sm text-cyan-900 whitespace-pre-line">{selectedQuote.agent_notes}</p>
+                    {selectedQuote.agent_drafted_at && (
+                      <p className="text-xs text-cyan-600 mt-2">
+                        Draft created: {new Date(selectedQuote.agent_drafted_at).toLocaleString()}
+                      </p>
+                    )}
+                  </div>
                 </div>
               )}
 
@@ -353,12 +372,14 @@ export default function QuoteRequestsPage() {
                         ? 'bg-yellow-100 text-yellow-800'
                         : selectedQuote.status === 'read'
                         ? 'bg-blue-100 text-blue-800'
+                        : selectedQuote.status === 'draft_created'
+                        ? 'bg-cyan-100 text-cyan-800'
                         : selectedQuote.status === 'actioned'
                         ? 'bg-green-100 text-green-800'
                         : 'bg-gray-100 text-gray-800'
                     }`}
                   >
-                    {selectedQuote.status}
+                    {selectedQuote.status === 'draft_created' ? 'Draft Created' : selectedQuote.status}
                   </span>
                 </p>
                 <p className="text-sm text-gray-600 mb-1">
@@ -367,6 +388,11 @@ export default function QuoteRequestsPage() {
                 {selectedQuote.read_at && (
                   <p className="text-sm text-gray-600 mb-1">
                     <strong>Read:</strong> {new Date(selectedQuote.read_at).toLocaleString()}
+                  </p>
+                )}
+                {selectedQuote.agent_drafted_at && (
+                  <p className="text-sm text-gray-600 mb-1">
+                    <strong>Agent Drafted:</strong> {new Date(selectedQuote.agent_drafted_at).toLocaleString()}
                   </p>
                 )}
                 {selectedQuote.actioned_at && (
@@ -395,7 +421,7 @@ export default function QuoteRequestsPage() {
                     Mark as Read
                   </button>
                 )}
-                {(selectedQuote.status === 'pending' || selectedQuote.status === 'read') && (
+                {(selectedQuote.status === 'pending' || selectedQuote.status === 'read' || selectedQuote.status === 'draft_created') && (
                   <button
                     onClick={() => {
                       updateStatusMutation.mutate({ id: selectedQuote.id, status: 'actioned' });

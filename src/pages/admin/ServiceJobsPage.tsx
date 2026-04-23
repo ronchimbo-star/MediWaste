@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../lib/supabase';
-import { Plus, Calendar, User, MapPin, X, FileEdit as Edit2, Trash2, Truck, Clock, CheckCircle, AlertCircle, ChevronDown, ChevronUp, Package } from 'lucide-react';
+import { Plus, Calendar as CalendarIcon, User, MapPin, X, FileEdit as Edit2, Trash2, Truck, Clock, CheckCircle, AlertCircle, ChevronDown, ChevronUp, Package, Download } from 'lucide-react';
 import { useToastContext } from '../../contexts/ToastContext';
 import AdminLayout from '../../components/admin/AdminLayout';
 
@@ -60,6 +60,73 @@ function statusBadge(s: string) {
 function fmt(d: string | null) {
   if (!d) return '—';
   return new Date(d).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+
+function generateICS(job: {
+  job_number: string;
+  scheduled_date: string;
+  scheduled_time_start?: string | null;
+  scheduled_time_end?: string | null;
+  service_type: string;
+  customer_name: string;
+  customer_address?: string;
+  special_instructions?: string | null;
+}): string {
+  const date = job.scheduled_date.replace(/-/g, '');
+  const startTime = job.scheduled_time_start?.replace(/:/g, '') || '080000';
+  const endTime = job.scheduled_time_end?.replace(/:/g, '') || '120000';
+  const dtStart = `${date}T${startTime.padEnd(6, '0')}`;
+  const dtEnd = `${date}T${endTime.padEnd(6, '0')}`;
+  const uid = `${job.job_number}@mediwaste.co.uk`;
+  const now = new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+
+  const escapeText = (s: string) => s.replace(/[\\;,\n]/g, (m) => m === '\n' ? '\\n' : `\\${m}`);
+  const summary = escapeText(`MediWaste Collection - ${job.customer_name}`);
+  const description = escapeText(
+    `Job: ${job.job_number}\nService: ${job.service_type.replace(/_/g, ' ')}\nCustomer: ${job.customer_name}${job.special_instructions ? `\nNotes: ${job.special_instructions}` : ''}`
+  );
+  const location = job.customer_address ? escapeText(job.customer_address) : '';
+
+  return [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//MediWaste//Service Jobs//EN',
+    'CALSCALE:GREGORIAN',
+    'METHOD:PUBLISH',
+    'BEGIN:VEVENT',
+    `UID:${uid}`,
+    `DTSTAMP:${now}`,
+    `DTSTART:${dtStart}`,
+    `DTEND:${dtEnd}`,
+    `SUMMARY:${summary}`,
+    `DESCRIPTION:${description}`,
+    location ? `LOCATION:${location}` : '',
+    'STATUS:CONFIRMED',
+    `ORGANIZER;CN=MediWaste:mailto:hello@mediwaste.co.uk`,
+    'BEGIN:VALARM',
+    'TRIGGER:-PT30M',
+    'ACTION:DISPLAY',
+    'DESCRIPTION:Collection reminder',
+    'END:VALARM',
+    'END:VEVENT',
+    'END:VCALENDAR',
+  ].filter(Boolean).join('\r\n');
+}
+
+function downloadICS(job: ServiceJob) {
+  const icsContent = generateICS({
+    job_number: job.job_number,
+    scheduled_date: job.scheduled_date,
+    service_type: job.service_type,
+    customer_name: job.customer?.company_name || job.customer?.contact_name || 'Customer',
+  });
+  const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `${job.job_number}-collection.ics`;
+  link.click();
+  URL.revokeObjectURL(url);
 }
 
 function RequestCard({ req, onApprove, onReject }: {
@@ -134,7 +201,7 @@ function RequestCard({ req, onApprove, onReject }: {
 
         <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-gray-600">
           <div className="flex items-center gap-1.5">
-            <Calendar size={12} className="text-gray-400" />
+            <CalendarIcon size={12} className="text-gray-400" />
             {req.preferred_date_from ? (
               <span>
                 {fmt(req.preferred_date_from)}
@@ -432,7 +499,7 @@ export default function ServiceJobsPage() {
             className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${activeTab === 'jobs' ? 'border-orange-500 text-orange-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
           >
             <div className="flex items-center gap-2">
-              <Calendar size={15} />
+              <CalendarIcon size={15} />
               Scheduled Jobs
               <span className="bg-gray-100 text-gray-600 text-xs px-1.5 py-0.5 rounded-full">{(jobs || []).length}</span>
             </div>
@@ -482,13 +549,14 @@ export default function ServiceJobsPage() {
                       </div>
                       <div className="flex items-center gap-1">
                         <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${statusBadge(job.status)}`}>{job.status.replace('_', ' ')}</span>
-                        <button onClick={() => openEdit(job)} className="text-blue-500 hover:text-blue-700 p-1"><Edit2 size={14} /></button>
-                        <button onClick={() => { if (window.confirm('Delete this job?')) deleteMutation.mutate(job.id); }} className="text-red-400 hover:text-red-600 p-1"><Trash2 size={14} /></button>
+                        <button onClick={() => downloadICS(job)} className="text-green-500 hover:text-green-700 p-1" title="Download .ics"><Download size={14} /></button>
+                        <button onClick={() => openEdit(job)} className="text-blue-500 hover:text-blue-700 p-1" title="Edit"><Edit2 size={14} /></button>
+                        <button onClick={() => { if (window.confirm('Delete this job?')) deleteMutation.mutate(job.id); }} className="text-red-400 hover:text-red-600 p-1" title="Delete"><Trash2 size={14} /></button>
                       </div>
                     </div>
                     <div className="space-y-1.5 text-sm">
                       <div className="flex items-center gap-2 text-gray-700"><MapPin size={14} className="text-gray-400" />{job.customer?.company_name || job.customer?.contact_name}</div>
-                      <div className="flex items-center gap-2 text-gray-700"><Calendar size={14} className="text-gray-400" />{job.scheduled_date ? new Date(job.scheduled_date).toLocaleDateString('en-GB') : '—'}</div>
+                      <div className="flex items-center gap-2 text-gray-700"><CalendarIcon size={14} className="text-gray-400" />{job.scheduled_date ? new Date(job.scheduled_date).toLocaleDateString('en-GB') : '—'}</div>
                       <div className="flex items-center gap-2 text-gray-700"><User size={14} className="text-gray-400" />{job.assigned_staff ? `${job.assigned_staff.first_name} ${job.assigned_staff.last_name}` : 'Unassigned'}</div>
                       <p className="text-gray-500 capitalize mt-1">{job.service_type?.replace(/_/g, ' ')}</p>
                     </div>

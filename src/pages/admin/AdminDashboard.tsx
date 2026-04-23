@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useQuery } from '@tanstack/react-query';
@@ -5,9 +6,10 @@ import {
   Bell, Mail, FileText, CheckCircle, XCircle, Clock,
   Users, AlertTriangle, Calendar, TrendingUp, CreditCard,
   Receipt, Briefcase, Settings, Newspaper, Inbox, List,
-  FileCheck, BarChart2, ShieldCheck, Truck
+  FileCheck, BarChart2, ShieldCheck, Truck, Zap
 } from 'lucide-react';
 import AdminLayout from '../../components/admin/AdminLayout';
+import { useToastContext } from '../../contexts/ToastContext';
 
 function fmtCurrency(val: number) {
   return new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP' }).format(val);
@@ -19,6 +21,8 @@ function fmtDate(date: string) {
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
+  const { toast } = useToastContext();
+  const [triggeringAgent, setTriggeringAgent] = useState(false);
 
   const { data: activeCustomerCount } = useQuery({
     queryKey: ['active-customer-count'],
@@ -154,6 +158,23 @@ export default function AdminDashboard() {
     },
   });
 
+  const { data: invoicesDueSoon } = useQuery({
+    queryKey: ['invoices-due-soon'],
+    queryFn: async () => {
+      const today = new Date();
+      const in7days = new Date();
+      in7days.setDate(today.getDate() + 7);
+      const { data } = await supabase
+        .from('mw_invoices')
+        .select('id, invoice_number, total_amount, due_date, status, reminder_sent, mw_customers(company_name)')
+        .not('status', 'in', '("paid","cancelled")')
+        .lte('due_date', in7days.toISOString().split('T')[0])
+        .order('due_date', { ascending: true })
+        .limit(10);
+      return data || [];
+    },
+  });
+
   const { data: recentQuotes } = useQuery({
     queryKey: ['recent-quotes'],
     queryFn: async () => {
@@ -167,6 +188,27 @@ export default function AdminDashboard() {
   });
 
   const unreadNotifications = notifications?.filter((n: any) => !n.is_read).length || 0;
+
+  const triggerQuoteAgent = async () => {
+    setTriggeringAgent(true);
+    try {
+      const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/trigger-quote-agent`;
+      const res = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      if (!res.ok) throw new Error('Failed to trigger agent');
+      toast.success('Agent triggered — check Gmail drafts in a few minutes');
+      refetchNotifications();
+    } catch {
+      toast.error('Failed to trigger quote agent');
+    } finally {
+      setTriggeringAgent(false);
+    }
+  };
 
   const markAsRead = async (id: string) => {
     await supabase.from('system_notifications').update({ is_read: true }).eq('id', id);
@@ -210,6 +252,14 @@ export default function AdminDashboard() {
             </p>
           </div>
           <div className="flex items-center gap-3">
+            <button
+              onClick={triggerQuoteAgent}
+              disabled={triggeringAgent}
+              className="flex items-center gap-2 bg-gray-900 hover:bg-gray-800 disabled:opacity-50 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+            >
+              <Zap size={14} className={triggeringAgent ? 'animate-pulse' : ''} />
+              {triggeringAgent ? 'Running...' : 'Run Quote Agent'}
+            </button>
             {((unreadQuotes || 0) + (unreadContacts || 0) + (pendingCollectionRequests || 0) + unreadNotifications) > 0 && (
               <div className="flex items-center gap-2 bg-orange-50 border border-orange-200 text-orange-700 px-4 py-2 rounded-full text-sm font-semibold">
                 <Bell className="w-4 h-4" />
@@ -290,6 +340,63 @@ export default function AdminDashboard() {
                 <p className="px-5 py-8 text-sm text-gray-400 text-center">No invoices yet</p>
               )}
             </div>
+
+            {invoicesDueSoon && invoicesDueSoon.length > 0 && (
+              <div className="bg-white rounded-xl border border-gray-200">
+                <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+                  <h3 className="font-bold text-gray-900 flex items-center gap-2">
+                    <AlertTriangle size={16} className="text-amber-500" />
+                    Invoices Due Soon
+                  </h3>
+                  <span className="text-xs font-semibold bg-amber-100 text-amber-700 px-2 py-1 rounded-full">
+                    {invoicesDueSoon.length}
+                  </span>
+                </div>
+                <div className="divide-y divide-gray-100">
+                  {invoicesDueSoon.map((inv: any) => {
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    const due = new Date(inv.due_date);
+                    due.setHours(0, 0, 0, 0);
+                    const daysUntilDue = Math.ceil((due.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+                    const isOverdue = daysUntilDue < 0;
+                    const isUrgent = daysUntilDue >= 0 && daysUntilDue <= 3;
+                    const rowBg = isOverdue ? 'bg-red-50' : isUrgent ? 'bg-amber-50' : '';
+                    const dueBadgeCls = isOverdue
+                      ? 'bg-red-100 text-red-700'
+                      : isUrgent
+                      ? 'bg-amber-100 text-amber-700'
+                      : 'bg-blue-100 text-blue-700';
+                    const dueLabel = isOverdue
+                      ? `${Math.abs(daysUntilDue)}d overdue`
+                      : daysUntilDue === 0
+                      ? 'Due today'
+                      : `${daysUntilDue}d left`;
+
+                    return (
+                      <div
+                        key={inv.id}
+                        className={`px-5 py-3 hover:bg-gray-50 cursor-pointer flex items-center justify-between gap-3 ${rowBg}`}
+                        onClick={() => navigate(`/admin/invoices/${inv.id}/preview`)}
+                      >
+                        <div className="min-w-0 flex-1">
+                          <p className="font-semibold text-gray-900 text-sm truncate">
+                            {inv.mw_customers?.company_name || 'Unknown'}
+                          </p>
+                          <p className="text-xs text-gray-500">{inv.invoice_number} · Due {fmtDate(inv.due_date)}</p>
+                        </div>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          <span className="font-bold text-sm text-gray-900">{fmtCurrency(Number(inv.total_amount))}</span>
+                          <span className={`text-xs font-semibold px-2 py-1 rounded-full ${dueBadgeCls}`}>
+                            {dueLabel}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             <div className="bg-white rounded-xl border border-gray-200">
               <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
