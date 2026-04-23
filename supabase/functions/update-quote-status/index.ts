@@ -24,7 +24,7 @@ Deno.serve(async (req: Request) => {
   try {
     if (req.method !== "POST") {
       return new Response(
-        JSON.stringify({ error: "Method not allowed" }),
+        JSON.stringify({ success: false, error: "Method not allowed" }),
         {
           status: 405,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -37,7 +37,10 @@ Deno.serve(async (req: Request) => {
 
     if (!email || !status || !secret) {
       return new Response(
-        JSON.stringify({ error: "Missing required fields: email, status, secret" }),
+        JSON.stringify({
+          success: false,
+          error: "Missing required fields: email, status, secret",
+        }),
         {
           status: 400,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -48,7 +51,7 @@ Deno.serve(async (req: Request) => {
     const apiSecret = Deno.env.get("API_SECRET");
     if (!apiSecret || secret !== apiSecret) {
       return new Response(
-        JSON.stringify({ error: "Invalid secret" }),
+        JSON.stringify({ success: false, error: "Invalid secret" }),
         {
           status: 403,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -59,6 +62,7 @@ Deno.serve(async (req: Request) => {
     if (!VALID_STATUSES.includes(status)) {
       return new Response(
         JSON.stringify({
+          success: false,
           error: `Invalid status. Must be one of: ${VALID_STATUSES.join(", ")}`,
         }),
         {
@@ -102,7 +106,10 @@ Deno.serve(async (req: Request) => {
 
     if (!data || data.length === 0) {
       return new Response(
-        JSON.stringify({ error: "No quote request found for that email" }),
+        JSON.stringify({
+          success: false,
+          error: "No quote request found for that email",
+        }),
         {
           status: 404,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -111,11 +118,7 @@ Deno.serve(async (req: Request) => {
     }
 
     return new Response(
-      JSON.stringify({
-        success: true,
-        updated_count: data.length,
-        records: data,
-      }),
+      JSON.stringify({ success: true }),
       {
         status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -124,6 +127,7 @@ Deno.serve(async (req: Request) => {
   } catch (err) {
     return new Response(
       JSON.stringify({
+        success: false,
         error: err instanceof Error ? err.message : "Internal error",
       }),
       {
