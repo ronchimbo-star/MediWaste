@@ -19,7 +19,6 @@ interface LineItem {
   description: string;
   quantity: number;
   unit_price: number;
-  vat_rate: number;
   po_number: string;
 }
 
@@ -105,7 +104,7 @@ export default function InvoiceEditPage() {
   const [isRecurring, setIsRecurring] = useState(false);
   const [recurringFrequency, setRecurringFrequency] = useState('monthly');
   const [paymentTerms, setPaymentTerms] = useState('');
-  const [lineItems, setLineItems] = useState<LineItem[]>([{ description: '', quantity: 1, unit_price: 0, vat_rate: 20, po_number: '' }]);
+  const [lineItems, setLineItems] = useState<LineItem[]>([{ description: '', quantity: 1, unit_price: 0, po_number: '' }]);
 
   useEffect(() => {
     fetchCustomers();
@@ -169,7 +168,6 @@ export default function InvoiceEditPage() {
           description: it.description,
           quantity: Number(it.quantity),
           unit_price: Number(it.unit_price),
-          vat_rate: Number(it.vat_rate ?? 20),
           po_number: it.po_number || '',
         })));
       }
@@ -181,7 +179,7 @@ export default function InvoiceEditPage() {
   };
 
   const addLineItem = () => {
-    setLineItems([...lineItems, { description: '', quantity: 1, unit_price: 0, vat_rate: 20, po_number: '' }]);
+    setLineItems([...lineItems, { description: '', quantity: 1, unit_price: 0, po_number: '' }]);
   };
 
   const removeLineItem = (index: number) => {
@@ -195,12 +193,14 @@ export default function InvoiceEditPage() {
   };
 
   const addSubscriptionItem = (sub: Subscription) => {
-    setLineItems([...lineItems, { description: sub.service_plan.name, quantity: 1, unit_price: Number(sub.service_plan.price), vat_rate: 20, po_number: '' }]);
+    setLineItems([...lineItems, { description: sub.service_plan.name, quantity: 1, unit_price: Number(sub.service_plan.price), po_number: '' }]);
   };
 
-  const calcLineTotal = (item: LineItem) => item.quantity * item.unit_price;
-  const calcLineVat = (item: LineItem) => (item.quantity * item.unit_price * item.vat_rate) / 100;
-  const subtotal = lineItems.reduce((s, it) => s + calcLineTotal(it), 0);
+  const VAT_RATE = 20;
+  const calcLineNet = (item: LineItem) => item.quantity * item.unit_price;
+  const calcLineVat = (item: LineItem) => (calcLineNet(item) * VAT_RATE) / 100;
+  const calcLineTotal = (item: LineItem) => calcLineNet(item) + calcLineVat(item);
+  const subtotal = lineItems.reduce((s, it) => s + calcLineNet(it), 0);
   const totalVat = lineItems.reduce((s, it) => s + calcLineVat(it), 0);
   const grandTotal = subtotal + totalVat;
 
@@ -250,8 +250,8 @@ export default function InvoiceEditPage() {
         description: it.description,
         quantity: it.quantity,
         unit_price: it.unit_price,
-        total_price: calcLineTotal(it),
-        vat_rate: it.vat_rate,
+        total_price: calcLineNet(it),
+        vat_rate: VAT_RATE,
         vat_amount: calcLineVat(it),
         po_number: it.po_number || null,
       }));
@@ -329,10 +329,6 @@ export default function InvoiceEditPage() {
                 <input type="text" value={poNumber} onChange={(e) => setPoNumber(e.target.value)} placeholder="e.g. PO-12345" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">VAT Number</label>
-                <input type="text" value={vatNumber} onChange={(e) => setVatNumber(e.target.value)} placeholder="e.g. GB 123 4567 89" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-              </div>
-              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Payment Terms</label>
                 <input type="text" value={paymentTerms} onChange={(e) => setPaymentTerms(e.target.value)} placeholder="e.g. Net 30 days" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
               </div>
@@ -401,9 +397,8 @@ export default function InvoiceEditPage() {
                     <th className="text-left pb-2 font-medium text-gray-500 text-xs uppercase">Description</th>
                     <th className="text-left pb-2 font-medium text-gray-500 text-xs uppercase w-16">Qty</th>
                     <th className="text-left pb-2 font-medium text-gray-500 text-xs uppercase w-28">Unit Price</th>
-                    <th className="text-left pb-2 font-medium text-gray-500 text-xs uppercase w-20">VAT %</th>
                     <th className="text-left pb-2 font-medium text-gray-500 text-xs uppercase w-28">PO Number</th>
-                    <th className="text-right pb-2 font-medium text-gray-500 text-xs uppercase w-24">Total</th>
+                    <th className="text-right pb-2 font-medium text-gray-500 text-xs uppercase w-28">Total (inc. VAT)</th>
                     <th className="w-10"></th>
                   </tr>
                 </thead>
@@ -421,13 +416,6 @@ export default function InvoiceEditPage() {
                           <span className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 text-xs">£</span>
                           <input type="number" value={item.unit_price} onChange={(e) => updateLineItem(index, 'unit_price', Number(e.target.value))} min="0" step="0.01" className="w-full border border-gray-200 rounded-lg pl-5 pr-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
                         </div>
-                      </td>
-                      <td className="py-2 pr-2">
-                        <select value={item.vat_rate} onChange={(e) => updateLineItem(index, 'vat_rate', Number(e.target.value))} className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                          <option value={20}>20%</option>
-                          <option value={5}>5%</option>
-                          <option value={0}>0%</option>
-                        </select>
                       </td>
                       <td className="py-2 pr-2">
                         <input type="text" value={item.po_number} onChange={(e) => updateLineItem(index, 'po_number', e.target.value)} placeholder="PO #" className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
@@ -449,11 +437,11 @@ export default function InvoiceEditPage() {
             <div className="border-t border-gray-100 pt-4 flex justify-end">
               <div className="w-64 space-y-2 text-sm">
                 <div className="flex justify-between text-gray-500">
-                  <span>Subtotal</span>
+                  <span>Subtotal (Net)</span>
                   <span>£{subtotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-gray-500">
-                  <span>VAT</span>
+                  <span>VAT (20%)</span>
                   <span>£{totalVat.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between font-bold text-gray-900 text-base border-t border-gray-200 pt-2">

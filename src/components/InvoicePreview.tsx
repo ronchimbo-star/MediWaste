@@ -8,6 +8,15 @@ interface LineItem {
   po_number: string | null;
 }
 
+interface InvoiceSettings {
+  bank_name: string;
+  account_name: string;
+  sort_code: string;
+  account_number: string;
+  vat_number: string;
+  payment_instructions: string | null;
+}
+
 interface InvoiceData {
   invoice_number: string;
   issue_date: string;
@@ -30,8 +39,8 @@ interface InvoiceData {
 
 interface Props {
   data: InvoiceData;
+  settings: InvoiceSettings | null;
   logoDataUrl?: string;
-  faviconDataUrl?: string;
 }
 
 function fmt(date: string) {
@@ -39,23 +48,16 @@ function fmt(date: string) {
   return new Date(date).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
 }
 
-function statusLabel(s: string) {
-  const map: Record<string, { label: string; bg: string; color: string }> = {
-    draft: { label: 'DRAFT', bg: '#f3f4f6', color: '#6b7280' },
-    sent: { label: 'SENT', bg: '#dbeafe', color: '#1d4ed8' },
-    paid: { label: 'PAID', bg: '#dcfce7', color: '#16a34a' },
-    overdue: { label: 'OVERDUE', bg: '#fee2e2', color: '#dc2626' },
-    cancelled: { label: 'CANCELLED', bg: '#f3f4f6', color: '#9ca3af' },
-  };
-  return map[s] || map.draft;
-}
-
-export default function InvoicePreview({ data, logoDataUrl, faviconDataUrl }: Props) {
+export default function InvoicePreview({ data, settings, logoDataUrl }: Props) {
   const logoSrc = logoDataUrl || '/mediwaste-logo.png';
-  const faviconSrc = faviconDataUrl || '/mediwaste-favicon.png';
-  const st = statusLabel(data.status);
 
   const hasPONumbers = data.line_items.some((it) => it.po_number);
+
+  const bankName = settings?.bank_name || 'Tide Business Banking';
+  const accountName = settings?.account_name || 'Circular Horizons International LTD';
+  const sortCode = settings?.sort_code || '04-06-05';
+  const accountNumber = settings?.account_number || '2283 7469';
+  const vatNumber = settings?.vat_number || data.vat_number || '';
 
   return (
     <div
@@ -76,16 +78,8 @@ export default function InvoicePreview({ data, logoDataUrl, faviconDataUrl }: Pr
 
       {/* Header */}
       <div style={{ padding: '40px 48px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <img src={faviconSrc} alt="MediWaste" crossOrigin="anonymous" style={{ width: '52px', height: '52px', objectFit: 'contain' }} />
-          <img src={logoSrc} alt="MediWaste" crossOrigin="anonymous" style={{ width: '180px', height: 'auto', objectFit: 'contain' }} />
-        </div>
-        <div style={{ textAlign: 'right' }}>
-          <h1 style={{ fontSize: '32px', fontWeight: '900', color: '#111', margin: 0, letterSpacing: '-0.5px' }}>INVOICE</h1>
-          <div style={{ display: 'inline-block', padding: '3px 12px', borderRadius: '4px', background: st.bg, color: st.color, fontSize: '11px', fontWeight: '700', letterSpacing: '1px', marginTop: '6px' }}>
-            {st.label}
-          </div>
-        </div>
+        <img src={logoSrc} alt="MediWaste" crossOrigin="anonymous" style={{ width: '220px', height: 'auto', objectFit: 'contain' }} />
+        <h1 style={{ fontSize: '32px', fontWeight: '900', color: '#111', margin: 0, letterSpacing: '-0.5px' }}>INVOICE</h1>
       </div>
 
       {/* Invoice Info Row */}
@@ -119,12 +113,6 @@ export default function InvoicePreview({ data, logoDataUrl, faviconDataUrl }: Pr
                   <td style={{ padding: '2px 0' }}>{data.po_number}</td>
                 </tr>
               )}
-              {data.vat_number && (
-                <tr>
-                  <td style={{ padding: '2px 12px 2px 0', fontWeight: 'bold', color: '#333' }}>VAT Number:</td>
-                  <td style={{ padding: '2px 0' }}>{data.vat_number}</td>
-                </tr>
-              )}
               {data.payment_terms && (
                 <tr>
                   <td style={{ padding: '2px 12px 2px 0', fontWeight: 'bold', color: '#333' }}>Payment Terms:</td>
@@ -154,22 +142,25 @@ export default function InvoicePreview({ data, logoDataUrl, faviconDataUrl }: Pr
               <th style={{ padding: '10px 12px', textAlign: 'left', color: 'white', fontWeight: '600', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Description</th>
               {hasPONumbers && <th style={{ padding: '10px 12px', textAlign: 'left', color: 'white', fontWeight: '600', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>PO #</th>}
               <th style={{ padding: '10px 12px', textAlign: 'center', color: 'white', fontWeight: '600', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px', width: '60px' }}>Qty</th>
-              <th style={{ padding: '10px 12px', textAlign: 'right', color: 'white', fontWeight: '600', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px', width: '90px' }}>Unit Price</th>
-              <th style={{ padding: '10px 12px', textAlign: 'right', color: 'white', fontWeight: '600', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px', width: '70px' }}>VAT</th>
-              <th style={{ padding: '10px 12px', textAlign: 'right', color: 'white', fontWeight: '600', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px', width: '100px' }}>Amount</th>
+              <th style={{ padding: '10px 12px', textAlign: 'right', color: 'white', fontWeight: '600', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px', width: '100px' }}>Unit Price</th>
+              <th style={{ padding: '10px 12px', textAlign: 'right', color: 'white', fontWeight: '600', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px', width: '110px' }}>Amount</th>
             </tr>
           </thead>
           <tbody>
-            {data.line_items.map((item, i) => (
-              <tr key={i} style={{ borderBottom: '1px solid #eee', background: i % 2 === 0 ? '#fafafa' : 'white' }}>
-                <td style={{ padding: '10px 12px', color: '#333' }}>{item.description}</td>
-                {hasPONumbers && <td style={{ padding: '10px 12px', color: '#555', fontSize: '12px' }}>{item.po_number || '—'}</td>}
-                <td style={{ padding: '10px 12px', textAlign: 'center', color: '#333' }}>{item.quantity}</td>
-                <td style={{ padding: '10px 12px', textAlign: 'right', color: '#333' }}>£{Number(item.unit_price).toFixed(2)}</td>
-                <td style={{ padding: '10px 12px', textAlign: 'right', color: '#555' }}>{Number(item.vat_rate)}%</td>
-                <td style={{ padding: '10px 12px', textAlign: 'right', color: '#111', fontWeight: '600' }}>£{Number(item.total_price).toFixed(2)}</td>
-              </tr>
-            ))}
+            {data.line_items.map((item, i) => {
+              const lineNet = Number(item.quantity) * Number(item.unit_price);
+              const lineVat = lineNet * (Number(item.vat_rate) / 100);
+              const lineTotal = lineNet + lineVat;
+              return (
+                <tr key={i} style={{ borderBottom: '1px solid #eee', background: i % 2 === 0 ? '#fafafa' : 'white' }}>
+                  <td style={{ padding: '10px 12px', color: '#333' }}>{item.description}</td>
+                  {hasPONumbers && <td style={{ padding: '10px 12px', color: '#555', fontSize: '12px' }}>{item.po_number || '—'}</td>}
+                  <td style={{ padding: '10px 12px', textAlign: 'center', color: '#333' }}>{item.quantity}</td>
+                  <td style={{ padding: '10px 12px', textAlign: 'right', color: '#333' }}>£{Number(item.unit_price).toFixed(2)}</td>
+                  <td style={{ padding: '10px 12px', textAlign: 'right', color: '#111', fontWeight: '600' }}>£{lineTotal.toFixed(2)}</td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
 
@@ -178,11 +169,11 @@ export default function InvoicePreview({ data, logoDataUrl, faviconDataUrl }: Pr
           <table style={{ borderCollapse: 'collapse', fontSize: '13px', width: '260px' }}>
             <tbody>
               <tr>
-                <td style={{ padding: '6px 12px', color: '#555' }}>Subtotal</td>
+                <td style={{ padding: '6px 12px', color: '#555' }}>Subtotal (Net)</td>
                 <td style={{ padding: '6px 12px', textAlign: 'right', color: '#333' }}>£{Number(data.subtotal).toFixed(2)}</td>
               </tr>
               <tr>
-                <td style={{ padding: '6px 12px', color: '#555' }}>VAT</td>
+                <td style={{ padding: '6px 12px', color: '#555' }}>VAT (20%)</td>
                 <td style={{ padding: '6px 12px', textAlign: 'right', color: '#333' }}>£{Number(data.tax_amount).toFixed(2)}</td>
               </tr>
               <tr style={{ borderTop: '2px solid #FF0000' }}>
@@ -205,16 +196,20 @@ export default function InvoicePreview({ data, logoDataUrl, faviconDataUrl }: Pr
 
         <div style={{ background: '#fafafa', border: '1px solid #eee', borderRadius: '8px', padding: '14px 18px', fontSize: '12px', color: '#555' }}>
           <p style={{ fontWeight: 'bold', margin: '0 0 4px', color: '#333', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Payment Information</p>
-          <p style={{ margin: '0 0 2px' }}>Bank: Tide Business Banking</p>
-          <p style={{ margin: '0 0 2px' }}>Account Name: Circular Horizons International LTD</p>
-          <p style={{ margin: '0 0 2px' }}>Sort Code: 04-06-05</p>
-          <p style={{ margin: 0 }}>Account Number: 2283 7469</p>
+          <p style={{ margin: '0 0 2px' }}>Bank: {bankName}</p>
+          <p style={{ margin: '0 0 2px' }}>Account Name: {accountName}</p>
+          <p style={{ margin: '0 0 2px' }}>Sort Code: {sortCode}</p>
+          <p style={{ margin: 0 }}>Account Number: {accountNumber}</p>
+          {settings?.payment_instructions && <p style={{ margin: '6px 0 0', fontStyle: 'italic' }}>{settings.payment_instructions}</p>}
         </div>
       </div>
 
       {/* Footer */}
       <div style={{ padding: '16px 48px', borderTop: '1px solid #eee', fontSize: '10px', color: '#aaa', textAlign: 'center', flexShrink: 0 }}>
-        <p style={{ margin: '0 0 2px' }}>Circular Horizons International LTD | Company No. 15821509 | Registered in England and Wales</p>
+        <p style={{ margin: '0 0 2px' }}>
+          Circular Horizons International LTD | Company No. 15821509 | Registered in England and Wales
+          {vatNumber && <> | VAT No. {vatNumber}</>}
+        </p>
         <p style={{ margin: 0 }}>Unit 2 Capital Industrial Estate, Crabtree Manorway South, Belvedere, Kent, DA17 6BJ</p>
       </div>
 

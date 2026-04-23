@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import AdminLayout from '../../components/admin/AdminLayout';
 import InvoicePreview from '../../components/InvoicePreview';
-import { FileEdit as Edit, ChevronLeft, Loader, Image, FileText, CheckCircle, XCircle } from 'lucide-react';
+import { FileEdit as Edit, ChevronLeft, Loader, Image, FileText, CheckCircle, XCircle, Settings } from 'lucide-react';
 import { imageToDataUrl } from '../../utils/certificateDownload';
 import { useToastContext } from '../../contexts/ToastContext';
 import html2canvas from 'html2canvas';
@@ -25,7 +25,6 @@ function copyCanvasContent(original: HTMLElement, clone: HTMLElement) {
 async function renderInvoiceCanvas(scale = 3): Promise<HTMLCanvasElement> {
   const el = document.getElementById('invoice-render');
   if (!el) throw new Error('Invoice element not found');
-
   const clone = el.cloneNode(true) as HTMLElement;
   copyCanvasContent(el, clone);
   clone.style.position = 'absolute';
@@ -33,14 +32,21 @@ async function renderInvoiceCanvas(scale = 3): Promise<HTMLCanvasElement> {
   clone.style.top = '0';
   clone.style.zIndex = '-1';
   document.body.appendChild(clone);
-
   const images = clone.querySelectorAll('img');
   await Promise.all(Array.from(images).map((img) => new Promise<void>((resolve) => { if (img.complete) resolve(); else { img.onload = () => resolve(); img.onerror = () => resolve(); } })));
   await new Promise((r) => setTimeout(r, 200));
-
   const canvas = await html2canvas(clone, { scale, useCORS: true, allowTaint: true, backgroundColor: '#ffffff', logging: false, width: clone.scrollWidth, height: clone.scrollHeight });
   document.body.removeChild(clone);
   return canvas;
+}
+
+interface InvoiceSettings {
+  bank_name: string;
+  account_name: string;
+  sort_code: string;
+  account_number: string;
+  vat_number: string;
+  payment_instructions: string | null;
 }
 
 export default function InvoicePreviewPage() {
@@ -49,26 +55,32 @@ export default function InvoicePreviewPage() {
   const { toast } = useToastContext();
   const [invoice, setInvoice] = useState<any>(null);
   const [lineItems, setLineItems] = useState<any[]>([]);
+  const [invoiceSettings, setInvoiceSettings] = useState<InvoiceSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [logoDataUrl, setLogoDataUrl] = useState('');
-  const [faviconDataUrl, setFaviconDataUrl] = useState('');
   const [imagesReady, setImagesReady] = useState(false);
   const [downloading, setDownloading] = useState<'png' | 'pdf' | null>(null);
+  const [showBankingSettings, setShowBankingSettings] = useState(false);
 
   useEffect(() => {
     fetchData();
     let cancelled = false;
-    Promise.all([imageToDataUrl('/mediwaste-logo.png'), imageToDataUrl('/mediwaste-favicon.png')]).then(([logo, favicon]) => {
-      if (!cancelled) { setLogoDataUrl(logo); setFaviconDataUrl(favicon); setImagesReady(true); }
+    imageToDataUrl('/mediwaste-logo.png').then((logo) => {
+      if (!cancelled) { setLogoDataUrl(logo); setImagesReady(true); }
     });
     return () => { cancelled = true; };
   }, [id]);
 
   const fetchData = async () => {
     try {
-      const { data: inv, error } = await supabase.from('mw_invoices').select('*, customer:mw_customers(customer_number, company_name, contact_name, email, billing_address)').eq('id', id).single();
-      if (error) throw error;
-      setInvoice(inv);
+      const [invResult, settingsResult] = await Promise.all([
+        supabase.from('mw_invoices').select('*, customer:mw_customers(customer_number, company_name, contact_name, email, billing_address)').eq('id', id).single(),
+        supabase.from('mw_invoice_settings').select('*').eq('id', 'default').maybeSingle(),
+      ]);
+
+      if (invResult.error) throw invResult.error;
+      setInvoice(invResult.data);
+      setInvoiceSettings(settingsResult.data);
 
       const { data: items } = await supabase.from('mw_invoice_line_items').select('*').eq('invoice_id', id);
       setLineItems(items || []);
@@ -187,6 +199,9 @@ export default function InvoicePreviewPage() {
                 <XCircle size={15} /> Mark Unpaid
               </button>
             )}
+            <button onClick={() => setShowBankingSettings(true)} className="flex items-center gap-2 border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium">
+              <Settings size={15} /> Banking
+            </button>
             <button onClick={() => navigate(`/admin/invoices/${id}/edit`)} className="flex items-center gap-2 border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium">
               <Edit size={15} /> Edit
             </button>
@@ -203,7 +218,7 @@ export default function InvoicePreviewPage() {
 
         <div className="flex justify-center overflow-auto">
           {imagesReady ? (
-            <InvoicePreview data={previewData} logoDataUrl={logoDataUrl} faviconDataUrl={faviconDataUrl} />
+            <InvoicePreview data={previewData} settings={invoiceSettings} logoDataUrl={logoDataUrl} />
           ) : (
             <div className="flex items-center justify-center gap-3 text-gray-400 py-24">
               <Loader size={18} className="animate-spin" /><span className="text-sm">Preparing invoice...</span>
@@ -211,6 +226,95 @@ export default function InvoicePreviewPage() {
           )}
         </div>
       </div>
+
+      {showBankingSettings && (
+        <BankingSettingsModal
+          settings={invoiceSettings}
+          onClose={() => setShowBankingSettings(false)}
+          onSaved={() => { setShowBankingSettings(false); fetchData(); }}
+        />
+      )}
     </AdminLayout>
+  );
+}
+
+function BankingSettingsModal({ settings, onClose, onSaved }: { settings: InvoiceSettings | null; onClose: () => void; onSaved: () => void }) {
+  const { toast } = useToastContext();
+  const [saving, setSaving] = useState(false);
+  const [bankName, setBankName] = useState(settings?.bank_name || 'Tide Business Banking');
+  const [accountName, setAccountName] = useState(settings?.account_name || 'Circular Horizons International LTD');
+  const [sortCode, setSortCode] = useState(settings?.sort_code || '04-06-05');
+  const [accountNumber, setAccountNumber] = useState(settings?.account_number || '2283 7469');
+  const [vatNumber, setVatNumber] = useState(settings?.vat_number || '');
+  const [paymentInstructions, setPaymentInstructions] = useState(settings?.payment_instructions || '');
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const payload = {
+        id: 'default',
+        bank_name: bankName,
+        account_name: accountName,
+        sort_code: sortCode,
+        account_number: accountNumber,
+        vat_number: vatNumber,
+        payment_instructions: paymentInstructions || null,
+        updated_at: new Date().toISOString(),
+      };
+
+      const { error } = await supabase.from('mw_invoice_settings').upsert(payload);
+      if (error) throw error;
+      toast.success('Banking details updated');
+      onSaved();
+    } catch {
+      toast.error('Failed to save banking details');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-xl max-w-lg w-full shadow-xl">
+        <div className="p-6 border-b border-gray-100">
+          <h2 className="text-lg font-bold text-gray-900">Invoice Banking Details</h2>
+          <p className="text-sm text-gray-500 mt-1">These details appear on all invoices</p>
+        </div>
+        <div className="p-6 space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Bank Name</label>
+            <input type="text" value={bankName} onChange={(e) => setBankName(e.target.value)} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Account Name</label>
+            <input type="text" value={accountName} onChange={(e) => setAccountName(e.target.value)} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Sort Code</label>
+              <input type="text" value={sortCode} onChange={(e) => setSortCode(e.target.value)} placeholder="XX-XX-XX" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Account Number</label>
+              <input type="text" value={accountNumber} onChange={(e) => setAccountNumber(e.target.value)} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">VAT Registration Number</label>
+            <input type="text" value={vatNumber} onChange={(e) => setVatNumber(e.target.value)} placeholder="e.g. GB 123 4567 89" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Additional Payment Instructions</label>
+            <textarea value={paymentInstructions} onChange={(e) => setPaymentInstructions(e.target.value)} rows={2} placeholder="Optional instructions shown on invoices..." className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none" />
+          </div>
+        </div>
+        <div className="px-6 py-4 border-t border-gray-100 flex justify-end gap-2">
+          <button onClick={onClose} className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800">Cancel</button>
+          <button onClick={handleSave} disabled={saving} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-lg text-sm font-medium">
+            {saving ? 'Saving...' : 'Save Details'}
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
