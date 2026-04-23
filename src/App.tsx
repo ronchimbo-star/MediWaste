@@ -45,6 +45,8 @@ const SubscriptionsPage = lazy(() => import('./pages/admin/SubscriptionsPage'));
 const ServiceJobsPage = lazy(() => import('./pages/admin/ServiceJobsPage'));
 const StaffManagementPage = lazy(() => import('./pages/admin/StaffManagementPage'));
 const InvoicingPage = lazy(() => import('./pages/admin/InvoicingPage'));
+const InvoiceEditPage = lazy(() => import('./pages/admin/InvoiceEditPage'));
+const InvoicePreviewPage = lazy(() => import('./pages/admin/InvoicePreviewPage'));
 const WasteTransferNotesPage = lazy(() => import('./pages/admin/WasteTransferNotesPage'));
 const StaffDashboard = lazy(() => import('./pages/staff/StaffDashboard'));
 const CustomerDashboard = lazy(() => import('./pages/customer/CustomerDashboard'));
@@ -143,6 +145,9 @@ function App() {
           <Route path="/admin/jobs" element={<ProtectedRoute><ServiceJobsPage /></ProtectedRoute>} />
           <Route path="/admin/staff" element={<ProtectedRoute><StaffManagementPage /></ProtectedRoute>} />
           <Route path="/admin/invoices" element={<ProtectedRoute><InvoicingPage /></ProtectedRoute>} />
+          <Route path="/admin/invoices/create" element={<ProtectedRoute><InvoiceEditPage /></ProtectedRoute>} />
+          <Route path="/admin/invoices/:id/edit" element={<ProtectedRoute><InvoiceEditPage /></ProtectedRoute>} />
+          <Route path="/admin/invoices/:id/preview" element={<ProtectedRoute><InvoicePreviewPage /></ProtectedRoute>} />
           <Route path="/admin/invoicing" element={<Navigate to="/admin/invoices" replace />} />
           <Route path="/admin/waste-transfer-notes" element={<ProtectedRoute><WasteTransferNotesPage /></ProtectedRoute>} />
           <Route path="/admin/service-agreements" element={<ProtectedRoute><ServiceAgreementsPage /></ProtectedRoute>} />
