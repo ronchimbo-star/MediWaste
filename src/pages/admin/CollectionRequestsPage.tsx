@@ -4,10 +4,10 @@ import { supabase } from '../../lib/supabase';
 import AdminLayout from '../../components/admin/AdminLayout';
 import {
   Truck, Clock, CheckCircle, XCircle, ChevronDown, ChevronUp,
-  Phone, Mail, Calendar, Package, RefreshCw
+  Phone, Mail, Calendar, Package, RefreshCw, Archive, Trash2
 } from 'lucide-react';
 
-type Status = 'pending' | 'approved' | 'completed' | 'cancelled';
+type Status = 'pending' | 'approved' | 'completed' | 'cancelled' | 'archived';
 
 interface CollectionRequest {
   id: string;
@@ -25,6 +25,7 @@ interface CollectionRequest {
   contact_email: string | null;
   source: string;
   admin_notes: string | null;
+  archived_at: string | null;
   created_at: string;
   mw_customers?: { company_name: string } | null;
   collection_request_items?: Item[];
@@ -51,6 +52,7 @@ const STATUS_OPTIONS: { value: Status; label: string }[] = [
   { value: 'approved', label: 'Approved' },
   { value: 'completed', label: 'Completed' },
   { value: 'cancelled', label: 'Cancelled' },
+  { value: 'archived', label: 'Archived' },
 ];
 
 function statusBadge(status: Status) {
@@ -59,6 +61,7 @@ function statusBadge(status: Status) {
     approved: 'bg-blue-100 text-blue-700',
     completed: 'bg-green-100 text-green-700',
     cancelled: 'bg-gray-100 text-gray-600',
+    archived: 'bg-slate-100 text-slate-600',
   };
   return map[status] ?? 'bg-gray-100 text-gray-600';
 }
@@ -67,6 +70,7 @@ function statusIcon(status: Status) {
   if (status === 'completed') return <CheckCircle size={13} />;
   if (status === 'cancelled') return <XCircle size={13} />;
   if (status === 'approved') return <Truck size={13} />;
+  if (status === 'archived') return <Archive size={13} />;
   return <Clock size={13} />;
 }
 
@@ -105,19 +109,44 @@ function RequestRow({ req, onStatusChange }: { req: CollectionRequest; onStatusC
   const [adminNotes, setAdminNotes] = useState(req.admin_notes ?? '');
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const displayName = req.mw_customers?.company_name || req.customer_name || req.contact_name || 'Anonymous';
 
   async function saveChanges() {
     setSaving(true);
     setSaved(false);
+    const updateData: Record<string, unknown> = { status, admin_notes: adminNotes || null };
+    if (status === 'archived') {
+      updateData.archived_at = new Date().toISOString();
+    }
     await supabase
       .from('collection_requests')
-      .update({ status, admin_notes: adminNotes || null })
+      .update(updateData)
       .eq('id', req.id);
     setSaving(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
+    onStatusChange();
+  }
+
+  async function archiveRequest() {
+    setSaving(true);
+    await supabase
+      .from('collection_requests')
+      .update({ status: 'archived', archived_at: new Date().toISOString() })
+      .eq('id', req.id);
+    setSaving(false);
+    onStatusChange();
+  }
+
+  async function deleteRequest() {
+    setDeleting(true);
+    await supabase.from('collection_request_supplies').delete().eq('request_id', req.id);
+    await supabase.from('collection_request_items').delete().eq('request_id', req.id);
+    await supabase.from('collection_requests').delete().eq('id', req.id);
+    setDeleting(false);
     onStatusChange();
   }
 
@@ -260,6 +289,46 @@ function RequestRow({ req, onStatusChange }: { req: CollectionRequest; onStatusC
                 </button>
               </div>
             </div>
+
+            <div className="flex items-center gap-2 pt-2 border-t border-gray-100">
+              {req.status !== 'archived' && (
+                <button
+                  onClick={archiveRequest}
+                  disabled={saving}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors disabled:opacity-50"
+                >
+                  <Archive size={14} />
+                  Archive
+                </button>
+              )}
+              {!confirmDelete ? (
+                <button
+                  onClick={() => setConfirmDelete(true)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
+                >
+                  <Trash2 size={14} />
+                  Delete
+                </button>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-red-600 font-medium">Are you sure?</span>
+                  <button
+                    onClick={deleteRequest}
+                    disabled={deleting}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
+                  >
+                    {deleting ? <RefreshCw size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                    Confirm Delete
+                  </button>
+                  <button
+                    onClick={() => setConfirmDelete(false)}
+                    className="px-3 py-1.5 text-sm font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
@@ -284,7 +353,9 @@ export default function CollectionRequestsPage() {
         `)
         .order('created_at', { ascending: false });
 
-      if (filterStatus !== 'all') {
+      if (filterStatus === 'all') {
+        q = q.neq('status', 'archived');
+      } else {
         q = q.eq('status', filterStatus);
       }
 
@@ -294,13 +365,26 @@ export default function CollectionRequestsPage() {
     },
   });
 
-  const counts = {
-    all: requests?.length ?? 0,
-    pending: requests?.filter(r => r.status === 'pending').length ?? 0,
-    approved: requests?.filter(r => r.status === 'approved').length ?? 0,
-    completed: requests?.filter(r => r.status === 'completed').length ?? 0,
-    cancelled: requests?.filter(r => r.status === 'cancelled').length ?? 0,
-  };
+  const { data: allCounts } = useQuery({
+    queryKey: ['collection-requests-counts'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('collection_requests')
+        .select('status');
+      if (error) throw error;
+      const rows = data ?? [];
+      return {
+        all: rows.filter(r => r.status !== 'archived').length,
+        pending: rows.filter(r => r.status === 'pending').length,
+        approved: rows.filter(r => r.status === 'approved').length,
+        completed: rows.filter(r => r.status === 'completed').length,
+        cancelled: rows.filter(r => r.status === 'cancelled').length,
+        archived: rows.filter(r => r.status === 'archived').length,
+      };
+    },
+  });
+
+  const counts = allCounts ?? { all: 0, pending: 0, approved: 0, completed: 0, cancelled: 0, archived: 0 };
 
   return (
     <AdminLayout pageTitle="Collection Requests">
@@ -322,7 +406,7 @@ export default function CollectionRequestsPage() {
         </div>
 
         <div className="px-6 py-4 flex gap-2 flex-wrap border-b border-gray-200 bg-white">
-          {(['all', 'pending', 'approved', 'completed', 'cancelled'] as const).map(s => (
+          {(['all', 'pending', 'approved', 'completed', 'cancelled', 'archived'] as const).map(s => (
             <button
               key={s}
               onClick={() => setFilterStatus(s)}
@@ -360,6 +444,7 @@ export default function CollectionRequestsPage() {
                 req={req}
                 onStatusChange={() => {
                   queryClient.invalidateQueries({ queryKey: ['collection-requests'] });
+                  queryClient.invalidateQueries({ queryKey: ['collection-requests-counts'] });
                   queryClient.invalidateQueries({ queryKey: ['pending-collection-requests-count'] });
                 }}
               />
