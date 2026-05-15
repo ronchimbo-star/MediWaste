@@ -60,6 +60,9 @@ const NotesPage = lazy(() => import('./pages/admin/NotesPage'));
 const BackupPage = lazy(() => import('./pages/admin/BackupPage'));
 const ResourcesPage = lazy(() => import('./pages/admin/ResourcesPage'));
 const CollectionRequestsPage = lazy(() => import('./pages/admin/CollectionRequestsPage'));
+const SeoPagesPage = lazy(() => import('./pages/admin/SeoPagesPage'));
+const SeoPageEditPage = lazy(() => import('./pages/admin/SeoPageEditPage'));
+const SeoPage = lazy(() => import('./pages/SeoPage'));
 
 function PageLoader() {
   return (
@@ -162,8 +165,12 @@ function App() {
           <Route path="/admin/backup" element={<ProtectedRoute><BackupPage /></ProtectedRoute>} />
           <Route path="/admin/resources" element={<ProtectedRoute><ResourcesPage /></ProtectedRoute>} />
           <Route path="/admin/collection-requests" element={<ProtectedRoute><CollectionRequestsPage /></ProtectedRoute>} />
+          <Route path="/admin/seo-pages" element={<ProtectedRoute><SeoPagesPage /></ProtectedRoute>} />
+          <Route path="/admin/seo-pages/create" element={<ProtectedRoute><SeoPageEditPage /></ProtectedRoute>} />
+          <Route path="/admin/seo-pages/:id/edit" element={<ProtectedRoute><SeoPageEditPage /></ProtectedRoute>} />
           <Route path="/staff/dashboard" element={<ProtectedRoute><StaffDashboard /></ProtectedRoute>} />
           <Route path="/customer/dashboard" element={<ProtectedRoute><CustomerDashboard /></ProtectedRoute>} />
+          <Route path="/c/:slug" element={<SeoPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
