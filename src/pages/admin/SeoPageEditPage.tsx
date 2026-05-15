@@ -6,6 +6,7 @@ import { supabase } from '../../lib/supabase';
 import {
   Save, Eye, Sparkles, RefreshCw, ArrowLeft, ExternalLink,
 } from 'lucide-react';
+import SeoValidationChecklist from '../../components/admin/SeoValidationChecklist';
 
 interface SeoCategory {
   id: string;
@@ -400,6 +401,18 @@ export default function SeoPageEditPage() {
               {isNew && <p className="text-xs text-blue-600">Save the page first before generating content.</p>}
               {genError && <p className="text-sm text-red-600">{genError}</p>}
             </div>
+
+            {/* Validation Checklist */}
+            {form.content && (
+              <SeoValidationChecklist
+                content={form.content}
+                h1={form.h1}
+                metaTitle={form.meta_title}
+                metaDescription={form.meta_description}
+                location={form.location}
+                targetKeyword={form.target_keyword}
+              />
+            )}
 
             {/* SEO Metadata */}
             <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-4">

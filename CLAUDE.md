@@ -87,7 +87,7 @@ Each page renders unique crawler-visible meta tags:
 ### Phone Numbers
 
 - **CTA / Freephone**: 0800 046 9806
-- **Local office**: 01322 879 713 (used in header, mobile CTA, contact pages)
+- **Local office**: 01322 879 713 (used in header, mobile CTA, contact pages, BottomCTA call button)
 
 ### Internal Links
 
