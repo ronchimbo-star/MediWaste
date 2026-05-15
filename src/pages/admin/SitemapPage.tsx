@@ -60,8 +60,7 @@ Disallow: /quote/*
 
 Crawl-delay: 1
 
-Sitemap: https://mediwaste.co.uk/sitemap.xml
-Sitemap: https://mediwaste.co.uk/seo-sitemap.xml`;
+Sitemap: https://www.mediwaste.co.uk/sitemap.xml`;
 
 const PER_PAGE = 50;
 
@@ -114,15 +113,28 @@ ${urls.join('\n')}
 </urlset>`;
   };
 
-  const downloadSitemap = () => {
-    const xml = generateSitemapXml();
-    const blob = new Blob([xml], { type: 'application/xml' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'sitemap.xml';
-    a.click();
-    URL.revokeObjectURL(url);
+  const downloadSitemap = async () => {
+    const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/seo-sitemap`;
+    try {
+      const res = await fetch(apiUrl);
+      const xml = await res.text();
+      const blob = new Blob([xml], { type: 'application/xml' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'sitemap.xml';
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      const xml = generateSitemapXml();
+      const blob = new Blob([xml], { type: 'application/xml' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'sitemap.xml';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
   };
 
   const downloadRobots = () => {

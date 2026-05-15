@@ -8,6 +8,42 @@ const corsHeaders = {
     "Content-Type, Authorization, X-Client-Info, Apikey",
 };
 
+const BASE_URL = "https://www.mediwaste.co.uk";
+
+const STATIC_URLS = [
+  { loc: "/", lastmod: "2026-04-10", changefreq: "weekly", priority: "1.0" },
+  { loc: "/about", lastmod: "2026-04-10", changefreq: "monthly", priority: "0.8" },
+  { loc: "/contact", lastmod: "2026-04-10", changefreq: "monthly", priority: "0.9" },
+  { loc: "/quote", lastmod: "2026-04-10", changefreq: "monthly", priority: "0.9" },
+  { loc: "/faq", lastmod: "2026-04-10", changefreq: "monthly", priority: "0.7" },
+  { loc: "/waste-services", lastmod: "2026-04-10", changefreq: "monthly", priority: "0.9" },
+  { loc: "/waste-services/infectious-waste", lastmod: "2026-04-10", changefreq: "monthly", priority: "0.8" },
+  { loc: "/waste-services/sharps-waste", lastmod: "2026-04-10", changefreq: "monthly", priority: "0.8" },
+  { loc: "/waste-services/pharmaceutical-waste", lastmod: "2026-04-10", changefreq: "monthly", priority: "0.8" },
+  { loc: "/waste-services/cytotoxic-waste", lastmod: "2026-04-10", changefreq: "monthly", priority: "0.8" },
+  { loc: "/waste-services/dental-waste", lastmod: "2026-04-10", changefreq: "monthly", priority: "0.8" },
+  { loc: "/waste-services/anatomical-waste", lastmod: "2026-04-10", changefreq: "monthly", priority: "0.8" },
+  { loc: "/service-coverage", lastmod: "2026-04-10", changefreq: "monthly", priority: "0.8" },
+  { loc: "/service-areas/london", lastmod: "2026-04-10", changefreq: "monthly", priority: "0.9" },
+  { loc: "/service-areas/kent", lastmod: "2026-04-10", changefreq: "monthly", priority: "0.8" },
+  { loc: "/service-areas/essex", lastmod: "2026-04-10", changefreq: "monthly", priority: "0.8" },
+  { loc: "/service-areas/surrey", lastmod: "2026-04-10", changefreq: "monthly", priority: "0.8" },
+  { loc: "/service-areas/sussex", lastmod: "2026-04-10", changefreq: "monthly", priority: "0.8" },
+  { loc: "/service-areas/hampshire", lastmod: "2026-04-10", changefreq: "monthly", priority: "0.8" },
+  { loc: "/clinical-waste-disposal-london", lastmod: "2026-04-10", changefreq: "monthly", priority: "0.9" },
+  { loc: "/clinical-waste-disposal-kent", lastmod: "2026-04-10", changefreq: "monthly", priority: "0.8" },
+  { loc: "/clinical-waste-disposal-essex", lastmod: "2026-04-10", changefreq: "monthly", priority: "0.8" },
+  { loc: "/clinical-waste-disposal-surrey", lastmod: "2026-04-10", changefreq: "monthly", priority: "0.8" },
+  { loc: "/clinical-waste-disposal-sussex", lastmod: "2026-04-10", changefreq: "monthly", priority: "0.8" },
+  { loc: "/clinical-waste-disposal-hampshire", lastmod: "2026-04-10", changefreq: "monthly", priority: "0.8" },
+  { loc: "/compliance", lastmod: "2026-04-10", changefreq: "monthly", priority: "0.7" },
+  { loc: "/directory-listings", lastmod: "2026-05-15", changefreq: "weekly", priority: "0.5" },
+  { loc: "/news", lastmod: "2026-04-10", changefreq: "weekly", priority: "0.7" },
+  { loc: "/privacy", lastmod: "2026-04-10", changefreq: "yearly", priority: "0.3" },
+  { loc: "/terms", lastmod: "2026-04-10", changefreq: "yearly", priority: "0.3" },
+  { loc: "/cookies", lastmod: "2026-04-10", changefreq: "yearly", priority: "0.3" },
+];
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { status: 200, headers: corsHeaders });
@@ -32,13 +68,20 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    const baseUrl = "https://www.mediwaste.co.uk";
+    // Static pages
+    const staticXml = STATIC_URLS.map((u) => `  <url>
+    <loc>${BASE_URL}${u.loc}</loc>
+    <lastmod>${u.lastmod}</lastmod>
+    <changefreq>${u.changefreq}</changefreq>
+    <priority>${u.priority}</priority>
+  </url>`);
 
-    const urls = (pages || []).map((page) => {
+    // Dynamic SEO pages
+    const dynamicXml = (pages || []).map((page) => {
       const lastmod = page.updated_at || page.published_at;
       const dateStr = lastmod ? new Date(lastmod).toISOString().split("T")[0] : "";
       return `  <url>
-    <loc>${baseUrl}/c/${page.url_slug}</loc>${dateStr ? `\n    <lastmod>${dateStr}</lastmod>` : ""}
+    <loc>${BASE_URL}/c/${page.url_slug}</loc>${dateStr ? `\n    <lastmod>${dateStr}</lastmod>` : ""}
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>`;
@@ -46,7 +89,8 @@ Deno.serve(async (req: Request) => {
 
     const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${urls.join("\n")}
+${staticXml.join("\n")}
+${dynamicXml.join("\n")}
 </urlset>`;
 
     return new Response(sitemap, {
