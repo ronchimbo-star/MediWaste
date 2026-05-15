@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import AdminLayout from '../../components/admin/AdminLayout';
 import { supabase } from '../../lib/supabase';
-import { Search, Plus, Upload, Download, FileEdit as Edit, Globe, FileText, ChevronLeft, ChevronRight, RefreshCw, CheckCircle } from 'lucide-react';
+import { Search, Plus, Upload, Download, FileEdit as Edit, Globe, FileText, ChevronLeft, ChevronRight, RefreshCw, CheckCircle, MapPin, FileDown } from 'lucide-react';
 
 interface SeoPage {
   id: string;
@@ -412,6 +412,9 @@ export default function SeoPagesPage() {
             </div>
           )}
         </div>
+
+        {/* Sitemap & Robots Section */}
+        <SitemapViewer />
       </div>
 
       {/* CSV Import Modal */}
@@ -419,6 +422,170 @@ export default function SeoPagesPage() {
         <CsvImportModal onClose={() => setShowCsvModal(false)} />
       )}
     </AdminLayout>
+  );
+}
+
+const SITEMAP_PER_PAGE = 50;
+
+function SitemapViewer() {
+  const [sitemapPage, setSitemapPage] = useState(0);
+
+  const { data: sitemapLinks = [], isLoading: sitemapLoading } = useQuery({
+    queryKey: ['sitemap-links'],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('seo_pages')
+        .select('url_slug, updated_at, published_at, target_keyword, location')
+        .eq('status', 'published')
+        .order('published_at', { ascending: false });
+      return (data || []).map((p: any) => ({
+        url: `https://www.mediwaste.co.uk/c/${p.url_slug}`,
+        slug: p.url_slug,
+        keyword: p.target_keyword,
+        location: p.location,
+        lastmod: p.updated_at || p.published_at,
+      }));
+    },
+  });
+
+  const totalSitemapPages = Math.ceil(sitemapLinks.length / SITEMAP_PER_PAGE);
+  const paginatedLinks = sitemapLinks.slice(
+    sitemapPage * SITEMAP_PER_PAGE,
+    (sitemapPage + 1) * SITEMAP_PER_PAGE
+  );
+
+  const downloadSitemap = async () => {
+    const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/seo-sitemap`;
+    const res = await fetch(apiUrl, {
+      headers: { 'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}` },
+    });
+    const xml = await res.text();
+    const blob = new Blob([xml], { type: 'application/xml' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'sitemap.xml';
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const downloadRobots = () => {
+    const robotsContent = `User-agent: *
+Allow: /
+
+Disallow: /admin/
+Disallow: /admin
+Disallow: /staff/
+Disallow: /staff
+Disallow: /customer/
+Disallow: /customer
+Disallow: /login
+Disallow: /quote/*
+
+Crawl-delay: 1
+
+Sitemap: https://mediwaste.co.uk/sitemap.xml
+Sitemap: ${import.meta.env.VITE_SUPABASE_URL}/functions/v1/seo-sitemap`;
+    const blob = new Blob([robotsContent], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'robots.txt';
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  return (
+    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <MapPin size={18} className="text-gray-500" />
+          <div>
+            <h3 className="font-bold text-gray-900">Sitemap</h3>
+            <p className="text-xs text-gray-500">{sitemapLinks.length} published URLs indexed</p>
+          </div>
+        </div>
+        <div className="flex gap-2">
+          <button
+            onClick={downloadSitemap}
+            className="flex items-center gap-2 px-3 py-2 text-sm bg-green-50 text-green-700 rounded-lg hover:bg-green-100 font-medium transition-colors"
+          >
+            <FileDown size={14} /> sitemap.xml
+          </button>
+          <button
+            onClick={downloadRobots}
+            className="flex items-center gap-2 px-3 py-2 text-sm bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 font-medium transition-colors"
+          >
+            <FileDown size={14} /> robots.txt
+          </button>
+        </div>
+      </div>
+
+      {sitemapLoading ? (
+        <div className="p-8 text-center">
+          <RefreshCw size={20} className="animate-spin text-gray-400 mx-auto" />
+        </div>
+      ) : paginatedLinks.length === 0 ? (
+        <div className="p-8 text-center text-gray-400 text-sm">
+          No published pages in sitemap yet
+        </div>
+      ) : (
+        <div className="divide-y divide-gray-100">
+          {paginatedLinks.map((link, i) => (
+            <div key={link.slug} className="px-5 py-2.5 flex items-center justify-between gap-3 hover:bg-gray-50">
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-gray-400 font-mono w-6 text-right shrink-0">
+                    {sitemapPage * SITEMAP_PER_PAGE + i + 1}
+                  </span>
+                  <a
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-blue-600 hover:text-blue-800 hover:underline truncate"
+                  >
+                    /c/{link.slug}
+                  </a>
+                </div>
+                <div className="flex items-center gap-2 ml-8">
+                  <span className="text-xs text-gray-500 truncate">{link.keyword}</span>
+                  {link.location && (
+                    <span className="text-xs text-gray-400">| {link.location}</span>
+                  )}
+                </div>
+              </div>
+              <span className="text-xs text-gray-400 shrink-0">
+                {link.lastmod ? new Date(link.lastmod).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : ''}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {totalSitemapPages > 1 && (
+        <div className="flex items-center justify-between px-5 py-3 border-t border-gray-100">
+          <p className="text-sm text-gray-500">
+            Page {sitemapPage + 1} of {totalSitemapPages}
+          </p>
+          <div className="flex gap-1">
+            <button
+              onClick={() => setSitemapPage(p => Math.max(0, p - 1))}
+              disabled={sitemapPage === 0}
+              className="p-2 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <ChevronLeft size={16} />
+            </button>
+            <button
+              onClick={() => setSitemapPage(p => Math.min(totalSitemapPages - 1, p + 1))}
+              disabled={sitemapPage >= totalSitemapPages - 1}
+              className="p-2 rounded hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <ChevronRight size={16} />
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 

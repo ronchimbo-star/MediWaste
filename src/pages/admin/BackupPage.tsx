@@ -11,28 +11,69 @@ interface TableExport {
 }
 
 const EXPORT_TABLES: { table: string; label: string }[] = [
+  // Customers & Addresses
   { table: 'mw_customers', label: 'Customers' },
+  { table: 'mw_customer_addresses', label: 'Customer Addresses' },
+  { table: 'mw_customer_services', label: 'Customer Services' },
+  { table: 'mw_customer_payments', label: 'Customer Payments' },
+  { table: 'mw_customer_documents', label: 'Customer Documents' },
+  // Services & Subscriptions
   { table: 'mw_subscriptions', label: 'Subscriptions' },
   { table: 'mw_service_plans', label: 'Service Plans' },
+  { table: 'mw_service_jobs', label: 'Service Jobs' },
+  { table: 'mw_job_photos', label: 'Job Photos' },
+  { table: 'mw_job_issues', label: 'Job Issues' },
+  { table: 'mw_job_completion', label: 'Job Completions' },
+  // Invoicing & Payments
   { table: 'mw_invoices', label: 'Invoices' },
   { table: 'mw_invoice_line_items', label: 'Invoice Line Items' },
+  { table: 'mw_invoice_settings', label: 'Invoice Settings' },
   { table: 'mw_payments', label: 'Payments' },
-  { table: 'mw_service_jobs', label: 'Service Jobs' },
+  { table: 'mw_receipts', label: 'Receipts' },
+  // Collection Requests
   { table: 'mw_collection_requests', label: 'Collection Requests' },
   { table: 'mw_collection_request_items', label: 'Collection Request Items' },
   { table: 'mw_collection_request_supplies', label: 'Collection Request Supplies' },
+  // Certificates & Compliance
   { table: 'mw_certificates', label: 'Certificates' },
+  { table: 'mw_certificate_settings', label: 'Certificate Settings' },
+  { table: 'mw_certificate_alerts', label: 'Certificate Alerts' },
   { table: 'mw_waste_transfer_notes', label: 'Waste Transfer Notes' },
   { table: 'mw_wtn_items', label: 'WTN Items' },
-  { table: 'mw_resources', label: 'Resources' },
-  { table: 'mw_admin_notes', label: 'Admin Notes' },
-  { table: 'mw_reminders', label: 'Reminders' },
-  { table: 'mw_staff', label: 'Staff' },
+  // Quotes
   { table: 'quote_requests', label: 'Quote Requests' },
   { table: 'quotes', label: 'Quotes' },
+  { table: 'quote_line_items', label: 'Quote Line Items' },
+  { table: 'quote_templates', label: 'Quote Templates' },
+  { table: 'quote_template_line_items', label: 'Quote Template Line Items' },
+  { table: 'quote_service_options', label: 'Quote Service Options' },
+  // Service Agreements
+  { table: 'service_agreements', label: 'Service Agreements' },
+  // Contact & Enquiries
   { table: 'contact_enquiries', label: 'Contact Enquiries' },
+  // Email
   { table: 'mw_emails', label: 'Email Messages' },
   { table: 'mw_email_sync_log', label: 'Email Sync Log' },
+  { table: 'mw_gmail_sync_config', label: 'Gmail Sync Config' },
+  // Admin & Resources
+  { table: 'mw_admin_notes', label: 'Admin Notes' },
+  { table: 'mw_reminders', label: 'Reminders' },
+  { table: 'mw_resources', label: 'Resources' },
+  { table: 'mw_staff', label: 'Staff' },
+  // News & Content
+  { table: 'news_articles', label: 'News Articles' },
+  { table: 'news_adverts', label: 'News Adverts' },
+  { table: 'news_categories', label: 'News Categories' },
+  // SEO
+  { table: 'seo_pages', label: 'SEO Pages' },
+  { table: 'seo_categories', label: 'SEO Categories' },
+  { table: 'seo_generation_logs', label: 'SEO Generation Logs' },
+  // Directory Listings
+  { table: 'directory_listings', label: 'Directory Listings' },
+  { table: 'directory_settings', label: 'Directory Settings' },
+  // Site Settings & Notifications
+  { table: 'site_settings', label: 'Site Settings' },
+  { table: 'system_notifications', label: 'System Notifications' },
 ];
 
 export default function BackupPage() {
