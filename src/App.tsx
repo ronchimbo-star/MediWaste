@@ -28,6 +28,7 @@ const DentalWastePage = lazy(() => import('./pages/DentalWastePage'));
 const AnatomicalWastePage = lazy(() => import('./pages/AnatomicalWastePage'));
 const ServiceAgreementPage = lazy(() => import('./pages/ServiceAgreementPage'));
 const CompliancePage = lazy(() => import('./pages/CompliancePage'));
+const ComplianceInfoPage = lazy(() => import('./pages/ComplianceInfoPage'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
@@ -129,6 +130,7 @@ function App() {
           <Route path="/quote" element={<QuotePage />} />
           <Route path="/quote/:token" element={<PublicQuoteView />} />
           <Route path="/service-agreement/:token" element={<ServiceAgreementPage />} />
+          <Route path="/compliance" element={<ComplianceInfoPage />} />
           <Route path="/compliance/:token" element={<CompliancePage />} />
           <Route path="/directory-listings" element={<DirectoryListingsPage />} />
           <Route path="/terms" element={<TermsPage />} />
