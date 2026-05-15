@@ -1,4 +1,5 @@
-import { CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
+import { useState } from 'react';
+import { CheckCircle, XCircle, AlertTriangle, Wrench, RefreshCw } from 'lucide-react';
 
 interface ValidationResult {
   label: string;
@@ -13,6 +14,8 @@ interface SeoValidationChecklistProps {
   metaDescription: string;
   location: string;
   targetKeyword: string;
+  pageId?: string;
+  onFixed?: (fixed: { h1: string; meta_title: string; meta_description: string; content: string }) => void;
 }
 
 function countWords(html: string): number {
@@ -40,7 +43,6 @@ function validate(props: SeoValidationChecklistProps): ValidationResult[] {
   const textContent = content.replace(/<[^>]+>/g, ' ');
   const lowerContent = content.toLowerCase();
 
-  // H1 checks
   results.push({
     label: 'H1 includes target keyword',
     passed: h1.toLowerCase().includes(targetKeyword.toLowerCase()),
@@ -55,7 +57,6 @@ function validate(props: SeoValidationChecklistProps): ValidationResult[] {
     });
   }
 
-  // Meta title
   results.push({
     label: 'Meta title length (55-60 chars)',
     passed: metaTitle.length >= 45 && metaTitle.length <= 65,
@@ -68,14 +69,12 @@ function validate(props: SeoValidationChecklistProps): ValidationResult[] {
     detail: metaTitle || 'Not set',
   });
 
-  // Meta description
   results.push({
     label: 'Meta description length (140-165 chars)',
     passed: metaDescription.length >= 120 && metaDescription.length <= 170,
     detail: `${metaDescription.length} characters`,
   });
 
-  // Content word count
   const wordCount = countWords(content);
   results.push({
     label: 'Content length (min 1,500 words)',
@@ -83,7 +82,6 @@ function validate(props: SeoValidationChecklistProps): ValidationResult[] {
     detail: `${wordCount} words`,
   });
 
-  // Keyword density
   const keywordCount = countOccurrences(content, targetKeyword);
   results.push({
     label: 'Keyword usage (5-8 times)',
@@ -91,7 +89,6 @@ function validate(props: SeoValidationChecklistProps): ValidationResult[] {
     detail: `"${targetKeyword}" appears ${keywordCount} times`,
   });
 
-  // Trust signal module
   const hasTestimonials = lowerContent.includes('what our') && lowerContent.includes('clients say');
   results.push({
     label: 'Trust signal module with testimonials',
@@ -99,7 +96,6 @@ function validate(props: SeoValidationChecklistProps): ValidationResult[] {
     detail: hasTestimonials ? 'Found' : 'Not detected',
   });
 
-  // Accreditations
   const hasAccreditations = lowerContent.includes('environment agency') && (lowerContent.includes('iso 14001') || lowerContent.includes('safe contractor'));
   results.push({
     label: 'Accreditations mentioned (EA, Safe Contractor, ISO 14001)',
@@ -107,7 +103,6 @@ function validate(props: SeoValidationChecklistProps): ValidationResult[] {
     detail: hasAccreditations ? 'Found' : 'Missing accreditation references',
   });
 
-  // Services table
   const hasTable = content.includes('<table') && content.includes('<th');
   results.push({
     label: 'Key services table present',
@@ -115,7 +110,6 @@ function validate(props: SeoValidationChecklistProps): ValidationResult[] {
     detail: hasTable ? 'Found' : 'No table detected',
   });
 
-  // Collection process steps
   const hasProcess = lowerContent.includes('collection process') || lowerContent.includes('how it works') || lowerContent.includes('step 1') || lowerContent.includes('our process');
   results.push({
     label: 'Collection process section (3 steps)',
@@ -123,7 +117,6 @@ function validate(props: SeoValidationChecklistProps): ValidationResult[] {
     detail: hasProcess ? 'Found' : 'Not detected',
   });
 
-  // Local relevance
   if (loc) {
     const hasLocalRelevance = countOccurrences(content, loc) >= 3;
     results.push({
@@ -133,7 +126,6 @@ function validate(props: SeoValidationChecklistProps): ValidationResult[] {
     });
   }
 
-  // Compliance guarantee box
   const hasComplianceBox = lowerContent.includes('compliance guarantee') || lowerContent.includes('waste transfer notes');
   results.push({
     label: 'Compliance guarantee box present',
@@ -141,7 +133,6 @@ function validate(props: SeoValidationChecklistProps): ValidationResult[] {
     detail: hasComplianceBox ? 'Found' : 'Not detected',
   });
 
-  // FAQ section
   const hasFaq = lowerContent.includes('frequently asked questions') || lowerContent.includes('faq');
   results.push({
     label: 'FAQ section present',
@@ -149,7 +140,6 @@ function validate(props: SeoValidationChecklistProps): ValidationResult[] {
     detail: hasFaq ? 'Found' : 'Not detected',
   });
 
-  // Mandatory FAQ questions
   if (loc) {
     const mandatoryQuestions = [
       `cost in ${loc.toLowerCase()}`,
@@ -165,7 +155,6 @@ function validate(props: SeoValidationChecklistProps): ValidationResult[] {
     });
   }
 
-  // UK English spelling check
   const americanSpellings = ['organize', 'color ', 'center ', 'license '];
   const hasAmericanSpelling = americanSpellings.some(s => textContent.toLowerCase().includes(s));
   results.push({
@@ -174,7 +163,6 @@ function validate(props: SeoValidationChecklistProps): ValidationResult[] {
     detail: hasAmericanSpelling ? 'American spellings detected' : 'Passed',
   });
 
-  // No broken links
   const linkRegex = /href="([^"]+)"/g;
   let match;
   const links: string[] = [];
@@ -189,7 +177,6 @@ function validate(props: SeoValidationChecklistProps): ValidationResult[] {
     detail: brokenLinks.length > 0 ? `Suspicious links: ${brokenLinks.join(', ')}` : 'All links valid',
   });
 
-  // No CTA in content (handled by template)
   const hasCTAInContent = lowerContent.includes('request a quote') || lowerContent.includes('call us now') || content.includes('cta-box');
   results.push({
     label: 'No CTA embedded in content (template handles CTA)',
@@ -197,7 +184,6 @@ function validate(props: SeoValidationChecklistProps): ValidationResult[] {
     detail: hasCTAInContent ? 'CTA detected in content — remove it (template adds CTA automatically)' : 'Passed',
   });
 
-  // Internal links present
   const internalLinks = links.filter(l => l.startsWith('/'));
   results.push({
     label: 'Internal links included (min 2)',
@@ -209,6 +195,9 @@ function validate(props: SeoValidationChecklistProps): ValidationResult[] {
 }
 
 export default function SeoValidationChecklist(props: SeoValidationChecklistProps) {
+  const [fixing, setFixing] = useState(false);
+  const [fixError, setFixError] = useState('');
+
   if (!props.content) return null;
 
   const results = validate(props);
@@ -220,6 +209,52 @@ export default function SeoValidationChecklist(props: SeoValidationChecklistProp
   const scoreColor = score >= 90 ? 'text-green-700 bg-green-50 border-green-200' :
     score >= 70 ? 'text-yellow-700 bg-yellow-50 border-yellow-200' :
     'text-red-700 bg-red-50 border-red-200';
+
+  const handleFixIssues = async () => {
+    if (!props.pageId || !props.onFixed) return;
+
+    setFixing(true);
+    setFixError('');
+
+    const failingLabels = results.filter(r => !r.passed).map(r => {
+      let desc = r.label;
+      if (r.detail) desc += ` (${r.detail})`;
+      return desc;
+    });
+
+    try {
+      const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/fix-seo-issues`;
+      const res = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          page_id: props.pageId,
+          current_content: props.content,
+          current_h1: props.h1,
+          current_meta_title: props.metaTitle,
+          current_meta_description: props.metaDescription,
+          target_keyword: props.targetKeyword,
+          location: props.location,
+          failing_checks: failingLabels,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setFixError(data.error || 'Fix failed');
+        return;
+      }
+
+      props.onFixed(data.fixed);
+    } catch (err: any) {
+      setFixError(err.message || 'Fix failed');
+    } finally {
+      setFixing(false);
+    }
+  };
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-4">
@@ -233,11 +268,36 @@ export default function SeoValidationChecklist(props: SeoValidationChecklistProp
       </div>
 
       {failCount > 0 && (
-        <div className="flex items-start gap-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+        <div className="flex items-start gap-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
           <AlertTriangle size={16} className="text-yellow-600 mt-0.5 shrink-0" />
-          <p className="text-sm text-yellow-800">
-            {failCount} check{failCount > 1 ? 's' : ''} failed. Review the items below before publishing.
-          </p>
+          <div className="flex-1">
+            <p className="text-sm text-yellow-800">
+              {failCount} check{failCount > 1 ? 's' : ''} failed. Review the items below or use AI to fix automatically.
+            </p>
+          </div>
+          {props.pageId && props.onFixed && (
+            <button
+              onClick={handleFixIssues}
+              disabled={fixing}
+              className="shrink-0 flex items-center gap-2 px-4 py-2 bg-red-600 text-white text-sm font-semibold rounded-lg hover:bg-red-700 disabled:opacity-50 transition-colors"
+            >
+              {fixing ? <RefreshCw size={14} className="animate-spin" /> : <Wrench size={14} />}
+              {fixing ? 'Fixing...' : 'Fix Issues'}
+            </button>
+          )}
+        </div>
+      )}
+
+      {fixing && (
+        <div className="flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <RefreshCw size={14} className="animate-spin text-blue-600" />
+          <p className="text-sm text-blue-700">AI is rewriting content to resolve {failCount} issues. This may take 30-60 seconds...</p>
+        </div>
+      )}
+
+      {fixError && (
+        <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+          <p className="text-sm text-red-700">{fixError}</p>
         </div>
       )}
 

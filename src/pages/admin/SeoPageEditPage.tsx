@@ -411,6 +411,18 @@ export default function SeoPageEditPage() {
                 metaDescription={form.meta_description}
                 location={form.location}
                 targetKeyword={form.target_keyword}
+                pageId={id}
+                onFixed={(fixed) => {
+                  setForm(prev => ({
+                    ...prev,
+                    h1: fixed.h1 || prev.h1,
+                    meta_title: fixed.meta_title || prev.meta_title,
+                    meta_description: fixed.meta_description || prev.meta_description,
+                    content: fixed.content || prev.content,
+                  }));
+                  queryClient.invalidateQueries({ queryKey: ['seo-page-edit', id] });
+                  setSaveMsg('Issues fixed and saved by AI');
+                }}
               />
             )}
 
