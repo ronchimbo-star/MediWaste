@@ -96,6 +96,13 @@ For each failing check, apply the following fixes:
 - "Mandatory FAQ questions": Ensure all 4 mandatory questions above are present and localised
 - "UK English spelling": Replace any American spellings (organize→organise, color→colour, center→centre, license→licence)
 - "No external/broken links": Remove or replace any external links with valid internal links (/waste-services, /quote, /contact, /compliance, etc.)
+- "Broken image links": Replace any broken <img> tags with a valid Pexels image. ONLY use these verified Pexels URLs:
+  - Sharps/needles: https://images.pexels.com/photos/7579831/pexels-photo-7579831.jpeg?auto=compress&cs=tinysrgb&w=800
+  - Medical waste: https://images.pexels.com/photos/3786166/pexels-photo-3786166.jpeg?auto=compress&cs=tinysrgb&w=800
+  - Healthcare: https://images.pexels.com/photos/4386467/pexels-photo-4386467.jpeg?auto=compress&cs=tinysrgb&w=800
+  - If no image is needed or the topic doesn't match, REMOVE the broken img tag entirely rather than guessing a URL.
+  - NEVER use unsplash.com, pixabay.com, shutterstock.com, freepik.com, or any non-Pexels URL.
+  - Format: <img src="URL" alt="descriptive alt text" class="w-full rounded-lg my-6" />
 - "No CTA embedded in content": Remove any "Request a Quote" buttons or cta-box divs from the content
 - "Internal links included": Add at least 3 internal links to pages like /waste-services, /waste-services/sharps-waste, /waste-services/infectious-waste, /quote, /compliance
 
@@ -107,6 +114,7 @@ IMPORTANT RULES:
 - Do NOT wrap in <article> or <section> tags
 - Preserve existing good structure and content where possible
 - The content must be factual and relevant to clinical waste collection in ${locationOrDefault}
+- For "Content length" fixes: The main body (excluding FAQ and testimonials) MUST be at least 1,500 words. Add detailed paragraphs about the service, regulations, local context, collection process details, waste types, and compliance requirements. Each h2 section should have 3-4 paragraphs of 80-100 words each.
 
 Return ONLY valid JSON (no markdown fences):
 {

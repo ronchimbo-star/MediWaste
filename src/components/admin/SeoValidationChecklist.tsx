@@ -75,11 +75,20 @@ function validate(props: SeoValidationChecklistProps): ValidationResult[] {
     detail: `${metaDescription.length} characters`,
   });
 
-  const wordCount = countWords(content);
+  // Word count excluding FAQ and testimonials sections
+  let mainContent = content;
+  const faqStart = content.toLowerCase().indexOf('<h2>frequently asked questions');
+  if (faqStart !== -1) {
+    mainContent = content.slice(0, faqStart);
+  }
+  // Remove info-box testimonials from count
+  mainContent = mainContent.replace(/<div class="info-box">[\s\S]*?<\/div>/gi, '');
+  const wordCount = countWords(mainContent);
+  const totalWordCount = countWords(content);
   results.push({
-    label: 'Content length (min 1,500 words)',
+    label: 'Content length (min 1,500 words excl. FAQ/testimonials)',
     passed: wordCount >= 1400,
-    detail: `${wordCount} words`,
+    detail: `${wordCount} main body words (${totalWordCount} total)`,
   });
 
   const keywordCount = countOccurrences(content, targetKeyword);
@@ -183,6 +192,24 @@ function validate(props: SeoValidationChecklistProps): ValidationResult[] {
     passed: !hasCTAInContent,
     detail: hasCTAInContent ? 'CTA detected in content — remove it (template adds CTA automatically)' : 'Passed',
   });
+
+  // Broken image check
+  const imgRegex = /src="([^"]+)"/g;
+  const imgSrcs: string[] = [];
+  const imgContent = content.replace(/href="[^"]+"/g, '');
+  let imgMatch;
+  while ((imgMatch = imgRegex.exec(imgContent)) !== null) {
+    imgSrcs.push(imgMatch[1]);
+  }
+  const validImgPrefixes = ['/', 'https://images.pexels.com/', 'https://www.mediwaste.co.uk'];
+  const brokenImages = imgSrcs.filter(src => !validImgPrefixes.some(p => src.startsWith(p)));
+  if (imgSrcs.length > 0) {
+    results.push({
+      label: 'Image links valid (Pexels or local only)',
+      passed: brokenImages.length === 0,
+      detail: brokenImages.length > 0 ? `Broken: ${brokenImages.join(', ')}` : `${imgSrcs.length} image(s) valid`,
+    });
+  }
 
   const internalLinks = links.filter(l => l.startsWith('/'));
   results.push({

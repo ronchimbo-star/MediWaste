@@ -106,12 +106,41 @@ Generate the following in JSON format:
 - No jargon — write for beauticians, aesthetic practitioners, GP managers, salon owners
 - Short paragraphs (2-3 sentences max)
 - Bullet points for lists (not dense text)
-- 1,500-1,700 minimum words total (not including testimonials/FAQ)
 - Professional but accessible tone — direct and factual, not marketing fluff
 - Do NOT use phrases like "transform your waste management" or "clinical waste management is a critical service"
 - Do NOT include broken or placeholder links
 - Do NOT write generic environmental theory — focus on collection, compliance, and service
 - Internal links: use <a href="/waste-services">, <a href="/quote">, <a href="/contact">, <a href="/waste-services/sharps-waste">, <a href="/compliance">
+
+===== WORD COUNT REQUIREMENT (CRITICAL) =====
+
+The MAIN BODY content (sections 1-6: intro, trust signals, services table, collection process, local relevance, compliance) MUST total at least 1,500 words. This does NOT include the FAQ section or testimonial quotes.
+
+To achieve this:
+- The INTRO should be 100-150 words
+- AFTER the trust signal module, add a detailed section (h2) about the specific service with 3-4 paragraphs of 80-100 words each (300-400 words)
+- The KEY SERVICES section should include explanatory paragraphs before/after the table (200+ words)
+- The COLLECTION PROCESS section should have detailed descriptions for each step (200+ words)
+- The LOCAL RELEVANCE section should be thorough: 250-300 words about the area
+- The COMPLIANCE section should be detailed: 200-300 words about regulations, duty of care, etc.
+- Add a section about "Why Choose MediWaste in ${locationOrDefault}" with 200-300 words
+
+If you calculate fewer than 1,500 words in your main body, ADD MORE substantial paragraphs. Each section should have multiple paragraphs with real, useful information — not padding.
+
+===== IMAGE RULES (CRITICAL) =====
+
+- If instructed to include an image, you MUST use a real, verified Pexels URL in this format:
+  https://images.pexels.com/photos/{PHOTO_ID}/pexels-photo-{PHOTO_ID}.jpeg?auto=compress&cs=tinysrgb&w=800
+- ONLY use these known valid Pexels photo IDs for clinical/medical waste topics:
+  - Sharps/needles: 7579831, 7579828, 3786126, 5726794, 3786157
+  - Medical waste/biohazard: 3786166, 5726706, 4031321, 7089401
+  - Healthcare/clinical setting: 4386467, 3938022, 4021775, 3259629
+  - Waste bins/containers: 3735218, 802221, 2547565
+- NEVER generate or guess image URLs — only use the IDs listed above
+- NEVER use unsplash.com, pixabay.com, shutterstock.com, or any other image service
+- NEVER use placeholder URLs or URLs you are not 100% certain exist
+- If you are not sure an image URL works, DO NOT include any image
+- Format: <img src="URL" alt="Descriptive alt text" class="w-full rounded-lg my-6" />
 
 ===== CONTENT QUALITY =====
 
