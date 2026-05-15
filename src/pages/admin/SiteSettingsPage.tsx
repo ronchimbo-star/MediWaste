@@ -251,6 +251,20 @@ export default function SiteSettingsPage() {
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                   />
                 </div>
+
+                <div>
+                  <label htmlFor="google_business_url" className="block text-sm font-medium text-gray-700 mb-2">
+                    Google Business Profile URL
+                  </label>
+                  <input
+                    type="url"
+                    name="google_business_url"
+                    id="google_business_url"
+                    defaultValue={settings?.google_business_url || ''}
+                    placeholder="https://g.page/yourbusiness"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  />
+                </div>
               </div>
             </div>
 

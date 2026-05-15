@@ -5,6 +5,12 @@ interface SiteSettings {
   phone_number: string;
   contact_email: string;
   service_areas: string;
+  facebook_url: string;
+  instagram_url: string;
+  linkedin_url: string;
+  tiktok_url: string;
+  youtube_url: string;
+  google_business_url: string;
 }
 
 export function useSiteSettings() {

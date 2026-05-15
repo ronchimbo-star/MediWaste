@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Facebook, Twitter, Linkedin, Instagram } from 'lucide-react';
+import { Facebook, Linkedin, Instagram, MapPin } from 'lucide-react';
 import { useSiteSettings } from '../hooks/useSiteSettings';
 
 export default function Footer() {
@@ -26,44 +26,70 @@ export default function Footer() {
             >
               As featured on Medical Waste Directory
             </a>
-            <div className="flex gap-3 mt-4">
-              <a
-                href="https://facebook.com/mediwaste"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-gray-400 hover:text-white transition-colors"
-                aria-label="Follow us on Facebook"
-              >
-                <Facebook className="w-5 h-5" />
-              </a>
-              <a
-                href="https://twitter.com/mediwaste"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-gray-400 hover:text-white transition-colors"
-                aria-label="Follow us on Twitter"
-              >
-                <Twitter className="w-5 h-5" />
-              </a>
-              <a
-                href="https://linkedin.com/company/mediwaste"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-gray-400 hover:text-white transition-colors"
-                aria-label="Follow us on LinkedIn"
-              >
-                <Linkedin className="w-5 h-5" />
-              </a>
-              <a
-                href="https://instagram.com/mediwaste"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-gray-400 hover:text-white transition-colors"
-                aria-label="Follow us on Instagram"
-              >
-                <Instagram className="w-5 h-5" />
-              </a>
-            </div>
+            {(settings?.linkedin_url || settings?.facebook_url || settings?.instagram_url || settings?.google_business_url || settings?.tiktok_url) && (
+              <div className="mt-4">
+                <p className="text-sm font-bold text-white mb-2">We're social. Visit us at</p>
+                <div className="flex gap-3">
+                  {settings?.linkedin_url && (
+                    <a
+                      href={settings.linkedin_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-white hover:text-gray-300 transition-colors"
+                      aria-label="Follow us on LinkedIn"
+                    >
+                      <Linkedin className="w-5 h-5" />
+                    </a>
+                  )}
+                  {settings?.google_business_url && (
+                    <a
+                      href={settings.google_business_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-white hover:text-gray-300 transition-colors"
+                      aria-label="Visit our Google Business Profile"
+                    >
+                      <MapPin className="w-5 h-5" />
+                    </a>
+                  )}
+                  {settings?.facebook_url && (
+                    <a
+                      href={settings.facebook_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-white hover:text-gray-300 transition-colors"
+                      aria-label="Follow us on Facebook"
+                    >
+                      <Facebook className="w-5 h-5" />
+                    </a>
+                  )}
+                  {settings?.instagram_url && (
+                    <a
+                      href={settings.instagram_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-white hover:text-gray-300 transition-colors"
+                      aria-label="Follow us on Instagram"
+                    >
+                      <Instagram className="w-5 h-5" />
+                    </a>
+                  )}
+                  {settings?.tiktok_url && (
+                    <a
+                      href={settings.tiktok_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-white hover:text-gray-300 transition-colors"
+                      aria-label="Follow us on TikTok"
+                    >
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.88 2.89 2.89 0 01-2.88-2.88 2.89 2.89 0 012.88-2.88c.28 0 .56.04.82.11v-3.5a6.37 6.37 0 00-.82-.05A6.34 6.34 0 003.15 15.6a6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.34-6.34V9.4a8.16 8.16 0 004.76 1.52v-3.4a4.85 4.85 0 01-1-.83z"/>
+                      </svg>
+                    </a>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
 
           <div>
