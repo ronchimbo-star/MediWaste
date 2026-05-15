@@ -18,17 +18,9 @@ export default function Footer() {
             <p className="text-sm text-gray-400 mb-3">
               Professional clinical waste management solutions for healthcare facilities across the UK.
             </p>
-            <a
-              href="https://medicalwastedirectory.co.uk/directory/1ee6c307-808d-4ade-b4e1-cccc03514144"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-sm text-red-500 hover:text-red-400 transition-colors inline-block mb-4"
-            >
-              As featured on Medical Waste Directory
-            </a>
             {(settings?.linkedin_url || settings?.facebook_url || settings?.instagram_url || settings?.google_business_url || settings?.tiktok_url) && (
               <div className="mt-4">
-                <p className="text-sm font-bold text-white mb-2">We're social. Visit us at</p>
+                <p className="text-sm text-red-500 mb-2">We're social. Visit us at</p>
                 <div className="flex gap-3">
                   {settings?.linkedin_url && (
                     <a
