@@ -127,20 +127,23 @@ To achieve this:
 
 If you calculate fewer than 1,500 words in your main body, ADD MORE substantial paragraphs. Each section should have multiple paragraphs with real, useful information — not padding.
 
-===== IMAGE RULES (CRITICAL) =====
+===== IMAGE RULES (MANDATORY — ALWAYS INCLUDE IMAGES) =====
 
-- If instructed to include an image, you MUST use a real, verified Pexels URL in this format:
+You MUST include at least 2 images in every article. Place one after the intro and one in the local relevance or compliance section.
+
+- Use ONLY real Pexels URLs in this exact format:
   https://images.pexels.com/photos/{PHOTO_ID}/pexels-photo-{PHOTO_ID}.jpeg?auto=compress&cs=tinysrgb&w=800
 - ONLY use these known valid Pexels photo IDs for clinical/medical waste topics:
   - Sharps/needles: 7579831, 7579828, 3786126, 5726794, 3786157
   - Medical waste/biohazard: 3786166, 5726706, 4031321, 7089401
   - Healthcare/clinical setting: 4386467, 3938022, 4021775, 3259629
   - Waste bins/containers: 3735218, 802221, 2547565
+- Pick 2-3 IDs from the list above that best match the page topic
 - NEVER generate or guess image URLs — only use the IDs listed above
 - NEVER use unsplash.com, pixabay.com, shutterstock.com, or any other image service
 - NEVER use placeholder URLs or URLs you are not 100% certain exist
-- If you are not sure an image URL works, DO NOT include any image
-- Format: <img src="URL" alt="Descriptive alt text" class="w-full rounded-lg my-6" />
+- Format: <img src="URL" alt="Descriptive alt text for the keyword" class="w-full rounded-lg my-6" />
+- The alt text MUST include the target keyword or location for SEO value
 
 ===== CONTENT QUALITY =====
 
@@ -220,12 +223,12 @@ Deno.serve(async (req: Request) => {
             {
               role: "system",
               content:
-                "You are an expert SEO content writer specialising in UK clinical waste management. Always respond with valid JSON only, no markdown fences. Follow all structural requirements precisely. Use UK English spelling throughout.",
+                "You are an expert SEO content writer specialising in UK clinical waste management. Always respond with valid JSON only, no markdown fences. Follow all structural requirements precisely. Use UK English spelling throughout. CRITICAL: The content field MUST contain at least 1,500 words of main body text (excluding FAQs). Write thorough, detailed, substantive paragraphs — never cut short. Always include at least 2 Pexels images from the approved ID list.",
             },
             { role: "user", content: prompt },
           ],
           temperature: 0.7,
-          max_tokens: 8000,
+          max_tokens: 16000,
         }),
       }
     );
