@@ -64,6 +64,8 @@ const SeoPagesPage = lazy(() => import('./pages/admin/SeoPagesPage'));
 const SeoPageEditPage = lazy(() => import('./pages/admin/SeoPageEditPage'));
 const BrokenLinksPage = lazy(() => import('./pages/admin/BrokenLinksPage'));
 const SeoPage = lazy(() => import('./pages/SeoPage'));
+const DirectoryListingsPage = lazy(() => import('./pages/DirectoryListingsPage'));
+const DirectoryListingsAdminPage = lazy(() => import('./pages/admin/DirectoryListingsPage'));
 
 function PageLoader() {
   return (
@@ -127,6 +129,7 @@ function App() {
           <Route path="/quote/:token" element={<PublicQuoteView />} />
           <Route path="/service-agreement/:token" element={<ServiceAgreementPage />} />
           <Route path="/compliance/:token" element={<CompliancePage />} />
+          <Route path="/directory-listings" element={<DirectoryListingsPage />} />
           <Route path="/terms" element={<TermsPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/cookies" element={<CookiePage />} />
@@ -170,6 +173,7 @@ function App() {
           <Route path="/admin/seo-pages/create" element={<ProtectedRoute><SeoPageEditPage /></ProtectedRoute>} />
           <Route path="/admin/seo-pages/:id/edit" element={<ProtectedRoute><SeoPageEditPage /></ProtectedRoute>} />
           <Route path="/admin/seo-pages/broken-links" element={<ProtectedRoute><BrokenLinksPage /></ProtectedRoute>} />
+          <Route path="/admin/directory-listings" element={<ProtectedRoute><DirectoryListingsAdminPage /></ProtectedRoute>} />
           <Route path="/staff/dashboard" element={<ProtectedRoute><StaffDashboard /></ProtectedRoute>} />
           <Route path="/customer/dashboard" element={<ProtectedRoute><CustomerDashboard /></ProtectedRoute>} />
           <Route path="/c/:slug" element={<SeoPage />} />

@@ -28,6 +28,7 @@ import {
   HardDrive,
   FolderOpen,
   Globe,
+  BookOpen,
 } from 'lucide-react';
 
 interface AdminLayoutProps {
@@ -151,6 +152,7 @@ export default function AdminLayout({ children, pageTitle, breadcrumbs }: AdminL
       title: 'Admin',
       items: [
         { label: 'SEO Pages', path: '/admin/seo-pages', icon: <Globe size={18} /> },
+        { label: 'Directory Listings', path: '/admin/directory-listings', icon: <BookOpen size={18} /> },
         { label: 'Notes', path: '/admin/notes', icon: <StickyNote size={18} /> },
         { label: 'Resources', path: '/admin/resources', icon: <FolderOpen size={18} /> },
         { label: 'Staff', path: '/admin/staff', icon: <UserCheck size={18} /> },
