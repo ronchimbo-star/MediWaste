@@ -24,6 +24,7 @@ const PROMPT_TEMPLATE = (
   const locationPart = location ? ` in ${location}` : "";
   const servicePart = serviceType ? ` related to ${serviceType}` : "";
   const categoryPart = categoryName ? ` in the ${categoryName} sector` : "";
+  const locationOrDefault = location || "your area";
 
   let customBlock = "";
   if (customInstructions && customInstructions.trim()) {
@@ -34,42 +35,95 @@ const PROMPT_TEMPLATE = (
 
 Generate the following in JSON format:
 {
-  "meta_title": "SEO-optimised title tag (55-60 chars, include keyword)",
-  "meta_description": "Compelling meta description (150-160 chars, include keyword, include call-to-action)",
-  "h1": "Engaging H1 heading (different from meta_title but includes keyword naturally)",
-  "content": "Full HTML article body (see structure requirements below)",
+  "meta_title": "SEO-optimised title tag (55-60 chars, include keyword + location)",
+  "meta_description": "Compelling meta description (150-160 chars, include keyword, location, and call-to-action)",
+  "h1": "Must include the target keyword + location (e.g. 'Clinical Waste Collection in ${locationOrDefault}')",
+  "content": "Full HTML article body following the MANDATORY STRUCTURE below",
   "og_title": "Open Graph title (can match meta_title)",
   "og_description": "OG description (can match meta_description)",
-  "keywords": "Comma-separated list of 6-10 relevant SEO keywords for the meta keywords tag"
+  "keywords": "Comma-separated list of 8-12 relevant SEO keywords including location variants",
+  "faq_schema": [
+    {"question": "FAQ question 1", "answer": "FAQ answer 1"},
+    {"question": "FAQ question 2", "answer": "FAQ answer 2"},
+    {"question": "FAQ question 3", "answer": "FAQ answer 3"},
+    {"question": "FAQ question 4", "answer": "FAQ answer 4"}
+  ]
 }
 
-CONTENT STRUCTURE REQUIREMENTS:
-The content field must be well-structured HTML article body following this exact pattern:
-- Start with an introductory paragraph (2-3 sentences summarising the article)
-- Use <h2> for major sections (4-6 sections minimum)
-- Use <h3> for sub-sections within major sections
-- Use <p> for paragraphs with proper spacing
-- Use <ul> and <li> for bullet point lists (include at least 2-3 lists)
-- Use <strong> for emphasis on key terms
-- Use <a href="/..."> for internal links to MediWaste pages (e.g. /waste-services, /quote, /contact, /waste-services/sharps-waste, /waste-services/infectious-waste)
-- Use <table>, <thead>, <tbody>, <tr>, <th>, <td> for comparison tables where appropriate (include at least one table if relevant)
-- Include <img> tags only if custom instructions specify an image to include
-- Do NOT include any call-to-action sections or CTA buttons — the page template adds these automatically
-- Do NOT add the H1 heading — it is rendered separately by the page template
-- Do NOT wrap content in <article> or <section> tags — just use heading and paragraph-level elements
+===== MANDATORY CONTENT STRUCTURE (in this exact order) =====
 
-CONTENT QUALITY REQUIREMENTS:
-- Minimum 1000 words unless instructed otherwise
-- Content must be unique, factual, and deeply relevant to UK clinical waste management
-- Naturally incorporate the target keyword 4-6 times across the article
-- Include references to relevant UK regulations (Environmental Protection Act 1990, Duty of Care, HTM 07-01, Hazardous Waste Regulations 2005) where applicable
-- Mention MediWaste naturally as a trusted provider (2-3 times, not excessively)
-- Content should be genuinely helpful and informative — not thin or spammy
-- Use British English spelling throughout
-- Write in a professional, authoritative tone that demonstrates expertise
-- Include practical, actionable advice the reader can use
-- Address common questions or concerns the reader may have
-- Do NOT wrap the JSON in markdown code fences${customBlock}`;
+1. INTRO PARAGRAPH (max 150 words)
+   - Summarise the service for that location
+   - Short, direct, factual — no marketing fluff
+   - 2-3 sentences maximum
+
+2. TRUST SIGNAL MODULE
+   - "Rated Excellent by ${locationOrDefault} practices" with a 4.8+ star rating mention
+   - 2 short customer testimonials specific to the area. Format as:
+     <div class="info-box"><h3>What Our ${locationOrDefault} Clients Say</h3><p><strong>"[Testimonial quote]"</strong><br/><em>— [Name] – [Role], [Location]</em></p><p><strong>"[Testimonial quote]"</strong><br/><em>— [Name] – [Role], [Location]</em></p></div>
+   - Accreditations line: "Fully licenced by the Environment Agency | Safe Contractor Approved | ISO 14001 Certified"
+
+3. KEY SERVICES TABLE (3 columns: Service, Description, Frequency)
+   - Use <table> with <thead> and <tbody>
+   - Include 5-6 services relevant to the keyword (sharps, infectious, pharmaceutical, anatomical, dental, offensive)
+
+4. OUR COLLECTION PROCESS (3 steps)
+   - Format as a numbered list or 3 clear steps
+   - Step 1: Schedule & Setup
+   - Step 2: Collection & Transport
+   - Step 3: Disposal & Documentation
+
+5. LOCAL RELEVANCE SECTION
+   - Include 2-3 sentences mentioning specific local landmarks, streets, or areas near ${locationOrDefault}
+   - Mention the local authority and any relevant waste policies
+   - List typical local businesses served (GP surgeries, dental clinics, beauty salons, veterinary practices)
+   - If the location is a town, mention nearby villages or postcode areas
+
+6. COMPLIANCE & TRUST SECTION
+   - Add a compliance guarantee box using: <div class="success-box"><h3>Compliance Guarantee</h3><p>All waste transfer notes and consignment notes provided within 48 hours of collection.</p></div>
+   - Include: "Our clients in ${locationOrDefault} include: small GP surgeries, dental clinics, beauty salons, tattoo studios, veterinary practices, and care homes."
+   - Include: "MediWaste is audited annually by the Environment Agency and holds a registered waste carrier licence (upper tier)."
+
+7. FAQ SECTION
+   - Minimum 4 questions formatted as:
+     <h2>Frequently Asked Questions</h2>
+     <h3>[Question]</h3>
+     <p>[Answer - 2-3 sentences]</p>
+   - MUST include these questions (localised to ${locationOrDefault}):
+     • "How much does clinical waste collection cost in ${locationOrDefault}?"
+     • "What types of clinical waste do you collect in ${locationOrDefault}?"
+     • "Are you registered with the Environment Agency?"
+     • "How quickly can you start collections in ${locationOrDefault}?"
+   - Add 1-2 more relevant questions
+
+8. Do NOT include any CTA buttons or "Request a Quote" sections — the page template adds these automatically.
+9. Do NOT add the H1 heading — it is rendered separately by the page template.
+10. Do NOT wrap content in <article>, <section>, or <main> tags — just use heading and paragraph-level elements.
+
+===== STYLING & TONE GUIDELINES =====
+
+- Use UK English spelling (colour, centre, licence, organised, favour)
+- No jargon — write for beauticians, aesthetic practitioners, GP managers, salon owners
+- Short paragraphs (2-3 sentences max)
+- Bullet points for lists (not dense text)
+- 1,500-1,700 minimum words total (not including testimonials/FAQ)
+- Professional but accessible tone — direct and factual, not marketing fluff
+- Do NOT use phrases like "transform your waste management" or "clinical waste management is a critical service"
+- Do NOT include broken or placeholder links
+- Do NOT write generic environmental theory — focus on collection, compliance, and service
+- Internal links: use <a href="/waste-services">, <a href="/quote">, <a href="/contact">, <a href="/waste-services/sharps-waste">, <a href="/compliance">
+
+===== CONTENT QUALITY =====
+
+- Content must be unique, factual, and deeply relevant to UK clinical waste management in ${locationOrDefault}
+- Naturally incorporate the target keyword 5-8 times across the article
+- Include references to: Environmental Protection Act 1990, Duty of Care regulations, HTM 07-01, Hazardous Waste Regulations 2005
+- Do NOT repeat content from other location pages — each must be unique
+- Do NOT wrap the JSON in markdown code fences
+
+===== FAQ SCHEMA =====
+
+The "faq_schema" field must contain an array of objects with "question" and "answer" keys matching the FAQ section in the content. These are used for Google FAQ rich snippets.${customBlock}`;
 };
 
 Deno.serve(async (req: Request) => {
@@ -137,12 +191,12 @@ Deno.serve(async (req: Request) => {
             {
               role: "system",
               content:
-                "You are an expert SEO content writer. Always respond with valid JSON only, no markdown fences. Follow all instructions precisely.",
+                "You are an expert SEO content writer specialising in UK clinical waste management. Always respond with valid JSON only, no markdown fences. Follow all structural requirements precisely. Use UK English spelling throughout.",
             },
             { role: "user", content: prompt },
           ],
           temperature: 0.7,
-          max_tokens: 4500,
+          max_tokens: 8000,
         }),
       }
     );

@@ -1,7 +1,6 @@
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowRight, ArrowLeft } from 'lucide-react';
-
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import SEO from '../components/SEO';
@@ -48,6 +47,23 @@ function PageSkeleton() {
       <Footer />
     </div>
   );
+}
+
+function extractFaqFromContent(content: string): Array<{ question: string; answer: string }> {
+  const faqs: Array<{ question: string; answer: string }> = [];
+  const h3Regex = /<h3[^>]*>(.*?)<\/h3>\s*<p[^>]*>(.*?)<\/p>/gi;
+  let match;
+  const faqSectionStart = content.toLowerCase().indexOf('frequently asked questions');
+  if (faqSectionStart === -1) return faqs;
+  const faqContent = content.slice(faqSectionStart);
+  while ((match = h3Regex.exec(faqContent)) !== null) {
+    const question = match[1].replace(/<[^>]+>/g, '').trim();
+    const answer = match[2].replace(/<[^>]+>/g, '').trim();
+    if (question && answer && question.includes('?')) {
+      faqs.push({ question, answer });
+    }
+  }
+  return faqs;
 }
 
 export default function SeoPage() {
@@ -97,33 +113,59 @@ export default function SeoPage() {
   const canonical = page.canonical_url || `${baseUrl}/c/${page.url_slug}`;
   const title = page.meta_title || page.h1 || page.target_keyword;
   const description = page.meta_description || `Professional ${page.target_keyword} services from MediWaste. Fully licensed, compliant clinical waste disposal across the UK.`;
+  const locationLabel = page.location || 'your area';
 
-  const schema = {
-    '@context': 'https://schema.org',
-    '@type': 'Article',
-    headline: page.h1 || title,
-    description,
-    url: canonical,
-    publisher: {
-      '@type': 'Organization',
+  const faqs = page.content ? extractFaqFromContent(page.content) : [];
+
+  const schemas: object[] = [
+    {
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: page.h1 || title,
+      description,
+      url: canonical,
+      publisher: {
+        '@type': 'Organization',
+        name: 'MediWaste',
+        url: baseUrl,
+        logo: {
+          '@type': 'ImageObject',
+          url: `${baseUrl}/mediwaste-logo.png`,
+        },
+      },
+      datePublished: page.published_at,
+      dateModified: page.updated_at || page.published_at,
+      keywords: page.meta_keywords || page.target_keyword,
+    },
+    {
+      '@context': 'https://schema.org',
+      '@type': 'LocalBusiness',
       name: 'MediWaste',
       url: baseUrl,
-      logo: {
-        '@type': 'ImageObject',
-        url: `${baseUrl}/mediwaste-logo.png`,
-      },
+      telephone: '0800 046 9806',
+      description: `Clinical waste collection and disposal services${page.location ? ` in ${page.location}` : ''}`,
+      areaServed: page.location || 'United Kingdom',
+      priceRange: '$$',
     },
-    datePublished: page.published_at,
-    dateModified: page.updated_at || page.published_at,
-    keywords: page.meta_keywords || page.target_keyword,
-  };
+  ];
 
-  const ctaTitle = page.location
-    ? `Transform Your Waste Management${page.location ? ` in ${page.location}` : ''}`
-    : 'Get a Free Clinical Waste Disposal Quote';
-  const ctaDescription = page.location
-    ? `MediWaste provides tailored, cost-effective waste solutions for practices${page.location ? ` in ${page.location}` : ''}. Get a free assessment today.`
-    : 'Professional, compliant waste management services tailored to your needs. Contact MediWaste today.';
+  if (faqs.length > 0) {
+    schemas.push({
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: faqs.map(faq => ({
+        '@type': 'Question',
+        name: faq.question,
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: faq.answer,
+        },
+      })),
+    });
+  }
+
+  const ctaTitle = `Get your free, no-obligation quote for ${locationLabel} today`;
+  const ctaDescription = `We can usually start collections within 7 days in the ${locationLabel} area. Professional, compliant waste management tailored to your needs.`;
 
   return (
     <div className="min-h-screen bg-white">
@@ -134,12 +176,12 @@ export default function SeoPage() {
         canonical={canonical}
         ogImage={page.og_image || undefined}
         keywords={page.meta_keywords || page.target_keyword}
-        schema={schema}
+        schema={schemas}
         type="article"
       />
 
       <article>
-        {/* Hero / Title Section */}
+        {/* Title Section */}
         <section className="py-12 lg:py-16 bg-white">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto">

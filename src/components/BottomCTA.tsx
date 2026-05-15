@@ -38,7 +38,7 @@ export default function BottomCTA({
             </Link>
             {showPhoneButton && (
               <a
-                href="tel:+4401322879713"
+                href="tel:08000469806"
                 className="bg-white/10 backdrop-blur-sm border-2 border-white text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-white/20 transition-all inline-flex items-center justify-center gap-2"
               >
                 <Phone className="w-5 h-5" />
