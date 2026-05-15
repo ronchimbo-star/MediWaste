@@ -26,8 +26,6 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-white">
       <SEO
-        title="MediWaste | Clinical & Medical Waste Disposal Services UK"
-        description="Professional clinical waste disposal services for healthcare providers, beauty clinics, tattoo studios, and medical practices across the UK. Get your free quote today."
         canonical="https://mediwaste.co.uk/"
         schema={organizationSchema}
       />
