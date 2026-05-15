@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import AdminLayout from '../../components/admin/AdminLayout';
 import { supabase } from '../../lib/supabase';
-import { Search, Plus, Upload, FileEdit as Edit, Globe, FileText, ChevronLeft, ChevronRight, RefreshCw, CheckCircle } from 'lucide-react';
+import { Search, Plus, Upload, Download, FileEdit as Edit, Globe, FileText, ChevronLeft, ChevronRight, RefreshCw, CheckCircle } from 'lucide-react';
 
 interface SeoPage {
   id: string;
@@ -240,6 +240,12 @@ export default function SeoPagesPage() {
             </div>
             <div className="flex gap-2">
               <button
+                onClick={() => navigate('/admin/seo-pages/broken-links')}
+                className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-sm font-medium transition-colors"
+              >
+                <Globe size={16} /> Link Checker
+              </button>
+              <button
                 onClick={() => setShowCsvModal(true)}
                 className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-sm font-medium transition-colors"
               >
@@ -422,6 +428,26 @@ function CsvImportModal({ onClose }: { onClose: () => void }) {
   const [importing, setImporting] = useState(false);
   const [result, setResult] = useState<{ success?: boolean; imported?: number; error?: string } | null>(null);
 
+  const handleDownloadTemplate = () => {
+    const template = `url_slug,target_keyword,location,service_type,category
+clinical-waste-disposal-london,clinical waste disposal London,London,collection,Sharps
+sharps-waste-collection-kent,sharps waste collection Kent,Kent,collection,Sharps
+dental-waste-removal-surrey,dental waste removal Surrey,Surrey,disposal,Dental
+pharmaceutical-waste-disposal-essex,pharmaceutical waste disposal Essex,Essex,disposal,Pharmaceutical
+beauty-salon-clinical-waste-dartford,beauty salon clinical waste Dartford,Dartford,collection,Beauty & Aesthetics
+veterinary-waste-collection-sussex,veterinary waste collection Sussex,Sussex,collection,Veterinary
+gp-surgery-waste-management-hampshire,GP surgery waste management Hampshire,Hampshire,management,GP Surgeries
+anatomical-waste-disposal-london,anatomical waste disposal London,London,disposal,Anatomical
+hazardous-waste-collection-kent,hazardous waste collection Kent,Kent,collection,Hazardous`;
+    const blob = new Blob([template], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'seo-pages-template.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -472,6 +498,12 @@ function CsvImportModal({ onClose }: { onClose: () => void }) {
             CSV must include columns: <code className="bg-gray-100 px-1 rounded">url_slug</code>, <code className="bg-gray-100 px-1 rounded">target_keyword</code>.
             Optional: <code className="bg-gray-100 px-1 rounded">location</code>, <code className="bg-gray-100 px-1 rounded">service_type</code>, <code className="bg-gray-100 px-1 rounded">category</code>
           </p>
+          <button
+            onClick={handleDownloadTemplate}
+            className="mt-2 inline-flex items-center gap-2 text-sm text-red-700 bg-red-50 px-3 py-1.5 rounded-lg hover:bg-red-100 font-medium transition-colors"
+          >
+            <Download size={14} /> Download Template CSV
+          </button>
         </div>
 
         <div className="mb-4">

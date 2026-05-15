@@ -62,6 +62,7 @@ const ResourcesPage = lazy(() => import('./pages/admin/ResourcesPage'));
 const CollectionRequestsPage = lazy(() => import('./pages/admin/CollectionRequestsPage'));
 const SeoPagesPage = lazy(() => import('./pages/admin/SeoPagesPage'));
 const SeoPageEditPage = lazy(() => import('./pages/admin/SeoPageEditPage'));
+const BrokenLinksPage = lazy(() => import('./pages/admin/BrokenLinksPage'));
 const SeoPage = lazy(() => import('./pages/SeoPage'));
 
 function PageLoader() {
@@ -168,6 +169,7 @@ function App() {
           <Route path="/admin/seo-pages" element={<ProtectedRoute><SeoPagesPage /></ProtectedRoute>} />
           <Route path="/admin/seo-pages/create" element={<ProtectedRoute><SeoPageEditPage /></ProtectedRoute>} />
           <Route path="/admin/seo-pages/:id/edit" element={<ProtectedRoute><SeoPageEditPage /></ProtectedRoute>} />
+          <Route path="/admin/seo-pages/broken-links" element={<ProtectedRoute><BrokenLinksPage /></ProtectedRoute>} />
           <Route path="/staff/dashboard" element={<ProtectedRoute><StaffDashboard /></ProtectedRoute>} />
           <Route path="/customer/dashboard" element={<ProtectedRoute><CustomerDashboard /></ProtectedRoute>} />
           <Route path="/c/:slug" element={<SeoPage />} />
