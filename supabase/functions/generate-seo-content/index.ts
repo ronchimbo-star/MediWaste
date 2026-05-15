@@ -36,22 +36,39 @@ Generate the following in JSON format:
 {
   "meta_title": "SEO-optimised title tag (55-60 chars, include keyword)",
   "meta_description": "Compelling meta description (150-160 chars, include keyword, include call-to-action)",
-  "h1": "Engaging H1 heading (different from meta_title but includes keyword)",
-  "content": "Full HTML article body. Use <h2>, <h3>, <p>, <ul>, <li>, <strong>, <img> tags. Include practical advice, UK regulations where relevant, and naturally integrate the keyword. Write in a professional, authoritative tone. Include mentions of MediWaste services. Do NOT use markdown - use HTML only.",
+  "h1": "Engaging H1 heading (different from meta_title but includes keyword naturally)",
+  "content": "Full HTML article body (see structure requirements below)",
   "og_title": "Open Graph title (can match meta_title)",
   "og_description": "OG description (can match meta_description)",
-  "keywords": "Comma-separated list of 5-8 relevant SEO keywords for the meta keywords tag"
+  "keywords": "Comma-separated list of 6-10 relevant SEO keywords for the meta keywords tag"
 }
 
-Requirements:
-- Content must be unique, factual, and relevant to UK clinical waste management
-- Minimum 800 words unless instructed otherwise
-- Naturally incorporate the target keyword 4-6 times
-- Include references to relevant UK regulations (Environmental Protection Act 1990, Duty of Care, HTM 07-01) where applicable
-- Mention MediWaste as a trusted provider with a call-to-action
-- Content should be helpful and informative, not thin or spammy
-- Use British English spelling
-- Include internal links where appropriate using <a href="/waste-services"> or similar MediWaste pages
+CONTENT STRUCTURE REQUIREMENTS:
+The content field must be well-structured HTML article body following this exact pattern:
+- Start with an introductory paragraph (2-3 sentences summarising the article)
+- Use <h2> for major sections (4-6 sections minimum)
+- Use <h3> for sub-sections within major sections
+- Use <p> for paragraphs with proper spacing
+- Use <ul> and <li> for bullet point lists (include at least 2-3 lists)
+- Use <strong> for emphasis on key terms
+- Use <a href="/..."> for internal links to MediWaste pages (e.g. /waste-services, /quote, /contact, /waste-services/sharps-waste, /waste-services/infectious-waste)
+- Use <table>, <thead>, <tbody>, <tr>, <th>, <td> for comparison tables where appropriate (include at least one table if relevant)
+- Include <img> tags only if custom instructions specify an image to include
+- Do NOT include any call-to-action sections or CTA buttons — the page template adds these automatically
+- Do NOT add the H1 heading — it is rendered separately by the page template
+- Do NOT wrap content in <article> or <section> tags — just use heading and paragraph-level elements
+
+CONTENT QUALITY REQUIREMENTS:
+- Minimum 1000 words unless instructed otherwise
+- Content must be unique, factual, and deeply relevant to UK clinical waste management
+- Naturally incorporate the target keyword 4-6 times across the article
+- Include references to relevant UK regulations (Environmental Protection Act 1990, Duty of Care, HTM 07-01, Hazardous Waste Regulations 2005) where applicable
+- Mention MediWaste naturally as a trusted provider (2-3 times, not excessively)
+- Content should be genuinely helpful and informative — not thin or spammy
+- Use British English spelling throughout
+- Write in a professional, authoritative tone that demonstrates expertise
+- Include practical, actionable advice the reader can use
+- Address common questions or concerns the reader may have
 - Do NOT wrap the JSON in markdown code fences${customBlock}`;
 };
 

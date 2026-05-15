@@ -1,6 +1,7 @@
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Phone, ArrowRight } from 'lucide-react';
+import { ArrowRight, ArrowLeft } from 'lucide-react';
+
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import SEO from '../components/SEO';
@@ -107,10 +108,22 @@ export default function SeoPage() {
       '@type': 'Organization',
       name: 'MediWaste',
       url: baseUrl,
+      logo: {
+        '@type': 'ImageObject',
+        url: `${baseUrl}/mediwaste-logo.png`,
+      },
     },
     datePublished: page.published_at,
     dateModified: page.updated_at || page.published_at,
+    keywords: page.meta_keywords || page.target_keyword,
   };
+
+  const ctaTitle = page.location
+    ? `Transform Your Waste Management${page.location ? ` in ${page.location}` : ''}`
+    : 'Get a Free Clinical Waste Disposal Quote';
+  const ctaDescription = page.location
+    ? `MediWaste provides tailored, cost-effective waste solutions for practices${page.location ? ` in ${page.location}` : ''}. Get a free assessment today.`
+    : 'Professional, compliant waste management services tailored to your needs. Contact MediWaste today.';
 
   return (
     <div className="min-h-screen bg-white">
@@ -125,81 +138,94 @@ export default function SeoPage() {
         type="article"
       />
 
-      <article className="py-12 lg:py-16">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto">
-            {page.seo_categories && (
-              <div className="mb-6">
-                <span className="inline-block bg-red-50 text-red-700 text-sm font-medium px-3 py-1 rounded-full">
-                  {page.seo_categories.name}
-                </span>
-                {page.location && (
-                  <span className="inline-block bg-blue-50 text-blue-700 text-sm font-medium px-3 py-1 rounded-full ml-2">
-                    {page.location}
-                  </span>
-                )}
-              </div>
-            )}
+      <article>
+        {/* Hero / Title Section */}
+        <section className="py-12 lg:py-16 bg-white">
+          <div className="container mx-auto px-4">
+            <div className="max-w-4xl mx-auto">
+              <Link
+                to="/"
+                className="inline-flex items-center text-red-600 hover:text-red-700 font-semibold mb-8 transition-colors text-sm"
+              >
+                <ArrowLeft size={16} className="mr-1" /> Back to Home
+              </Link>
 
-            {page.h1 && (
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-8 leading-tight">
-                {page.h1}
+              {(page.seo_categories || page.location) && (
+                <div className="flex flex-wrap gap-2 mb-6">
+                  {page.seo_categories && (
+                    <span className="text-xs px-3 py-1 bg-red-50 text-red-700 rounded-full font-medium">
+                      {page.seo_categories.name}
+                    </span>
+                  )}
+                  {page.location && (
+                    <span className="text-xs px-3 py-1 bg-blue-50 text-blue-700 rounded-full font-medium">
+                      {page.location}
+                    </span>
+                  )}
+                  {page.service_type && (
+                    <span className="text-xs px-3 py-1 bg-green-50 text-green-700 rounded-full font-medium">
+                      {page.service_type}
+                    </span>
+                  )}
+                </div>
+              )}
+
+              <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-8 leading-tight">
+                {page.h1 || page.target_keyword}
               </h1>
-            )}
 
-            {page.content && (
-              <div
-                className="prose prose-lg max-w-none prose-headings:text-gray-900 prose-headings:font-bold prose-p:text-gray-700 prose-a:text-red-600 prose-a:no-underline hover:prose-a:underline prose-strong:text-gray-900 prose-ul:text-gray-700 prose-ol:text-gray-700 prose-li:text-gray-700"
-                dangerouslySetInnerHTML={{ __html: page.content }}
-              />
-            )}
+              {page.published_at && (
+                <p className="text-sm text-gray-500">
+                  Published: {new Date(page.published_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+                  {page.updated_at && page.updated_at !== page.published_at && (
+                    <> | Updated: {new Date(page.updated_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</>
+                  )}
+                </p>
+              )}
+            </div>
+          </div>
+        </section>
 
-            <div className="mt-12 bg-gradient-to-r from-red-600 to-red-700 rounded-2xl p-8 md:p-10 text-white">
-              <h2 className="text-2xl md:text-3xl font-bold mb-4">
-                Need Professional Clinical Waste Disposal?
-              </h2>
-              <p className="text-red-100 mb-6 text-lg">
-                MediWaste provides fully compliant, licensed clinical waste collection services{page.location ? ` in ${page.location}` : ' across the UK'}. Get a free quote today.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Link
-                  to="/quote"
-                  className="inline-flex items-center justify-center gap-2 bg-white text-red-700 font-semibold px-6 py-3 rounded-lg hover:bg-red-50 transition-colors"
-                >
-                  Get a Free Quote <ArrowRight size={16} />
-                </Link>
-                <a
-                  href="tel:0145aborede"
-                  className="inline-flex items-center justify-center gap-2 border-2 border-white text-white font-semibold px-6 py-3 rounded-lg hover:bg-white/10 transition-colors"
-                >
-                  <Phone size={16} /> Call Us Today
-                </a>
+        {/* Main Content */}
+        {page.content && (
+          <section className="pb-12 lg:pb-16">
+            <div className="container mx-auto px-4">
+              <div className="max-w-4xl mx-auto">
+                <div
+                  className="article-content"
+                  dangerouslySetInnerHTML={{ __html: page.content }}
+                />
               </div>
             </div>
+          </section>
+        )}
 
-            {page.internal_links && page.internal_links.length > 0 && (
-              <div className="mt-10 p-6 bg-gray-50 rounded-xl">
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Related Services</h3>
+        {/* Related Services */}
+        {page.internal_links && page.internal_links.length > 0 && (
+          <section className="py-10 bg-gray-50">
+            <div className="container mx-auto px-4">
+              <div className="max-w-4xl mx-auto">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Related Services</h3>
                 <div className="flex flex-wrap gap-2">
                   {page.internal_links.map((link, i) => (
                     <Link
                       key={i}
                       to={link}
-                      className="text-sm text-red-600 hover:text-red-700 bg-white px-3 py-1.5 rounded-lg border border-gray-200 hover:border-red-200 transition-colors"
+                      className="text-sm text-red-600 hover:text-red-700 bg-white px-4 py-2 rounded-lg border border-gray-200 hover:border-red-200 transition-colors font-medium"
                     >
-                      {link.replace(/^\/c\//, '').replace(/-/g, ' ')}
+                      {link.replace(/^\/c\//, '').replace(/^\//, '').replace(/-/g, ' ')}
                     </Link>
                   ))}
                 </div>
               </div>
-            )}
-          </div>
-        </div>
+            </div>
+          </section>
+        )}
       </article>
 
       <BottomCTA
-        title="Get a Free Clinical Waste Disposal Quote"
-        description="Professional, compliant waste management services tailored to your needs. Contact MediWaste today."
+        title={ctaTitle}
+        description={ctaDescription}
       />
       <Footer />
     </div>
