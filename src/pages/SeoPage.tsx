@@ -15,6 +15,7 @@ interface SeoPageData {
   service_type: string | null;
   meta_title: string | null;
   meta_description: string | null;
+  meta_keywords: string | null;
   h1: string | null;
   content: string | null;
   og_title: string | null;
@@ -119,6 +120,7 @@ export default function SeoPage() {
         description={description}
         canonical={canonical}
         ogImage={page.og_image || undefined}
+        keywords={page.meta_keywords || page.target_keyword}
         schema={schema}
         type="article"
       />

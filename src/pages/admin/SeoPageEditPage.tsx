@@ -61,7 +61,7 @@ export default function SeoPageEditPage() {
   const [genError, setGenError] = useState('');
   const [saveMsg, setSaveMsg] = useState('');
   const [showPreview, setShowPreview] = useState(false);
-  const [apiKey, setApiKey] = useState(() => localStorage.getItem('openai-api-key') || '');
+  const [customInstructions, setCustomInstructions] = useState('');
 
   const { data: categories = [] } = useQuery({
     queryKey: ['seo-categories'],
@@ -164,16 +164,11 @@ export default function SeoPageEditPage() {
   };
 
   const handleGenerate = async () => {
-    if (!apiKey) {
-      setGenError('Please enter your OpenAI API key');
-      return;
-    }
     if (!id) {
       setGenError('Save the page first before generating content');
       return;
     }
 
-    localStorage.setItem('openai-api-key', apiKey);
     setGenerating(true);
     setGenError('');
 
@@ -185,7 +180,10 @@ export default function SeoPageEditPage() {
           'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ page_id: id, openai_api_key: apiKey }),
+        body: JSON.stringify({
+          page_id: id,
+          custom_instructions: customInstructions || undefined,
+        }),
       });
 
       const data = await res.json();
@@ -375,23 +373,29 @@ export default function SeoPageEditPage() {
               <h3 className="text-sm font-semibold text-blue-900 uppercase tracking-wider flex items-center gap-2">
                 <Sparkles size={16} /> AI Content Generation
               </h3>
-              <p className="text-sm text-blue-700">Generate SEO-optimised content using OpenAI. The keyword, location, and category will be used in the prompt.</p>
-              <div className="flex flex-col sm:flex-row gap-3">
-                <input
-                  type="password"
-                  value={apiKey}
-                  onChange={(e) => setApiKey(e.target.value)}
-                  placeholder="OpenAI API Key (sk-...)"
-                  className="flex-1 border border-blue-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+              <p className="text-sm text-blue-700">
+                Generate SEO-optimised content using OpenAI. The keyword, location, and category are automatically included in the prompt. Add custom instructions below for specific requirements.
+              </p>
+              <div>
+                <label className="block text-sm font-medium text-blue-800 mb-1">Custom Instructions (optional)</label>
+                <textarea
+                  value={customInstructions}
+                  onChange={(e) => setCustomInstructions(e.target.value)}
+                  rows={4}
+                  placeholder={"Examples:\n- Minimum 1500 words\n- Include this image: /Medical-Waste-Hero.jpg with alt text\n- Use a friendly, conversational tone\n- Include a CTA linking to /quote\n- Focus on cost benefits for dental practices\n- Reference NHS guidelines specifically"}
+                  className="w-full border border-blue-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
                 />
+              </div>
+              <div className="flex items-center gap-3">
                 <button
                   onClick={handleGenerate}
                   disabled={generating || isNew}
-                  className="flex items-center justify-center gap-2 px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 text-sm font-medium whitespace-nowrap"
+                  className="flex items-center justify-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 text-sm font-medium whitespace-nowrap"
                 >
                   {generating ? <RefreshCw size={14} className="animate-spin" /> : <Sparkles size={14} />}
                   {generating ? 'Generating...' : 'Generate Content'}
                 </button>
+                {generating && <span className="text-xs text-blue-600">This may take 15-30 seconds...</span>}
               </div>
               {isNew && <p className="text-xs text-blue-600">Save the page first before generating content.</p>}
               {genError && <p className="text-sm text-red-600">{genError}</p>}
