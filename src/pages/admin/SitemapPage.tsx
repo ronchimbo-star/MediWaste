@@ -60,7 +60,7 @@ Disallow: /quote/*
 
 Crawl-delay: 1
 
-Sitemap: https://www.mediwaste.co.uk/sitemap.xml`;
+Sitemap: https://xezovslgxkhzjumtfrjn.supabase.co/functions/v1/seo-sitemap`;
 
 const PER_PAGE = 50;
 
