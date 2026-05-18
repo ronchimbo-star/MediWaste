@@ -40,7 +40,6 @@ export default function CookiePage() {
         title="Cookie Policy | MediWaste"
         description="Cookie policy for MediWaste. Learn how we use cookies and similar technologies on our website."
         canonical="https://mediwaste.co.uk/cookies"
-        noindex={true}
       />
       <div className="bg-red-600 text-white py-16">
         <div className="container mx-auto px-4">

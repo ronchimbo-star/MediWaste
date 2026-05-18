@@ -75,24 +75,30 @@ function ArticleSkeleton() {
   );
 }
 
-function splitContent(content: string) {
-  const tempDiv = document.createElement('div');
-  tempDiv.innerHTML = content;
-  const elements = Array.from(tempDiv.children);
+function splitContent(content: string | null | undefined) {
+  if (!content) return { part1: '', part2: '', part3: '' };
 
-  if (elements.length === 0) {
+  try {
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = content;
+    const elements = Array.from(tempDiv.children);
+
+    if (elements.length === 0) {
+      return { part1: content, part2: '', part3: '' };
+    }
+
+    const total = elements.length;
+    const first = Math.floor(total / 3);
+    const second = Math.floor((total * 2) / 3);
+
+    return {
+      part1: elements.slice(0, first).map(el => el.outerHTML).join(''),
+      part2: elements.slice(first, second).map(el => el.outerHTML).join(''),
+      part3: elements.slice(second).map(el => el.outerHTML).join(''),
+    };
+  } catch {
     return { part1: content, part2: '', part3: '' };
   }
-
-  const total = elements.length;
-  const first = Math.floor(total / 3);
-  const second = Math.floor((total * 2) / 3);
-
-  return {
-    part1: elements.slice(0, first).map(el => el.outerHTML).join(''),
-    part2: elements.slice(first, second).map(el => el.outerHTML).join(''),
-    part3: elements.slice(second).map(el => el.outerHTML).join(''),
-  };
 }
 
 export default function NewsArticlePage() {
@@ -114,6 +120,8 @@ export default function NewsArticlePage() {
     enabled: !!slug,
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
+    retry: 2,
+    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 5000),
   });
 
   const { data: adverts = [] } = useQuery<NewsAdvert[]>({

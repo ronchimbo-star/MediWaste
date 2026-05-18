@@ -80,13 +80,15 @@ export default function SeoPage() {
         .maybeSingle();
 
       if (error) throw error;
-      if (!data) throw new Error('Page not found');
+      if (!data) return null;
 
       await supabase.rpc('increment_seo_page_views', { page_slug: slug });
 
       return data as SeoPageData;
     },
     enabled: !!slug,
+    retry: 2,
+    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 5000),
   });
 
   if (isLoading) return <PageSkeleton />;

@@ -33,13 +33,11 @@ export default function LocationServicePage() {
     fetchPage();
   }, [location.pathname]);
 
-  const fetchPage = async () => {
+  const fetchPage = async (retryCount = 0) => {
     try {
       setLoading(true);
-      // Extract slug from pathname (remove leading slash)
       let slug = location.pathname.substring(1);
 
-      // Map short area names to full slugs
       const areaMapping: Record<string, string> = {
         'service-areas/london': 'clinical-waste-disposal-london',
         'service-areas/kent': 'clinical-waste-disposal-kent',
@@ -49,7 +47,6 @@ export default function LocationServicePage() {
         'service-areas/hampshire': 'clinical-waste-disposal-hampshire',
       };
 
-      // Use mapped slug if available
       if (areaMapping[slug]) {
         slug = areaMapping[slug];
       }
@@ -61,7 +58,13 @@ export default function LocationServicePage() {
         .eq('status', 'published')
         .maybeSingle();
 
-      if (error) throw error;
+      if (error) {
+        if (retryCount < 2) {
+          await new Promise(r => setTimeout(r, 1000 * (retryCount + 1)));
+          return fetchPage(retryCount + 1);
+        }
+        throw error;
+      }
 
       if (!data) {
         setNotFound(true);

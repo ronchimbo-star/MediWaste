@@ -1,2 +1,33 @@
+# Sitemap proxy
 /sitemap.xml https://xezovslgxkhzjumtfrjn.supabase.co/functions/v1/seo-sitemap 200!
+
+# Legacy WordPress assets - permanently gone
+/wp-content/* /index.html 200
+/wp-admin/* /index.html 200
+/wp-includes/* /index.html 200
+
+# Old route redirects to current equivalents
+/healthcare-waste/sharps /waste-services/sharps-waste 301
+/sectors/dental-practices /waste-services/dental-waste 301
+/sectors/nursing-care /waste-services 301
+/sectors /waste-services 301
+/waste-collection-service /waste-services 301
+/waste-collection-service/ /waste-services 301
+/register /quote 301
+/register/ /quote 301
+/service-area /service-coverage 301
+/service-area/ /service-coverage 301
+
+# Old listing URLs redirect to directory listings page
+/listing/* /directory-listings 301
+/listings/* /directory-listings 301
+
+# Old profile URLs
+/profile/* /about 301
+
+# Old individual business page URLs
+/fki-aesthetics-wellness /directory-listings 301
+/fki-aesthetics-wellness/ /directory-listings 301
+
+# SPA fallback - must be last
 /* /index.html 200
