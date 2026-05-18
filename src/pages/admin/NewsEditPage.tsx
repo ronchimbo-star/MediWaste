@@ -22,6 +22,8 @@ export default function NewsEditPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 
+  const [existingPublishedAt, setExistingPublishedAt] = useState<string | null>(null);
+
   const [formData, setFormData] = useState({
     title: '',
     slug: '',
@@ -70,6 +72,7 @@ export default function NewsEditPage() {
       .single();
 
     if (article) {
+      setExistingPublishedAt(article.published_at || null);
       setFormData({
         title: article.title || '',
         slug: article.slug || '',
@@ -118,12 +121,15 @@ export default function NewsEditPage() {
     setSaving(true);
 
     try {
-      const articleData = {
+      const articleData: Record<string, any> = {
         ...formData,
         status: publishNow ? 'published' : formData.status,
-        published_at: publishNow && !formData.status ? new Date().toISOString() : undefined,
         updated_at: new Date().toISOString(),
       };
+
+      if (publishNow && !existingPublishedAt) {
+        articleData.published_at = new Date().toISOString();
+      }
 
       let articleId = id;
 

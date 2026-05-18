@@ -31,8 +31,11 @@ function ArticleSkeleton() {
   );
 }
 
-function formatDate(dateString: string) {
-  return new Date(dateString).toLocaleDateString('en-GB', {
+function formatDate(dateString: string | null | undefined) {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return '';
+  return date.toLocaleDateString('en-GB', {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
@@ -115,8 +118,12 @@ export default function NewsPage() {
                 )}
                 <div className="p-6">
                   <div className="flex items-center gap-2 text-sm text-gray-500 mb-3">
-                    <Calendar className="w-4 h-4" />
-                    <span>{formatDate(article.published_at)}</span>
+                    {formatDate(article.published_at) && (
+                      <>
+                        <Calendar className="w-4 h-4" />
+                        <span>{formatDate(article.published_at)}</span>
+                      </>
+                    )}
                     {article.tags && article.tags.length > 0 && (
                       <>
                         <span>•</span>

@@ -211,10 +211,12 @@ export default function NewsArticlePage() {
 
             <div className="mb-8">
               <div className="flex items-center gap-4 text-sm text-gray-600 mb-4">
-                <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4" />
-                  <time dateTime={article.published_at}>{formatDate(article.published_at)}</time>
-                </div>
+                {formatDate(article.published_at) && (
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4" />
+                    <time dateTime={article.published_at}>{formatDate(article.published_at)}</time>
+                  </div>
+                )}
 
                 <div className="relative">
                   <button
