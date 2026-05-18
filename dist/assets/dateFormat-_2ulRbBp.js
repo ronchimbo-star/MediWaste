@@ -1,0 +1,1 @@
+function r(t){if(!t)return"";const e=new Date(t);return isNaN(e.getTime())?"":e.toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"})}function a(t,e){if(!t)return"";const n=typeof t=="string"?new Date(t):t;return isNaN(n.getTime())?"":n.toLocaleDateString("en-GB",{day:"2-digit",month:"long",year:"numeric"})}export{a,r as f};
