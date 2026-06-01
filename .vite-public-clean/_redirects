@@ -1,7 +1,10 @@
+# Canonical www → non-www redirect (must be first)
+https://www.mediwaste.co.uk/* https://mediwaste.co.uk/:splat 301!
+
 # Sitemap proxy
 /sitemap.xml https://xezovslgxkhzjumtfrjn.supabase.co/functions/v1/seo-sitemap 200!
 
-# Legacy WordPress assets - permanently gone
+# Legacy WordPress assets – serve SPA so app can handle gracefully
 /wp-content/* /index.html 200
 /wp-admin/* /index.html 200
 /wp-includes/* /index.html 200
@@ -18,16 +21,16 @@
 /service-area /service-coverage 301
 /service-area/ /service-coverage 301
 
-# Old listing URLs redirect to directory listings page
+# Old listing / directory URLs
 /listing/* /directory-listings 301
 /listings/* /directory-listings 301
 
 # Old profile URLs
 /profile/* /about 301
 
-# Old individual business page URLs
+# Old individual business page URLs (WordPress)
 /fki-aesthetics-wellness /directory-listings 301
 /fki-aesthetics-wellness/ /directory-listings 301
 
-# SPA fallback - must be last
+# SPA fallback – must be last
 /* /index.html 200

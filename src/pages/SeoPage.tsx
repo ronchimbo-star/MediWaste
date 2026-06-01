@@ -82,7 +82,11 @@ export default function SeoPage() {
       if (error) throw error;
       if (!data) return null;
 
-      await supabase.rpc('increment_seo_page_views', { page_slug: slug });
+      // Fire-and-forget – never block page render on this
+      supabase.rpc('increment_seo_page_views', { page_slug: slug }).then(
+        () => {},
+        () => {}
+      );
 
       return data as SeoPageData;
     },
