@@ -162,7 +162,7 @@ export default function Footer() {
             &copy; {new Date().getFullYear()} MediWaste. All rights reserved. | Professional Clinical Waste Disposal UK
           </p>
           <p className="text-center text-xs text-gray-500 mt-3">
-            MediWaste is a trading name of Circular Horizons International Ltd, registered in England and Wales under company number 15821509. Registered office: Unit 2 Capital Industrial Estate, Crabtree Manorway South, Belvedere, Kent, England, DA17 6BJ
+            MediWaste is a trading name of SUEZ, registered in England and Wales under company number 02291198. Registered office: SUEZ House, Grenfell Road, Maidenhead, Berkshire, SL6 1ES
           </p>
         </div>
       </div>
