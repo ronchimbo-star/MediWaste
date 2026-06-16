@@ -31,14 +31,33 @@ export default function HomePage() {
   const handleAuditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setAuditStatus('sending');
+
+    const subject = `Free Compliance Audit Request – ${auditForm.practice}`;
+    const message = `${subject}\n\nName: ${auditForm.name}\nPractice / Business: ${auditForm.practice}\nEmail: ${auditForm.email}\nPhone: ${auditForm.phone || 'Not provided'}`;
+
     try {
-      await supabase.from('contact_enquiries').insert({
+      const { error: insertError } = await supabase.from('contact_submissions').insert({
         name: auditForm.name,
         email: auditForm.email,
         phone: auditForm.phone || null,
-        message: `FREE COMPLIANCE AUDIT REQUEST\n\nPractice / Business: ${auditForm.practice}\nPhone: ${auditForm.phone}`,
+        message,
         status: 'new',
       });
+
+      if (insertError) throw insertError;
+
+      // Notify admin via Resend (fire-and-forget — don't block the success state)
+      fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-contact-email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: auditForm.name,
+          email: auditForm.email,
+          phone: auditForm.phone || undefined,
+          message,
+        }),
+      }).catch(() => {});
+
       setAuditStatus('sent');
     } catch {
       setAuditStatus('error');
@@ -429,14 +448,14 @@ export default function HomePage() {
               { to: '/waste-services/sharps-waste', emoji: '💉', title: 'Sharps Waste', desc: 'Puncture-proof container supply and secure collection of needles, syringes, and sharps instruments.' },
               { to: '/waste-services/pharmaceutical-waste', emoji: '💊', title: 'Pharmaceutical Waste', desc: 'Controlled disposal of expired or unwanted pharmaceuticals in line with regulatory requirements.' },
               { to: '/waste-services/anatomical-waste', emoji: '🧬', title: 'Anatomical Waste', desc: 'Dignified, compliant disposal of anatomical waste including human tissue and body parts.' },
-              { to: '/waste-services/cytotoxic-waste', emoji: '⚗️', title: 'Cytotoxic &amp; Cytostatic', desc: 'Specialist handling of cytotoxic waste from cancer treatments requiring dedicated disposal methods.' },
+              { to: '/waste-services/cytotoxic-waste', emoji: '⚗️', title: 'Cytotoxic & Cytostatic', desc: 'Specialist handling of cytotoxic waste from cancer treatments requiring dedicated disposal methods.' },
               { to: '/waste-services/dental-waste', emoji: '🦷', title: 'Dental Waste', desc: 'Complete dental waste management including amalgam separation and contaminated dental materials.' },
             ].map(({ to, emoji, title, desc }) => (
               <Link key={to} to={to} className="bg-white text-gray-900 p-8 rounded-lg text-center hover:shadow-xl transition-shadow border-2 border-transparent hover:border-red-600">
                 <div className="w-24 h-24 mx-auto mb-4 flex items-center justify-center">
                   <span className="text-7xl">{emoji}</span>
                 </div>
-                <h3 className="text-xl font-bold mb-3 text-red-600" dangerouslySetInnerHTML={{ __html: title }} />
+                <h3 className="text-xl font-bold mb-3 text-red-600">{title}</h3>
                 <p className="text-sm text-gray-600 leading-relaxed">{desc}</p>
               </Link>
             ))}
