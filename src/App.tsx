@@ -50,6 +50,7 @@ const InvoicingPage = lazy(() => import('./pages/admin/InvoicingPage'));
 const InvoiceEditPage = lazy(() => import('./pages/admin/InvoiceEditPage'));
 const InvoicePreviewPage = lazy(() => import('./pages/admin/InvoicePreviewPage'));
 const WasteTransferNotesPage = lazy(() => import('./pages/admin/WasteTransferNotesPage'));
+const WasteCarriersPage = lazy(() => import('./pages/admin/WasteCarriersPage'));
 const StaffDashboard = lazy(() => import('./pages/staff/StaffDashboard'));
 const CustomerDashboard = lazy(() => import('./pages/customer/CustomerDashboard'));
 const ServiceAgreementsPage = lazy(() => import('./pages/admin/ServiceAgreementsPage'));
@@ -194,6 +195,7 @@ function App() {
           <Route path="/admin/invoices/:id/preview" element={<ProtectedRoute><InvoicePreviewPage /></ProtectedRoute>} />
           <Route path="/admin/invoicing" element={<Navigate to="/admin/invoices" replace />} />
           <Route path="/admin/waste-transfer-notes" element={<ProtectedRoute><WasteTransferNotesPage /></ProtectedRoute>} />
+          <Route path="/admin/waste-carriers" element={<ProtectedRoute><WasteCarriersPage /></ProtectedRoute>} />
           <Route path="/admin/service-agreements" element={<ProtectedRoute><ServiceAgreementsPage /></ProtectedRoute>} />
           <Route path="/admin/service-agreements/create" element={<ProtectedRoute><ServiceAgreementEditPage /></ProtectedRoute>} />
           <Route path="/admin/service-agreements/edit/:id" element={<ProtectedRoute><ServiceAgreementEditPage /></ProtectedRoute>} />
