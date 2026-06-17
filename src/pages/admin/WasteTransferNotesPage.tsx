@@ -594,8 +594,16 @@ interface WTNViewModalProps {
 function WTNViewModal({ wtn, onClose }: WTNViewModalProps) {
   const [customerAddress, setCustomerAddress] = useState<any>(null);
   const [savingPdf, setSavingPdf] = useState(false);
+  const [logoDataUrl, setLogoDataUrl] = useState('/mediwaste-logo.png');
 
-  useEffect(() => { fetchCustomerAddress(); }, []);
+  useEffect(() => {
+    fetchCustomerAddress();
+    fetch('/mediwaste-logo.png')
+      .then(r => r.blob())
+      .then(b => new Promise<string>(res => { const fr = new FileReader(); fr.onloadend = () => res(fr.result as string); fr.readAsDataURL(b); }))
+      .then(url => setLogoDataUrl(url))
+      .catch(() => {});
+  }, []);
 
   const fetchCustomerAddress = async () => {
     const { data } = await supabase
@@ -620,8 +628,10 @@ function WTNViewModal({ wtn, onClose }: WTNViewModalProps) {
       clone.style.top = '0';
       clone.style.width = '900px';
       document.body.appendChild(clone);
-      await new Promise(r => setTimeout(r, 100));
-      const canvas = await html2canvas(clone, { scale: 2, useCORS: true, backgroundColor: '#ffffff', logging: false });
+      const images = clone.querySelectorAll('img');
+      await Promise.all(Array.from(images).map(img => new Promise<void>(res => { if (img.complete) res(); else { img.onload = () => res(); img.onerror = () => res(); } })));
+      await new Promise(r => setTimeout(r, 150));
+      const canvas = await html2canvas(clone, { scale: 2, useCORS: true, allowTaint: true, backgroundColor: '#ffffff', logging: false });
       document.body.removeChild(clone);
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
@@ -676,7 +686,7 @@ function WTNViewModal({ wtn, onClose }: WTNViewModalProps) {
             {/* Header */}
             <div className="flex justify-between items-start mb-6">
               <div>
-                <img src="/mediwaste-logo.png" alt="MediWaste" style={{ height: '40px', width: 'auto', objectFit: 'contain' }} />
+                <img src={logoDataUrl} alt="MediWaste" style={{ height: '60px', width: 'auto', objectFit: 'contain' }} />
               </div>
               <div className="text-right">
                 <p className="text-sm font-semibold">WTN Number</p>
