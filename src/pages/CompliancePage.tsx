@@ -1,11 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import CertificatePreview from '../components/certificates/CertificatePreview';
 import { downloadCertificateAsPDF } from '../utils/certificateDownload';
 import CollectionRequestModal from '../components/CollectionRequestModal';
-import { Download, Award, FileText, CheckCircle, XCircle, Clock, MapPin, Phone, Mail, Building, AlertTriangle, Truck, Loader } from 'lucide-react';
+import { Download, Award, FileText, CheckCircle, XCircle, Clock, MapPin, Phone, Mail, Building, AlertTriangle, Truck, Loader, Eye, X } from 'lucide-react';
 
 interface WasteTransferNote {
   id: string;
@@ -45,6 +45,7 @@ export default function CompliancePage() {
   const { token } = useParams<{ token: string }>();
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [downloading, setDownloading] = useState(false);
+  const [selectedWtnId, setSelectedWtnId] = useState<string | null>(null);
 
   const { data: cert, isLoading, error } = useQuery({
     queryKey: ['compliance-cert', token],
@@ -298,9 +299,7 @@ export default function CompliancePage() {
                       <tr className="bg-gray-50 border-b border-gray-100">
                         <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">WTN No.</th>
                         <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Date</th>
-                        <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Waste Type</th>
-                        <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Quantity</th>
-                        <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Treatment</th>
+                        <th className="text-center px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">View</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-50">
@@ -310,13 +309,15 @@ export default function CompliancePage() {
                           <td className="px-4 py-3 text-gray-600">
                             {wtn.issue_date ? new Date(wtn.issue_date).toLocaleDateString('en-GB') : '—'}
                           </td>
-                          <td className="px-4 py-3 text-gray-700">
-                            {wtn.ewc_description || wtn.waste_type || wtn.waste_description || '—'}
+                          <td className="px-4 py-3 text-center">
+                            <button
+                              onClick={() => setSelectedWtnId(wtn.id)}
+                              className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-gray-100 hover:bg-red-100 text-gray-600 hover:text-red-600 transition-colors"
+                              title="View WTN"
+                            >
+                              <Eye size={15} />
+                            </button>
                           </td>
-                          <td className="px-4 py-3 text-gray-600">
-                            {wtn.quantity ? `${wtn.quantity} ${wtn.quantity_unit || ''}` : '—'}
-                          </td>
-                          <td className="px-4 py-3 text-gray-600">{wtn.treatment_method || '—'}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -376,6 +377,256 @@ export default function CompliancePage() {
           onClose={() => setShowRequestModal(false)}
         />
       )}
+
+      {selectedWtnId && (
+        <WtnDetailModal wtnId={selectedWtnId} onClose={() => setSelectedWtnId(null)} />
+      )}
+    </div>
+  );
+}
+
+interface WtnDetailModalProps {
+  wtnId: string;
+  onClose: () => void;
+}
+
+function WtnDetailModal({ wtnId, onClose }: WtnDetailModalProps) {
+  const [wtn, setWtn] = useState<any>(null);
+  const [customerAddress, setCustomerAddress] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [savingPdf, setSavingPdf] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      setLoading(true);
+      const { data } = await supabase
+        .from('mw_waste_transfer_notes')
+        .select(`
+          *,
+          carrier:mw_waste_carriers(id, name, address, registration_number, registration_type, registration_valid_until),
+          customer:mw_customers!inner(id, customer_number, company_name, contact_name),
+          mw_wtn_line_items(*)
+        `)
+        .eq('id', wtnId)
+        .single();
+      if (data) {
+        setWtn(data);
+        const { data: addrData } = await supabase
+          .from('mw_customer_addresses')
+          .select('*')
+          .eq('customer_id', data.customer.id)
+          .eq('is_primary', true)
+          .maybeSingle();
+        if (addrData) setCustomerAddress(addrData);
+      }
+      setLoading(false);
+    })();
+  }, [wtnId]);
+
+  const handleSavePDF = async () => {
+    const element = document.getElementById('wtn-detail-print-area');
+    if (!element) return;
+    setSavingPdf(true);
+    try {
+      const html2canvas = (await import('html2canvas')).default;
+      const jsPDF = (await import('jspdf')).default;
+      const clone = element.cloneNode(true) as HTMLElement;
+      clone.style.position = 'absolute';
+      clone.style.left = '-9999px';
+      clone.style.top = '0';
+      clone.style.width = '900px';
+      document.body.appendChild(clone);
+      await new Promise(r => setTimeout(r, 100));
+      const canvas = await html2canvas(clone, { scale: 2, useCORS: true, backgroundColor: '#ffffff', logging: false });
+      document.body.removeChild(clone);
+      const imgData = canvas.toDataURL('image/png');
+      const jsPDFInstance = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+      const pageW = jsPDFInstance.internal.pageSize.getWidth();
+      const pageH = jsPDFInstance.internal.pageSize.getHeight();
+      const imgAspect = canvas.height / canvas.width;
+      const w = pageW;
+      const h = w * imgAspect;
+      const y = h < pageH ? (pageH - h) / 2 : 0;
+      jsPDFInstance.addImage(imgData, 'PNG', 0, y, w, h);
+      jsPDFInstance.save(`WTN-${wtn?.wtn_number || wtnId}.pdf`);
+    } finally {
+      setSavingPdf(false);
+    }
+  };
+
+  const lineItems: any[] = wtn?.mw_wtn_line_items || [];
+  const carrier = wtn?.carrier;
+
+  const regTypeLabel = (t: string) => {
+    if (t === 'upper_tier') return 'Upper tier waste carrier, broker and dealer';
+    if (t === 'lower_tier') return 'Lower tier waste carrier';
+    return t;
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl flex flex-col">
+        <div className="p-5 border-b border-gray-200 flex justify-between items-center flex-shrink-0">
+          <h3 className="text-lg font-bold text-gray-900">Waste Transfer Note</h3>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
+            <X size={20} />
+          </button>
+        </div>
+
+        {loading ? (
+          <div className="flex items-center justify-center py-16">
+            <div className="w-8 h-8 border-2 border-red-600 border-t-transparent rounded-full animate-spin" />
+          </div>
+        ) : !wtn ? (
+          <div className="p-8 text-center text-gray-500">Unable to load WTN data.</div>
+        ) : (
+          <>
+            <div className="p-6 flex-1 overflow-y-auto">
+              <div className="border-2 border-gray-200 rounded-lg p-6 bg-white" id="wtn-detail-print-area">
+                <div className="flex justify-between items-start mb-6">
+                  <div>
+                    <h3 className="text-xl font-bold text-[#F59E0B]">MediWaste</h3>
+                    <p className="text-sm text-gray-600">Medical Waste Management Solutions</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-semibold">WTN Number</p>
+                    <p className="text-lg font-bold text-gray-900">{wtn.wtn_number}</p>
+                    <p className="text-sm text-gray-600 mt-1">Issue Date: {new Date(wtn.issue_date).toLocaleDateString('en-GB')}</p>
+                  </div>
+                </div>
+
+                {carrier && (
+                  <div className="border-t border-b border-gray-200 py-4 mb-4">
+                    <h4 className="font-bold text-gray-900 mb-3">Waste Carrier Details</h4>
+                    <div className="grid grid-cols-2 gap-3 text-sm">
+                      <div>
+                        <p className="font-semibold">Company Name:</p>
+                        <p>{carrier.name}</p>
+                      </div>
+                      <div>
+                        <p className="font-semibold">Registration Number:</p>
+                        <p>{carrier.registration_number || '—'}</p>
+                      </div>
+                      <div className="col-span-2">
+                        <p className="font-semibold">Address:</p>
+                        <p>{carrier.address}</p>
+                      </div>
+                      <div>
+                        <p className="font-semibold">Registration Type:</p>
+                        <p>{regTypeLabel(carrier.registration_type)}</p>
+                      </div>
+                      {carrier.registration_valid_until && (
+                        <div>
+                          <p className="font-semibold">Registration Valid Until:</p>
+                          <p>{new Date(carrier.registration_valid_until).toLocaleDateString('en-GB')}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <h4 className="font-bold text-gray-900 mb-2">Collection Address</h4>
+                    <div className="text-sm">
+                      <p className="font-semibold">{wtn.customer.company_name || wtn.customer.contact_name}</p>
+                      <p className="text-gray-600">Customer: {wtn.customer.customer_number}</p>
+                      {customerAddress && (
+                        <div className="mt-1 text-gray-700">
+                          <p>{customerAddress.address_line1}</p>
+                          {customerAddress.address_line2 && <p>{customerAddress.address_line2}</p>}
+                          <p>{customerAddress.city}, {customerAddress.postcode}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-gray-900 mb-2">Processing Site</h4>
+                    <div className="text-sm">
+                      {carrier ? (
+                        <>
+                          <p className="font-semibold">{carrier.name}</p>
+                          <p className="text-gray-700 mt-1">{carrier.address}</p>
+                        </>
+                      ) : (
+                        <p className="text-gray-500 italic">No carrier linked</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {lineItems.length > 0 && (
+                  <div className="border-t border-gray-200 pt-4 mb-4">
+                    <h4 className="font-bold text-gray-900 mb-3">Waste Details</h4>
+                    <table className="w-full text-sm border-collapse">
+                      <thead>
+                        <tr className="bg-gray-50">
+                          <th className="border border-gray-200 px-3 py-2 text-left font-semibold">Waste Type</th>
+                          <th className="border border-gray-200 px-3 py-2 text-left font-semibold">Code</th>
+                          <th className="border border-gray-200 px-3 py-2 text-left font-semibold">Description</th>
+                          <th className="border border-gray-200 px-3 py-2 text-right font-semibold">Qty</th>
+                          <th className="border border-gray-200 px-3 py-2 text-right font-semibold">Containers</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {lineItems.map((item: any, i: number) => (
+                          <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                            <td className="border border-gray-200 px-3 py-2 capitalize">{item.waste_type?.replace(/_/g, ' ')}</td>
+                            <td className="border border-gray-200 px-3 py-2 font-mono text-xs">{item.waste_code || '—'}</td>
+                            <td className="border border-gray-200 px-3 py-2">{item.waste_description}</td>
+                            <td className="border border-gray-200 px-3 py-2 text-right">{item.quantity} {item.quantity_unit}</td>
+                            <td className="border border-gray-200 px-3 py-2 text-right">{item.container_count}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+
+                <div className="border-t border-gray-200 pt-4">
+                  <h4 className="font-bold text-gray-900 mb-3">Signatures</h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm font-semibold mb-2">Carrier ({carrier?.name || 'Carrier'}):</p>
+                      <div className="border border-gray-200 rounded p-3 bg-gray-50 min-h-[48px]">
+                        <p className="text-sm">{wtn.carrier_signature || carrier?.name || 'Not signed'}</p>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold mb-2">Customer ({wtn.customer.company_name || wtn.customer.contact_name}):</p>
+                      <div className="border border-gray-200 rounded p-3 bg-gray-50 min-h-[48px]">
+                        <p className="text-sm">{wtn.customer.company_name || wtn.customer.contact_name}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-4 text-xs text-gray-400 border-t border-gray-200 pt-3">
+                  <p>This Waste Transfer Note is issued in accordance with the Waste (England and Wales) Regulations 2011.</p>
+                  <p className="mt-1">This document must be retained for a minimum of 2 years.</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-5 border-t border-gray-100 flex justify-end gap-3 flex-shrink-0">
+              <button
+                onClick={onClose}
+                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm hover:bg-gray-50 transition-colors"
+              >
+                Close
+              </button>
+              <button
+                onClick={handleSavePDF}
+                disabled={savingPdf}
+                className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg text-sm hover:bg-red-700 transition-colors disabled:opacity-60"
+              >
+                <Download size={15} />
+                {savingPdf ? 'Saving...' : 'Download PDF'}
+              </button>
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 }

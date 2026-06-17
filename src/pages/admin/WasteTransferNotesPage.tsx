@@ -593,6 +593,7 @@ interface WTNViewModalProps {
 
 function WTNViewModal({ wtn, onClose }: WTNViewModalProps) {
   const [customerAddress, setCustomerAddress] = useState<any>(null);
+  const [savingPdf, setSavingPdf] = useState(false);
 
   useEffect(() => { fetchCustomerAddress(); }, []);
 
@@ -604,6 +605,37 @@ function WTNViewModal({ wtn, onClose }: WTNViewModalProps) {
       .eq('is_primary', true)
       .maybeSingle();
     if (data) setCustomerAddress(data);
+  };
+
+  const handleSavePDF = async () => {
+    const element = document.getElementById('wtn-print-area');
+    if (!element) return;
+    setSavingPdf(true);
+    try {
+      const html2canvas = (await import('html2canvas')).default;
+      const jsPDF = (await import('jspdf')).default;
+      const clone = element.cloneNode(true) as HTMLElement;
+      clone.style.position = 'absolute';
+      clone.style.left = '-9999px';
+      clone.style.top = '0';
+      clone.style.width = '900px';
+      document.body.appendChild(clone);
+      await new Promise(r => setTimeout(r, 100));
+      const canvas = await html2canvas(clone, { scale: 2, useCORS: true, backgroundColor: '#ffffff', logging: false });
+      document.body.removeChild(clone);
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+      const pageW = pdf.internal.pageSize.getWidth();
+      const pageH = pdf.internal.pageSize.getHeight();
+      const imgAspect = canvas.height / canvas.width;
+      const w = pageW;
+      const h = w * imgAspect;
+      const y = h < pageH ? (pageH - h) / 2 : 0;
+      pdf.addImage(imgData, 'PNG', 0, y, w, h);
+      pdf.save(`WTN-${wtn.wtn_number}.pdf`);
+    } finally {
+      setSavingPdf(false);
+    }
   };
 
   const lineItems: WtnLineItem[] =
@@ -769,9 +801,9 @@ function WTNViewModal({ wtn, onClose }: WTNViewModalProps) {
                   </div>
                 </div>
                 <div>
-                  <p className="text-sm font-semibold mb-2">Customer:</p>
+                  <p className="text-sm font-semibold mb-2">Customer ({wtn.customer.company_name || wtn.customer.contact_name}):</p>
                   <div className="border border-gray-300 rounded p-3 bg-gray-50 min-h-[48px]">
-                  <p className="text-sm">{wtn.customer_signature || wtn.customer.company_name || wtn.customer.contact_name}</p>
+                  <p className="text-sm">{wtn.customer.company_name || wtn.customer.contact_name}</p>
                   </div>
                 </div>
               </div>
@@ -788,11 +820,12 @@ function WTNViewModal({ wtn, onClose }: WTNViewModalProps) {
               Close
             </button>
             <button
-              onClick={() => window.print()}
-              className="flex items-center gap-2 px-4 py-2 bg-[#F59E0B] text-white rounded-lg hover:bg-[#D97706] transition-colors"
+              onClick={handleSavePDF}
+              disabled={savingPdf}
+              className="flex items-center gap-2 px-4 py-2 bg-[#F59E0B] text-white rounded-lg hover:bg-[#D97706] transition-colors disabled:opacity-60"
             >
               <Download className="w-4 h-4" />
-              Print / Save PDF
+              {savingPdf ? 'Saving...' : 'Print / Save PDF'}
             </button>
           </div>
         </div>
