@@ -706,7 +706,14 @@ function WTNViewModal({ wtn, onClose }: WTNViewModalProps) {
               <div>
                 <h4 className="font-bold text-gray-900 mb-3">Processing Site</h4>
                 <div className="text-sm">
-                  <p className="text-gray-600 italic">To be confirmed by carrier</p>
+                  {carrier ? (
+                    <>
+                      <p className="font-semibold">{carrier.name}</p>
+                      <p className="text-gray-700 mt-1">{carrier.address}</p>
+                    </>
+                  ) : (
+                    <p className="text-gray-500 italic">No carrier linked</p>
+                  )}
                 </div>
               </div>
             </div>
@@ -764,7 +771,7 @@ function WTNViewModal({ wtn, onClose }: WTNViewModalProps) {
                 <div>
                   <p className="text-sm font-semibold mb-2">Customer:</p>
                   <div className="border border-gray-300 rounded p-3 bg-gray-50 min-h-[48px]">
-                    <p className="text-sm">{wtn.customer_signature || 'Not signed'}</p>
+                  <p className="text-sm">{wtn.customer_signature || wtn.customer.company_name || wtn.customer.contact_name}</p>
                   </div>
                 </div>
               </div>
