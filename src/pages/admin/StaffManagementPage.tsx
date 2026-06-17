@@ -56,7 +56,7 @@ export default function StaffManagementPage() {
       setEditing(null);
       setForm({ ...emptyForm });
     },
-    onError: () => toast.error('Failed to save staff member'),
+    onError: (err: any) => toast.error(err?.message || 'Failed to save staff member'),
   });
 
   const deleteMutation = useMutation({
