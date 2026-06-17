@@ -676,8 +676,7 @@ function WTNViewModal({ wtn, onClose }: WTNViewModalProps) {
             {/* Header */}
             <div className="flex justify-between items-start mb-6">
               <div>
-                <h3 className="text-xl font-bold text-[#F59E0B]">MediWaste</h3>
-                <p className="text-sm text-gray-600">Medical Waste Management Solutions</p>
+                <img src="/mediwaste-logo.png" alt="MediWaste" style={{ height: '40px', width: 'auto', objectFit: 'contain' }} />
               </div>
               <div className="text-right">
                 <p className="text-sm font-semibold">WTN Number</p>
