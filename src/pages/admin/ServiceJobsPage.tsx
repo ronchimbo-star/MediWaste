@@ -18,6 +18,17 @@ interface ServiceJob {
   notes: string | null;
   source?: string;
   priority?: string;
+  mw_job_waste_items?: JobWasteItem[];
+}
+
+interface JobWasteItem {
+  id?: string;
+  waste_type: string;
+  container_type: string;
+  quantity: string;
+  quantity_unit: string;
+  container_count: string;
+  description: string;
 }
 
 interface CollectionRequest {
@@ -41,9 +52,17 @@ interface CollectionRequest {
 
 const STATUS_OPTIONS = ['scheduled', 'in_progress', 'completed', 'cancelled', 'rescheduled'];
 const SERVICE_TYPES = ['sharps_collection', 'clinical_waste', 'pharmaceutical', 'cytotoxic', 'anatomical', 'dental', 'general'];
+const WASTE_TYPES = SERVICE_TYPES;
+const CONTAINER_TYPES = ['yellow_bag', 'sharps_bin', 'rigid_container', 'drum', 'box'];
+const QUANTITY_UNITS = ['kg', 'litres', 'units', 'bags'];
+
+const emptyWasteItem = (): JobWasteItem => ({
+  waste_type: 'clinical_waste', container_type: 'yellow_bag',
+  quantity: '', quantity_unit: 'kg', container_count: '1', description: '',
+});
 
 const emptyForm = {
-  customer_id: '', staff_id: '', scheduled_date: '', service_type: 'clinical_waste', status: 'scheduled', notes: '',
+  customer_id: '', staff_id: '', scheduled_date: '', status: 'scheduled', notes: '',
 };
 
 function statusBadge(s: string) {
@@ -328,6 +347,7 @@ export default function ServiceJobsPage() {
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState<ServiceJob | null>(null);
   const [form, setForm] = useState({ ...emptyForm });
+  const [wasteItems, setWasteItems] = useState<JobWasteItem[]>([emptyWasteItem()]);
   const [activeTab, setActiveTab] = useState<'jobs' | 'requests'>('jobs');
 
   const { data: jobs, isLoading } = useQuery({
@@ -335,7 +355,7 @@ export default function ServiceJobsPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('mw_service_jobs')
-        .select('*, customer:mw_customers(customer_number,company_name,contact_name), assigned_staff:mw_staff(staff_number,first_name,last_name)')
+        .select('*, customer:mw_customers(customer_number,company_name,contact_name), assigned_staff:mw_staff(staff_number,first_name,last_name), mw_job_waste_items(*)')
         .order('scheduled_date', { ascending: true });
       if (error) throw error;
       return data as ServiceJob[];
@@ -379,13 +399,40 @@ export default function ServiceJobsPage() {
 
   const saveMutation = useMutation({
     mutationFn: async (f: typeof form) => {
-      const payload = { customer_id: f.customer_id, staff_id: f.staff_id || null, scheduled_date: f.scheduled_date, service_type: f.service_type, status: f.status, notes: f.notes || null };
+      // derive a summary service_type for legacy column from the first waste item
+      const primaryType = wasteItems[0]?.waste_type || 'clinical_waste';
+      const payload = {
+        customer_id: f.customer_id, staff_id: f.staff_id || null,
+        scheduled_date: f.scheduled_date, service_type: primaryType,
+        status: f.status, notes: f.notes || null,
+      };
+      let jobId: string;
       if (editing) {
         const { error } = await supabase.from('mw_service_jobs').update(payload).eq('id', editing.id);
         if (error) throw error;
+        jobId = editing.id;
+        // replace all waste items for this job
+        await supabase.from('mw_job_waste_items').delete().eq('job_id', jobId);
       } else {
-        const { error } = await supabase.from('mw_service_jobs').insert([{ ...payload, job_number: '' }]);
+        const { data: job, error } = await supabase.from('mw_service_jobs')
+          .insert([{ ...payload, job_number: '' }]).select('id').single();
         if (error) throw error;
+        jobId = job.id;
+      }
+      const validItems = wasteItems.filter(i => i.waste_type && i.quantity);
+      if (validItems.length > 0) {
+        const { error: itemsErr } = await supabase.from('mw_job_waste_items').insert(
+          validItems.map(i => ({
+            job_id: jobId,
+            waste_type: i.waste_type,
+            container_type: i.container_type,
+            quantity: Number(i.quantity),
+            quantity_unit: i.quantity_unit,
+            container_count: Number(i.container_count) || 1,
+            description: i.description || null,
+          }))
+        );
+        if (itemsErr) throw itemsErr;
       }
     },
     onSuccess: () => {
@@ -394,6 +441,7 @@ export default function ServiceJobsPage() {
       setShowModal(false);
       setEditing(null);
       setForm({ ...emptyForm });
+      setWasteItems([emptyWasteItem()]);
     },
     onError: () => toast.error('Failed to save job'),
   });
@@ -470,10 +518,15 @@ export default function ServiceJobsPage() {
     onError: () => toast.error('Failed to update request'),
   });
 
-  function openAdd() { setEditing(null); setForm({ ...emptyForm }); setShowModal(true); }
+  function openAdd() { setEditing(null); setForm({ ...emptyForm }); setWasteItems([emptyWasteItem()]); setShowModal(true); }
   function openEdit(j: ServiceJob) {
     setEditing(j);
-    setForm({ customer_id: j.customer_id, staff_id: j.staff_id || '', scheduled_date: j.scheduled_date?.split('T')[0] || '', service_type: j.service_type, status: j.status, notes: j.notes || '' });
+    setForm({ customer_id: j.customer_id, staff_id: j.staff_id || '', scheduled_date: j.scheduled_date?.split('T')[0] || '', status: j.status, notes: j.notes || '' });
+    setWasteItems(
+      j.mw_job_waste_items && j.mw_job_waste_items.length > 0
+        ? j.mw_job_waste_items.map(i => ({ ...i, quantity: String(i.quantity), container_count: String(i.container_count), description: i.description || '' }))
+        : [emptyWasteItem()]
+    );
     setShowModal(true);
   }
 
@@ -558,7 +611,17 @@ export default function ServiceJobsPage() {
                       <div className="flex items-center gap-2 text-gray-700"><MapPin size={14} className="text-gray-400" />{job.customer?.company_name || job.customer?.contact_name}</div>
                       <div className="flex items-center gap-2 text-gray-700"><CalendarIcon size={14} className="text-gray-400" />{job.scheduled_date ? new Date(job.scheduled_date).toLocaleDateString('en-GB') : '—'}</div>
                       <div className="flex items-center gap-2 text-gray-700"><User size={14} className="text-gray-400" />{job.assigned_staff ? `${job.assigned_staff.first_name} ${job.assigned_staff.last_name}` : 'Unassigned'}</div>
-                      <p className="text-gray-500 capitalize mt-1">{job.service_type?.replace(/_/g, ' ')}</p>
+                      {job.mw_job_waste_items && job.mw_job_waste_items.length > 0 ? (
+                        <div className="mt-1 space-y-0.5">
+                          {job.mw_job_waste_items.map((item, i) => (
+                            <p key={i} className="text-xs text-gray-500 capitalize">
+                              {item.waste_type?.replace(/_/g, ' ')} — {item.quantity} {item.quantity_unit}
+                            </p>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-gray-500 capitalize mt-1">{job.service_type?.replace(/_/g, ' ')}</p>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -611,7 +674,7 @@ export default function ServiceJobsPage() {
 
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl max-w-lg w-full">
+          <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-5 border-b border-gray-200 flex justify-between items-center">
               <h3 className="text-lg font-bold text-gray-900">{editing ? 'Edit Job' : 'Schedule Job'}</h3>
               <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600"><X size={20} /></button>
@@ -637,20 +700,105 @@ export default function ServiceJobsPage() {
                   </select>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Service Type</label>
-                  <select value={form.service_type} onChange={e => setForm({ ...form, service_type: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent">
-                    {SERVICE_TYPES.map(t => <option key={t} value={t}>{t.replace(/_/g, ' ')}</option>)}
-                  </select>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                <select value={form.status} onChange={e => setForm({ ...form, status: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent">
+                  {STATUS_OPTIONS.map(s => <option key={s} value={s}>{s.replace('_', ' ')}</option>)}
+                </select>
+              </div>
+
+              {/* ── Waste Line Items ── */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-sm font-medium text-gray-700">Waste Items *</label>
+                  <button
+                    type="button"
+                    onClick={() => setWasteItems([...wasteItems, emptyWasteItem()])}
+                    className="flex items-center gap-1 text-xs text-orange-600 hover:text-orange-700 font-medium"
+                  >
+                    <Plus size={13} /> Add Item
+                  </button>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                  <select value={form.status} onChange={e => setForm({ ...form, status: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent">
-                    {STATUS_OPTIONS.map(s => <option key={s} value={s}>{s.replace('_', ' ')}</option>)}
-                  </select>
+                <div className="space-y-3">
+                  {wasteItems.map((item, idx) => (
+                    <div key={idx} className="border border-gray-200 rounded-lg p-3 bg-gray-50 relative">
+                      {wasteItems.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => setWasteItems(wasteItems.filter((_, i) => i !== idx))}
+                          className="absolute top-2 right-2 text-gray-400 hover:text-red-500"
+                        >
+                          <X size={14} />
+                        </button>
+                      )}
+                      <div className="grid grid-cols-2 gap-2 mb-2">
+                        <div>
+                          <label className="block text-xs font-medium text-gray-600 mb-1">Waste Type</label>
+                          <select
+                            value={item.waste_type}
+                            onChange={e => setWasteItems(wasteItems.map((w, i) => i === idx ? { ...w, waste_type: e.target.value } : w))}
+                            className="w-full px-2 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent bg-white"
+                          >
+                            {WASTE_TYPES.map(t => <option key={t} value={t}>{t.replace(/_/g, ' ')}</option>)}
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-gray-600 mb-1">Container Type</label>
+                          <select
+                            value={item.container_type}
+                            onChange={e => setWasteItems(wasteItems.map((w, i) => i === idx ? { ...w, container_type: e.target.value } : w))}
+                            className="w-full px-2 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent bg-white"
+                          >
+                            {CONTAINER_TYPES.map(t => <option key={t} value={t}>{t.replace(/_/g, ' ')}</option>)}
+                          </select>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-3 gap-2">
+                        <div>
+                          <label className="block text-xs font-medium text-gray-600 mb-1">Quantity *</label>
+                          <input
+                            type="number" min="0" step="0.1"
+                            value={item.quantity}
+                            onChange={e => setWasteItems(wasteItems.map((w, i) => i === idx ? { ...w, quantity: e.target.value } : w))}
+                            className="w-full px-2 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent"
+                            placeholder="0"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-gray-600 mb-1">Unit</label>
+                          <select
+                            value={item.quantity_unit}
+                            onChange={e => setWasteItems(wasteItems.map((w, i) => i === idx ? { ...w, quantity_unit: e.target.value } : w))}
+                            className="w-full px-2 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent bg-white"
+                          >
+                            {QUANTITY_UNITS.map(u => <option key={u} value={u}>{u}</option>)}
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-gray-600 mb-1">Containers</label>
+                          <input
+                            type="number" min="1"
+                            value={item.container_count}
+                            onChange={e => setWasteItems(wasteItems.map((w, i) => i === idx ? { ...w, container_count: e.target.value } : w))}
+                            className="w-full px-2 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent"
+                          />
+                        </div>
+                      </div>
+                      <div className="mt-2">
+                        <label className="block text-xs font-medium text-gray-600 mb-1">Description (optional)</label>
+                        <input
+                          type="text"
+                          value={item.description}
+                          onChange={e => setWasteItems(wasteItems.map((w, i) => i === idx ? { ...w, description: e.target.value } : w))}
+                          className="w-full px-2 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent"
+                          placeholder="e.g. Contaminated dressings, yellow bag"
+                        />
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
                 <textarea rows={2} value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent" />
@@ -658,7 +806,11 @@ export default function ServiceJobsPage() {
             </div>
             <div className="p-5 border-t border-gray-100 flex justify-end gap-3">
               <button onClick={() => setShowModal(false)} className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm hover:bg-gray-50">Cancel</button>
-              <button onClick={() => saveMutation.mutate(form)} disabled={saveMutation.isPending || !form.customer_id || !form.scheduled_date} className="px-4 py-2 bg-orange-500 text-white rounded-lg text-sm hover:bg-orange-600 disabled:opacity-50">
+              <button
+                onClick={() => saveMutation.mutate(form)}
+                disabled={saveMutation.isPending || !form.customer_id || !form.scheduled_date || !wasteItems.some(i => i.quantity)}
+                className="px-4 py-2 bg-orange-500 text-white rounded-lg text-sm hover:bg-orange-600 disabled:opacity-50"
+              >
                 {editing ? 'Save Changes' : 'Schedule Job'}
               </button>
             </div>
