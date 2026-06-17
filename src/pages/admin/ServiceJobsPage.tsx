@@ -10,7 +10,7 @@ interface ServiceJob {
   id: string;
   job_number: string;
   customer_id: string;
-  staff_id: string | null;
+  assigned_staff_id: string | null;
   customer: { customer_number: string; company_name: string; contact_name: string; };
   assigned_staff: { staff_number: string; first_name: string; last_name: string; } | null;
   scheduled_date: string;
@@ -63,7 +63,7 @@ const emptyWasteItem = (): JobWasteItem => ({
 });
 
 const emptyForm = {
-  customer_id: '', staff_id: '', scheduled_date: '', status: 'scheduled', notes: '',
+  customer_id: '', assigned_staff_id: '', scheduled_date: '', status: 'scheduled', notes: '',
 };
 
 function statusBadge(s: string) {
@@ -404,7 +404,7 @@ export default function ServiceJobsPage() {
       // derive a summary service_type for legacy column from the first waste item
       const primaryType = wasteItems[0]?.waste_type || 'clinical_waste';
       const payload = {
-        customer_id: f.customer_id, staff_id: f.staff_id || null,
+        customer_id: f.customer_id, assigned_staff_id: f.assigned_staff_id || null,
         scheduled_date: f.scheduled_date, service_type: primaryType,
         status: f.status, notes: f.notes || null,
       };
@@ -523,7 +523,7 @@ export default function ServiceJobsPage() {
   function openAdd() { setEditing(null); setForm({ ...emptyForm }); setWasteItems([emptyWasteItem()]); setShowModal(true); }
   function openEdit(j: ServiceJob) {
     setEditing(j);
-    setForm({ customer_id: j.customer_id, staff_id: j.staff_id || '', scheduled_date: j.scheduled_date?.split('T')[0] || '', status: j.status, notes: j.notes || '' });
+    setForm({ customer_id: j.customer_id, assigned_staff_id: j.assigned_staff_id || '', scheduled_date: j.scheduled_date?.split('T')[0] || '', status: j.status, notes: j.notes || '' });
     setWasteItems(
       j.mw_job_waste_items && j.mw_job_waste_items.length > 0
         ? j.mw_job_waste_items.map(i => ({ ...i, quantity: String(i.quantity), container_count: String(i.container_count), description: i.description || '' }))
@@ -703,7 +703,7 @@ export default function ServiceJobsPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Assign Staff</label>
-                  <select value={form.staff_id} onChange={e => setForm({ ...form, staff_id: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent">
+                  <select value={form.assigned_staff_id} onChange={e => setForm({ ...form, assigned_staff_id: e.target.value })} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent">
                     <option value="">Unassigned</option>
                     {(staffList || []).map((s: any) => <option key={s.id} value={s.id}>{s.first_name} {s.last_name}</option>)}
                   </select>
