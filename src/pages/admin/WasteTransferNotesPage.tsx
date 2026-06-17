@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
-import { Plus, Download, Eye, X } from 'lucide-react';
+import { Plus, Download, Eye, X, Pencil } from 'lucide-react';
 import { useToastContext } from '../../contexts/ToastContext';
 import AdminLayout from '../../components/admin/AdminLayout';
 
@@ -81,6 +81,7 @@ export default function WasteTransferNotesPage() {
   const [showModal, setShowModal] = useState(false);
   const [selectedWtn, setSelectedWtn] = useState<WasteTransferNote | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [editingWtn, setEditingWtn] = useState<WasteTransferNote | null>(null);
   const [createForm, setCreateForm] = useState({ ...emptyCreateForm });
   const [lineItems, setLineItems] = useState<WtnLineItem[]>([emptyLineItem()]);
   const [createLoading, setCreateLoading] = useState(false);
@@ -166,8 +167,46 @@ export default function WasteTransferNotesPage() {
     setCustomers(custRes.data || []);
     setJobs(jobRes.data || []);
     setCarriers(carrierRes.data || []);
+    setEditingWtn(null);
     setCreateForm({ ...emptyCreateForm });
     setLineItems([emptyLineItem()]);
+    setShowCreateModal(true);
+  };
+
+  const openEditModal = async (wtn: WasteTransferNote) => {
+    const [custRes, jobRes, carrierRes] = await Promise.all([
+      supabase.from('mw_customers').select('id,customer_number,company_name,contact_name').eq('status', 'active').order('company_name'),
+      supabase.from('mw_service_jobs').select('id,job_number,service_type').in('status', ['completed', 'scheduled']).order('scheduled_date', { ascending: false }).limit(50),
+      supabase.from('mw_waste_carriers').select('id,name,address,registration_number,registration_type,registration_valid_until').eq('is_active', true).order('name'),
+    ]);
+    setCustomers(custRes.data || []);
+    setJobs(jobRes.data || []);
+    setCarriers(carrierRes.data || []);
+    setEditingWtn(wtn);
+    // Resolve job_id from the linked job
+    let jobId = '';
+    if (wtn.job) {
+      const found = (jobRes.data || []).find((j: any) => j.job_number === wtn.job?.job_number);
+      if (found) jobId = found.id;
+    }
+    setCreateForm({
+      customer_id: wtn.customer.id,
+      job_id: jobId,
+      carrier_id: wtn.carrier?.id || '',
+    });
+    const existing = (wtn.mw_wtn_line_items && wtn.mw_wtn_line_items.length > 0)
+      ? wtn.mw_wtn_line_items.map(i => ({
+          id: i.id,
+          waste_type: i.waste_type,
+          waste_code: i.waste_code,
+          waste_description: i.waste_description,
+          quantity: String(i.quantity),
+          quantity_unit: i.quantity_unit,
+          container_type: i.container_type,
+          container_count: String(i.container_count),
+        }))
+      : [emptyLineItem()];
+    setLineItems(existing);
     setShowCreateModal(true);
   };
 
@@ -224,6 +263,52 @@ export default function WasteTransferNotesPage() {
       fetchWTNs();
     } catch {
       toast.error('Failed to create WTN');
+    } finally {
+      setCreateLoading(false);
+    }
+  };
+
+  const handleUpdateWTN = async () => {
+    if (!editingWtn) return;
+    const validItems = lineItems.filter(i => i.waste_description && i.quantity);
+    if (!createForm.customer_id || validItems.length === 0) {
+      toast.error('Please select a customer and add at least one waste item with description and quantity');
+      return;
+    }
+    setCreateLoading(true);
+    try {
+      const selectedCarrier = carriers.find(c => c.id === createForm.carrier_id);
+      const { error: wtnErr } = await supabase.from('mw_waste_transfer_notes').update({
+        customer_id: createForm.customer_id,
+        job_id: createForm.job_id || null,
+        carrier_id: createForm.carrier_id || null,
+        carrier_signature: selectedCarrier?.name || null,
+      }).eq('id', editingWtn.id);
+      if (wtnErr) throw wtnErr;
+
+      // Replace all line items
+      await supabase.from('mw_wtn_line_items').delete().eq('wtn_id', editingWtn.id);
+      const { error: itemsErr } = await supabase.from('mw_wtn_line_items').insert(
+        validItems.map((item, idx) => ({
+          wtn_id: editingWtn.id,
+          waste_type: item.waste_type,
+          waste_code: item.waste_code || WASTE_CODES[item.waste_type] || '',
+          waste_description: item.waste_description,
+          quantity: Number(item.quantity),
+          quantity_unit: item.quantity_unit,
+          container_type: item.container_type,
+          container_count: Number(item.container_count) || 1,
+          sort_order: idx,
+        }))
+      );
+      if (itemsErr) throw itemsErr;
+
+      toast.success('WTN updated successfully');
+      setShowCreateModal(false);
+      setEditingWtn(null);
+      fetchWTNs();
+    } catch {
+      toast.error('Failed to update WTN');
     } finally {
       setCreateLoading(false);
     }
@@ -314,6 +399,9 @@ export default function WasteTransferNotesPage() {
                         <button onClick={() => { setSelectedWtn(wtn); setShowModal(true); }} className="text-blue-600 hover:text-blue-900" title="View">
                           <Eye className="w-4 h-4" />
                         </button>
+                        <button onClick={() => openEditModal(wtn)} className="text-orange-500 hover:text-orange-700" title="Edit">
+                          <Pencil className="w-4 h-4" />
+                        </button>
                         <button onClick={() => { setSelectedWtn(wtn); setShowModal(true); }} className="text-green-600 hover:text-green-900" title="Print / Download">
                           <Download className="w-4 h-4" />
                         </button>
@@ -335,8 +423,10 @@ export default function WasteTransferNotesPage() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-5 border-b border-gray-200 flex justify-between items-center">
-              <h3 className="text-lg font-bold text-gray-900">Create Waste Transfer Note</h3>
-              <button onClick={() => setShowCreateModal(false)} className="text-gray-400 hover:text-gray-600"><X size={20} /></button>
+              <h3 className="text-lg font-bold text-gray-900">
+                {editingWtn ? `Edit WTN — ${editingWtn.wtn_number}` : 'Create Waste Transfer Note'}
+              </h3>
+              <button onClick={() => { setShowCreateModal(false); setEditingWtn(null); }} className="text-gray-400 hover:text-gray-600"><X size={20} /></button>
             </div>
             <div className="p-5 space-y-4">
               <div>
@@ -480,13 +570,13 @@ export default function WasteTransferNotesPage() {
               </div>
             </div>
             <div className="p-5 border-t border-gray-100 flex justify-end gap-3">
-              <button onClick={() => setShowCreateModal(false)} className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm hover:bg-gray-50">Cancel</button>
+              <button onClick={() => { setShowCreateModal(false); setEditingWtn(null); }} className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm hover:bg-gray-50">Cancel</button>
               <button
-                onClick={handleCreateWTN}
+                onClick={editingWtn ? handleUpdateWTN : handleCreateWTN}
                 disabled={createLoading || !createForm.customer_id || !lineItems.some(i => i.waste_description && i.quantity)}
                 className="px-4 py-2 bg-orange-500 text-white rounded-lg text-sm hover:bg-orange-600 disabled:opacity-50"
               >
-                {createLoading ? 'Creating...' : 'Create WTN'}
+                {createLoading ? (editingWtn ? 'Saving...' : 'Creating...') : (editingWtn ? 'Save Changes' : 'Create WTN')}
               </button>
             </div>
           </div>
