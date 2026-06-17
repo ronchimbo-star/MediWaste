@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { Plus, Download, Eye, X } from 'lucide-react';
 import { useToastContext } from '../../contexts/ToastContext';
@@ -65,6 +66,7 @@ const emptyCreateForm = {
 
 export default function WasteTransferNotesPage() {
   const { toast } = useToastContext();
+  const location = useLocation();
   const [wtns, setWtns] = useState<WasteTransferNote[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -77,6 +79,23 @@ export default function WasteTransferNotesPage() {
   const [jobs, setJobs] = useState<any[]>([]);
 
   useEffect(() => { fetchWTNs(); }, []);
+
+  // Auto-open create modal when navigated here from a job card
+  useEffect(() => {
+    const prefill = (location.state as any)?.prefill;
+    if (!prefill) return;
+    (async () => {
+      const [custRes, jobRes] = await Promise.all([
+        supabase.from('mw_customers').select('id,customer_number,company_name,contact_name').eq('status', 'active').order('company_name'),
+        supabase.from('mw_service_jobs').select('id,job_number,service_type').in('status', ['completed', 'scheduled']).order('scheduled_date', { ascending: false }).limit(50),
+      ]);
+      setCustomers(custRes.data || []);
+      setJobs(jobRes.data || []);
+      setCreateForm({ ...emptyCreateForm, customer_id: prefill.customer_id || '', job_id: prefill.job_id || '' });
+      setLineItems([emptyLineItem()]);
+      setShowCreateModal(true);
+    })();
+  }, []);
 
   const fetchWTNs = async () => {
     try {

@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
-import { Plus, Calendar as CalendarIcon, User, MapPin, X, FileEdit as Edit2, Trash2, Truck, Clock, CheckCircle, AlertCircle, ChevronDown, ChevronUp, Package, Download } from 'lucide-react';
+import { Plus, Calendar as CalendarIcon, User, MapPin, X, FileEdit as Edit2, Trash2, Truck, Clock, CheckCircle, AlertCircle, ChevronDown, ChevronUp, Package, Download, FileText } from 'lucide-react';
 import { useToastContext } from '../../contexts/ToastContext';
 import AdminLayout from '../../components/admin/AdminLayout';
 
@@ -342,6 +343,7 @@ function RequestCard({ req, onApprove, onReject }: {
 
 export default function ServiceJobsPage() {
   const { toast } = useToastContext();
+  const navigate = useNavigate();
   const qc = useQueryClient();
   const [filterStatus, setFilterStatus] = useState('all');
   const [showModal, setShowModal] = useState(false);
@@ -443,7 +445,7 @@ export default function ServiceJobsPage() {
       setForm({ ...emptyForm });
       setWasteItems([emptyWasteItem()]);
     },
-    onError: () => toast.error('Failed to save job'),
+    onError: (err: any) => toast.error(err?.message || 'Failed to save job'),
   });
 
   const deleteMutation = useMutation({
@@ -604,6 +606,13 @@ export default function ServiceJobsPage() {
                         <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${statusBadge(job.status)}`}>{job.status.replace('_', ' ')}</span>
                         <button onClick={() => downloadICS(job)} className="text-green-500 hover:text-green-700 p-1" title="Download .ics"><Download size={14} /></button>
                         <button onClick={() => openEdit(job)} className="text-blue-500 hover:text-blue-700 p-1" title="Edit"><Edit2 size={14} /></button>
+                        <button
+                          onClick={() => navigate('/admin/waste-transfer-notes', { state: { prefill: { job_id: job.id, customer_id: job.customer_id, job_number: job.job_number } } })}
+                          className="text-orange-500 hover:text-orange-700 p-1"
+                          title="Create WTN for this job"
+                        >
+                          <FileText size={14} />
+                        </button>
                         <button onClick={() => { if (window.confirm('Delete this job?')) deleteMutation.mutate(job.id); }} className="text-red-400 hover:text-red-600 p-1" title="Delete"><Trash2 size={14} /></button>
                       </div>
                     </div>
