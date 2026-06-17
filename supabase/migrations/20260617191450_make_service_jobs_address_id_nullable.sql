@@ -1,0 +1,1 @@
+ALTER TABLE mw_service_jobs ALTER COLUMN address_id DROP NOT NULL;
