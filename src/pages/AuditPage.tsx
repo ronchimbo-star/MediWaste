@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import SEO from '../components/SEO';
+import { useSiteSettings } from '../hooks/useSiteSettings';
 import {
   ClipboardList, ChevronRight, ChevronLeft, CheckCircle, AlertTriangle,
   Download, Mail, FileText, BarChart2, Loader, ArrowRight, Shield,
@@ -130,6 +131,9 @@ function ProgressBar({ step, total }: { step: number; total: number }) {
 export default function AuditPage() {
   const navigate = useNavigate();
   const reportRef = useRef<HTMLDivElement>(null);
+  const { settings } = useSiteSettings();
+  const phone = settings?.phone_number || '0800 046 9806';
+  const telHref = `tel:${phone.replace(/\s+/g, '')}`;
 
   const [step, setStep] = useState(0); // 0=landing, 1-4=wizard steps
   const [sessionId, setSessionId] = useState<string | null>(null);
@@ -477,7 +481,7 @@ export default function AuditPage() {
               '@type': 'LocalBusiness',
               name: 'MediWaste',
               url: 'https://mediwaste.co.uk',
-              telephone: '+441322879713',
+              telephone: phone.replace(/\s+/g, '').replace(/^0/, '+44'),
             },
           }}
         />
@@ -1075,9 +1079,9 @@ export default function AuditPage() {
                         {quoteRequested ? <CheckCircle size={16} /> : <ArrowRight size={16} />}
                         {quoteRequested ? 'Quote Requested' : 'Request a Free Quote'}
                       </button>
-                      <a href="tel:08000469806" className="flex items-center gap-2 text-white border border-red-400 hover:border-white px-6 py-3 rounded-xl font-medium text-sm transition-colors">
+                      <a href={telHref} className="flex items-center gap-2 text-white border border-red-400 hover:border-white px-6 py-3 rounded-xl font-medium text-sm transition-colors">
                         <Phone size={16} />
-                        Call 0800 046 9806
+                        Call {phone}
                       </a>
                     </div>
                   </div>
