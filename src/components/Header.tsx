@@ -1,32 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Phone } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import { ClipboardList } from 'lucide-react';
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [phoneNumber, setPhoneNumber] = useState('+441322879713');
-
-  useEffect(() => {
-    fetchPhoneNumber();
-  }, []);
-
-  const fetchPhoneNumber = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('site_settings')
-        .select('contact_phone')
-        .eq('id', 'default')
-        .maybeSingle();
-
-      if (error) throw error;
-      if (data?.contact_phone) {
-        setPhoneNumber(data.contact_phone);
-      }
-    } catch (err) {
-      console.error('Error fetching phone number:', err);
-    }
-  };
 
   const toggleMobileMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen);
@@ -53,20 +30,14 @@ export default function Header() {
             <Link to="/waste-services" className="text-gray-700 hover:text-gray-900 font-medium">Services</Link>
             <Link to="/service-coverage" className="text-gray-700 hover:text-gray-900 font-medium">Coverage</Link>
             <Link to="/news" className="text-gray-700 hover:text-gray-900 font-medium">News</Link>
+            <Link to="/contact" className="text-gray-700 hover:text-gray-900 font-medium">Contact</Link>
             <Link
-              to="/contact"
-              className="text-gray-700 hover:text-gray-900 font-medium"
+              to="/audit"
+              className="inline-flex items-center gap-1.5 border border-red-600 text-red-600 hover:bg-red-600 hover:text-white px-4 py-1.5 rounded-full font-semibold text-sm transition-colors"
             >
-              Contact
+              <ClipboardList className="w-4 h-4" />
+              Waste Audit
             </Link>
-            <a
-              href={`tel:${phoneNumber}`}
-              className="text-red-600 hover:text-red-700 font-semibold flex items-center gap-2 transition-colors"
-              title="Call us"
-            >
-              <Phone className="w-4 h-4" />
-              <span className="hidden lg:inline">{phoneNumber}</span>
-            </a>
             <Link
               to="/quote"
               className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-full font-semibold transition-colors"
@@ -130,14 +101,14 @@ export default function Header() {
               >
                 Contact
               </Link>
-              <a
-                href={`tel:${phoneNumber}`}
+              <Link
+                to="/audit"
                 onClick={closeMobileMenu}
-                className="px-4 py-3 text-red-600 hover:bg-gray-100 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2"
+                className="px-4 py-3 border border-red-600 text-red-600 hover:bg-red-600 hover:text-white rounded-lg font-semibold transition-colors flex items-center justify-center gap-2"
               >
-                <Phone className="w-5 h-5" />
-                {phoneNumber}
-              </a>
+                <ClipboardList className="w-5 h-5" />
+                Clinical Waste Audit Builder
+              </Link>
               <Link
                 to="/quote"
                 onClick={closeMobileMenu}
