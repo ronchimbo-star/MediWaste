@@ -14,7 +14,7 @@ function riskBadge(rating: string) {
   return `<span style="display:inline-block;padding:2px 10px;border-radius:12px;background:${colours[rating] || "#6b7280"};color:#fff;font-weight:700;font-size:12px;text-transform:uppercase;">${rating}</span>`;
 }
 
-function buildAuditEmailHtml(session: any, report: any, type: "user" | "admin"): string {
+function buildAuditEmailHtml(session: any, report: any, type: "user" | "admin", phone: string): string {
   const risks = (report.compliance_risks || [])
     .map((r: any) => `<tr>
       <td style="border:1px solid #e5e7eb;padding:8px 12px;font-size:13px;">${r.title}</td>
@@ -84,7 +84,7 @@ function buildAuditEmailHtml(session: any, report: any, type: "user" | "admin"):
           <p style="margin:0 0 8px;font-size:15px;font-weight:700;color:#dc2626;">Need help managing your clinical waste?</p>
           <p style="margin:0 0 16px;font-size:13px;color:#374151;">Get a free, no-obligation quote from MediWaste.co.uk today.</p>
           <a href="https://mediwaste.co.uk/quote" style="display:inline-block;background:#dc2626;color:#fff;padding:10px 28px;border-radius:8px;text-decoration:none;font-weight:700;font-size:14px;">Request a Free Quote</a>
-          <p style="margin:12px 0 0;font-size:12px;color:#6b7280;">Call us free: <strong>0800 046 9806</strong></p>
+          <p style="margin:12px 0 0;font-size:12px;color:#6b7280;">Call us free: <strong>${phone}</strong></p>
         </div>
       </td></tr>
       <!-- Footer -->
@@ -122,11 +122,15 @@ Deno.serve(async (req: Request) => {
       .from("mw_audit_reports").select("*").eq("session_id", session_id).maybeSingle();
     if (!report) throw new Error("Report not found");
 
+    const { data: siteSettings } = await supabase
+      .from("site_settings").select("phone_number").maybeSingle();
+    const phone = siteSettings?.phone_number || "0800 046 9806";
+
     const sent: string[] = [];
 
     // Email to user
     if (send_to_user && session.email) {
-      const userHtml = buildAuditEmailHtml(session, report, "user");
+      const userHtml = buildAuditEmailHtml(session, report, "user", phone);
       await fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${resendKey}` },
@@ -142,7 +146,7 @@ Deno.serve(async (req: Request) => {
     }
 
     // Notification to admin
-    const adminHtml = buildAuditEmailHtml(session, report, "admin");
+    const adminHtml = buildAuditEmailHtml(session, report, "admin", phone);
     await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: { "Content-Type": "application/json", "Authorization": `Bearer ${resendKey}` },
