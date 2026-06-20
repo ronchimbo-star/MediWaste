@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Check, ClipboardCheck, ShieldCheck, FileText, ArrowRight } from 'lucide-react';
+import { Check, ClipboardCheck, ShieldCheck, FileText, ArrowRight, ClipboardList, Stethoscope, FlaskConical, Sparkles, Heart, Scissors, Home, PawPrint } from 'lucide-react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import Testimonials from '../components/Testimonials';
@@ -124,6 +124,13 @@ export default function HomePage() {
                   className="bg-white text-gray-900 px-8 py-3 rounded-full font-semibold hover:bg-gray-100 hover:scale-105 transition-all inline-flex items-center gap-2"
                 >
                   Get a Quote
+                </Link>
+                <Link
+                  to="/audit"
+                  className="border-2 border-white text-white px-8 py-3 rounded-full font-semibold hover:bg-white hover:text-gray-900 hover:scale-105 transition-all inline-flex items-center gap-2"
+                >
+                  <ClipboardList size={16} />
+                  Waste Audit Tool
                 </Link>
               </div>
             </div>
@@ -472,6 +479,97 @@ export default function HomePage() {
       </section>
 
       <Testimonials />
+
+      {/* ── CLINICAL WASTE AUDIT BUILDER ── */}
+      <section className="py-20 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="max-w-6xl mx-auto">
+            <div className="grid lg:grid-cols-2 gap-16 items-center">
+
+              {/* Left: content */}
+              <div>
+                <div className="inline-flex items-center gap-2 bg-red-50 text-red-700 px-4 py-2 rounded-full text-sm font-semibold mb-6">
+                  <ClipboardList size={15} />
+                  Free · Takes 5 minutes · Instant AI report
+                </div>
+                <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 leading-tight">
+                  Clinical Waste Audit Builder
+                </h2>
+                <p className="text-gray-600 mb-6 leading-relaxed">
+                  Answer a few questions about your waste streams, storage, and current contractor. Our AI analyses your responses against UK regulations — HTM 07-01, Hazardous Waste Regulations 2005, and the Duty of Care — and delivers a personalised compliance report in seconds.
+                </p>
+
+                <ul className="space-y-3 mb-8">
+                  {[
+                    { icon: <ShieldCheck size={16} className="text-green-600" />, text: 'Identifies compliance gaps against UK clinical waste regulations' },
+                    { icon: <FileText size={16} className="text-green-600" />, text: 'Generates a downloadable PDF audit report you can share with your team' },
+                    { icon: <ClipboardCheck size={16} className="text-green-600" />, text: 'Gives a risk score and prioritised action plan' },
+                    { icon: <ArrowRight size={16} className="text-green-600" />, text: 'Takes under 5 minutes — no sign-up required' },
+                  ].map(({ icon, text }) => (
+                    <li key={text} className="flex items-center gap-3 text-sm text-gray-700">
+                      <span className="flex-shrink-0">{icon}</span>
+                      {text}
+                    </li>
+                  ))}
+                </ul>
+
+                <Link
+                  to="/audit"
+                  className="inline-flex items-center gap-2 bg-red-600 text-white px-8 py-3 rounded-full font-semibold hover:bg-red-700 hover:scale-105 transition-all shadow-md"
+                >
+                  <ClipboardList size={18} />
+                  Start Your Free Audit
+                </Link>
+                <p className="text-xs text-gray-400 mt-3">No account needed. Your data is kept private and never sold.</p>
+              </div>
+
+              {/* Right: who it's for + visual */}
+              <div>
+                <div className="bg-gray-50 rounded-2xl border border-gray-200 p-7">
+                  <h3 className="font-bold text-gray-900 mb-5 text-lg">Who is it for?</h3>
+                  <div className="grid grid-cols-2 gap-3">
+                    {[
+                      { icon: <Stethoscope size={16} />, label: 'GPs & Medical Practices' },
+                      { icon: <Sparkles size={16} />, label: 'Dental Practices' },
+                      { icon: <Heart size={16} />, label: 'Community Healthcare' },
+                      { icon: <Scissors size={16} />, label: 'Tattoo Studios' },
+                      { icon: <FlaskConical size={16} />, label: 'Laboratories' },
+                      { icon: <Home size={16} />, label: 'Care Homes' },
+                      { icon: <Sparkles size={16} />, label: 'Beauty & Aesthetics' },
+                      { icon: <PawPrint size={16} />, label: 'Veterinary Practices' },
+                    ].map(({ icon, label }) => (
+                      <div key={label} className="flex items-center gap-2.5 bg-white rounded-lg px-3 py-2.5 border border-gray-100 text-sm text-gray-700">
+                        <span className="text-red-500 flex-shrink-0">{icon}</span>
+                        {label}
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-5 p-4 bg-red-50 rounded-xl border border-red-100">
+                    <p className="text-sm text-gray-700 leading-relaxed">
+                      <span className="font-semibold text-red-700">Any UK healthcare business</span> producing clinical, infectious, sharps, pharmaceutical, or anatomical waste — if you're regulated, this tool is for you.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Mini stat strip */}
+                <div className="grid grid-cols-3 gap-3 mt-4">
+                  {[
+                    { value: '5 min', label: 'Average completion' },
+                    { value: 'Free', label: 'No cost, ever' },
+                    { value: 'AI', label: 'Powered analysis' },
+                  ].map(({ value, label }) => (
+                    <div key={label} className="bg-gray-900 rounded-xl p-4 text-center">
+                      <p className="text-xl font-bold text-white">{value}</p>
+                      <p className="text-xs text-gray-400 mt-0.5">{label}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* ── FINAL CTA ── */}
       <section className="py-20 bg-red-600 text-white">
