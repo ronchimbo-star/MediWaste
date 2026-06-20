@@ -222,8 +222,8 @@ export default function AuditPage() {
       setStep(3);
     } else if (step === 3) {
       await saveAnswers();
-      await generateReport();
-      setStep(4);
+      setStep(4);       // show step 4 spinner immediately
+      generateReport(); // fire async — sets generating/report state internally
     }
   };
 
@@ -303,8 +303,10 @@ export default function AuditPage() {
         const { data: rpt } = await supabase.from('mw_audit_reports').select('*').eq('session_id', sessionId).maybeSingle();
         if (rpt) setReport(rpt);
       }
-      // Send admin notification (fire and forget)
-      supabase.functions.invoke('send-audit-email', { body: { session_id: sessionId, send_to_user: false } }).catch(() => {});
+      // Send to user + admin notification together
+      supabase.functions.invoke('send-audit-email', { body: { session_id: sessionId, send_to_user: true } })
+        .then(() => setEmailSent(true))
+        .catch(() => {});
     } catch (err) {
       console.error('Report generation error:', err);
     } finally {
@@ -345,12 +347,11 @@ export default function AuditPage() {
       const pageW = pdf.internal.pageSize.getWidth();
       const pageH = pdf.internal.pageSize.getHeight();
       const imgH = (canvas.height / canvas.width) * pageW;
-      let y = 0;
-      let remaining = imgH;
-      while (remaining > 0) {
-        pdf.addImage(imgData, 'PNG', 0, y > 0 ? y : 0, pageW, imgH);
-        remaining -= pageH;
-        if (remaining > 0) { pdf.addPage(); y -= pageH; }
+      let offset = 0;
+      while (offset < imgH) {
+        if (offset > 0) pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, -offset, pageW, imgH);
+        offset += pageH;
       }
       pdf.save(`MediWaste-Audit-${bizDetails.business_name || 'Report'}.pdf`);
       await supabase.from('mw_audit_download_events').insert({ session_id: sessionId, format: 'pdf' });
@@ -894,7 +895,7 @@ export default function AuditPage() {
                       </button>
                       <button onClick={handleSendEmail} disabled={emailSending || emailSent} className="flex items-center gap-2 border border-gray-200 bg-white hover:bg-gray-50 disabled:opacity-50 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
                         {emailSending ? <Loader size={14} className="animate-spin" /> : <Mail size={14} />}
-                        {emailSent ? 'Email Sent ✓' : emailSending ? 'Sending…' : 'Email Report'}
+                        {emailSent ? 'Email Sent ✓' : emailSending ? 'Sending…' : 'Resend Email'}
                       </button>
                     </div>
                   </div>
