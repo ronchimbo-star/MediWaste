@@ -70,6 +70,9 @@ const SeoPage = lazy(() => import('./pages/SeoPage'));
 const DirectoryListingsPage = lazy(() => import('./pages/DirectoryListingsPage'));
 const DirectoryListingsAdminPage = lazy(() => import('./pages/admin/DirectoryListingsPage'));
 const SitemapPage = lazy(() => import('./pages/admin/SitemapPage'));
+const AuditPage = lazy(() => import('./pages/AuditPage'));
+const AdminAuditsPage = lazy(() => import('./pages/admin/AdminAuditsPage'));
+const AdminAuditDetailPage = lazy(() => import('./pages/admin/AdminAuditDetailPage'));
 
 function PageLoader() {
   return (
@@ -168,6 +171,7 @@ function App() {
           <Route path="/compliance" element={<ComplianceInfoPage />} />
           <Route path="/compliance/:token" element={<CompliancePage />} />
           <Route path="/directory-listings" element={<DirectoryListingsPage />} />
+          <Route path="/audit" element={<AuditPage />} />
           <Route path="/terms" element={<TermsPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/cookies" element={<CookiePage />} />
@@ -214,6 +218,8 @@ function App() {
           <Route path="/admin/seo-pages/broken-links" element={<ProtectedRoute><BrokenLinksPage /></ProtectedRoute>} />
           <Route path="/admin/directory-listings" element={<ProtectedRoute><DirectoryListingsAdminPage /></ProtectedRoute>} />
           <Route path="/admin/sitemap" element={<ProtectedRoute><SitemapPage /></ProtectedRoute>} />
+          <Route path="/admin/audits" element={<ProtectedRoute><AdminAuditsPage /></ProtectedRoute>} />
+          <Route path="/admin/audits/:id" element={<ProtectedRoute><AdminAuditDetailPage /></ProtectedRoute>} />
           <Route path="/staff/dashboard" element={<ProtectedRoute><StaffDashboard /></ProtectedRoute>} />
           <Route path="/customer/dashboard" element={<ProtectedRoute><CustomerDashboard /></ProtectedRoute>} />
           <Route path="/c/:slug" element={<SeoPage />} />

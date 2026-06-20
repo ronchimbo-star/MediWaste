@@ -30,6 +30,7 @@ import {
   Globe,
   BookOpen,
   Truck,
+  FlaskConical,
 } from 'lucide-react';
 
 interface AdminLayoutProps {
@@ -127,6 +128,7 @@ export default function AdminLayout({ children, pageTitle, breadcrumbs }: AdminL
       items: [
         { label: 'Customers', path: '/admin/customers', icon: <Users size={18} /> },
         { label: 'Waste Carriers', path: '/admin/waste-carriers', icon: <Truck size={18} /> },
+        { label: 'Audit Tool', path: '/admin/audits', icon: <FlaskConical size={18} /> },
         { label: 'Quote Requests', path: '/admin/quote-requests', icon: <FileText size={18} />, badge: pendingQuotes },
         { label: 'Quotes', path: '/admin/quotes', icon: <ClipboardList size={18} /> },
         { label: 'Service Agreements', path: '/admin/service-agreements', icon: <FileSignature size={18} /> },
