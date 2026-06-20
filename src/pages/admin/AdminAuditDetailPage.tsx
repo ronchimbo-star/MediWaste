@@ -248,8 +248,8 @@ export default function AdminAuditDetailPage() {
             <Row label="Status" value={session.status} />
             <Row label="Started" value={new Date(session.created_at).toLocaleString('en-GB')} />
             <Row label="Completed" value={session.completed_at ? new Date(session.completed_at).toLocaleString('en-GB') : '—'} />
-            <Row label="Consent Given" value={session.consent_given ? 'Yes' : 'No'} />
-            <Row label="Marketing OK" value={session.marketing_consent ? 'Yes' : 'No'} />
+            <Row label="Consent Given" value={session.consent_data ? 'Yes' : 'No'} />
+            <Row label="Marketing OK" value={session.consent_marketing ? 'Yes' : 'No'} />
             {report && <>
               <Row label="Risk Rating" value={<span className="capitalize font-semibold">{report.risk_rating}</span>} />
               <Row label="Risk Score" value={`${report.risk_score}/100`} />

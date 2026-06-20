@@ -17,6 +17,7 @@ const STATIC_PAGES: Omit<SitemapEntry, 'source'>[] = [
   { url: 'https://www.mediwaste.co.uk/about', lastmod: '2026-04-10', changefreq: 'monthly', priority: '0.8' },
   { url: 'https://www.mediwaste.co.uk/contact', lastmod: '2026-04-10', changefreq: 'monthly', priority: '0.9' },
   { url: 'https://www.mediwaste.co.uk/quote', lastmod: '2026-04-10', changefreq: 'monthly', priority: '0.9' },
+  { url: 'https://www.mediwaste.co.uk/audit', lastmod: '2026-06-20', changefreq: 'monthly', priority: '0.9' },
   { url: 'https://www.mediwaste.co.uk/faq', lastmod: '2026-04-10', changefreq: 'monthly', priority: '0.7' },
   { url: 'https://www.mediwaste.co.uk/waste-services', lastmod: '2026-04-10', changefreq: 'monthly', priority: '0.9' },
   { url: 'https://www.mediwaste.co.uk/waste-services/infectious-waste', lastmod: '2026-04-10', changefreq: 'monthly', priority: '0.8' },

@@ -459,8 +459,26 @@ export default function AuditPage() {
       <>
         <SEO
           title="Free Clinical Waste Audit Tool | MediWaste"
-          description="Complete a free clinical waste audit in minutes. Identify compliance risks and get a personalised report for your healthcare business."
+          description="Answer 15 questions about your waste streams and compliance setup. Our AI generates a free, personalised clinical waste audit report — identifying risks and giving you a prioritised action plan. For GPs, dentists, care homes, vets, tattoo studios and any UK healthcare waste producer."
           canonical="https://mediwaste.co.uk/audit"
+          keywords="clinical waste audit, free waste compliance check, healthcare waste audit tool, clinical waste compliance UK, dental waste audit, GP waste audit, care home waste compliance, sharps waste compliance, HTM 07-01 audit"
+          type="website"
+          schema={{
+            '@context': 'https://schema.org',
+            '@type': 'WebApplication',
+            name: 'Clinical Waste Audit Builder',
+            description: 'A free AI-powered clinical waste compliance audit tool for UK healthcare businesses. Identifies risks against HTM 07-01 and Hazardous Waste Regulations 2005.',
+            url: 'https://mediwaste.co.uk/audit',
+            applicationCategory: 'HealthApplication',
+            operatingSystem: 'Web',
+            offers: { '@type': 'Offer', price: '0', priceCurrency: 'GBP' },
+            provider: {
+              '@type': 'LocalBusiness',
+              name: 'MediWaste',
+              url: 'https://mediwaste.co.uk',
+              telephone: '+441322879713',
+            },
+          }}
         />
         <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
           <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
@@ -542,8 +560,9 @@ export default function AuditPage() {
     <>
       <SEO
         title="Clinical Waste Audit Builder | MediWaste"
-        description="Complete your free clinical waste audit"
+        description="Answer 15 questions about your waste streams and compliance setup. Our AI generates a free, personalised clinical waste audit report — identifying risks and giving you a prioritised action plan. For GPs, dentists, care homes, vets, tattoo studios and any UK healthcare waste producer."
         canonical="https://mediwaste.co.uk/audit"
+        keywords="clinical waste audit, free waste compliance check, healthcare waste audit tool, clinical waste compliance UK, dental waste audit, GP waste audit, care home waste compliance, sharps waste compliance, HTM 07-01 audit"
       />
       <div className="min-h-screen bg-gray-50">
         <header className="bg-white border-b border-gray-200 sticky top-0 z-10">

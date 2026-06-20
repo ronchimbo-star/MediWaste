@@ -15,6 +15,7 @@ const STATIC_URLS = [
   { loc: "/about", lastmod: "2026-05-15", changefreq: "monthly", priority: "0.8" },
   { loc: "/contact", lastmod: "2026-05-15", changefreq: "monthly", priority: "0.9" },
   { loc: "/quote", lastmod: "2026-05-15", changefreq: "monthly", priority: "0.9" },
+  { loc: "/audit", lastmod: "2026-06-20", changefreq: "monthly", priority: "0.9" },
   { loc: "/faq", lastmod: "2026-05-15", changefreq: "monthly", priority: "0.7" },
   { loc: "/compliance", lastmod: "2026-05-15", changefreq: "monthly", priority: "0.8" },
   { loc: "/waste-services", lastmod: "2026-05-15", changefreq: "monthly", priority: "0.9" },
