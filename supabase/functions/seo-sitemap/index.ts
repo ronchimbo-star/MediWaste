@@ -25,7 +25,7 @@ const STATIC_URLS = [
   { loc: "/waste-services/cytotoxic-waste", lastmod: "2026-05-15", changefreq: "monthly", priority: "0.8" },
   { loc: "/waste-services/dental-waste", lastmod: "2026-05-15", changefreq: "monthly", priority: "0.8" },
   { loc: "/waste-services/anatomical-waste", lastmod: "2026-05-15", changefreq: "monthly", priority: "0.8" },
-  { loc: "/service-area", lastmod: "2026-05-15", changefreq: "monthly", priority: "0.8" },
+  { loc: "/service-coverage", lastmod: "2026-07-04", changefreq: "monthly", priority: "0.8" },
   { loc: "/service-areas/london", lastmod: "2026-05-15", changefreq: "monthly", priority: "0.9" },
   { loc: "/service-areas/kent", lastmod: "2026-05-15", changefreq: "monthly", priority: "0.8" },
   { loc: "/service-areas/essex", lastmod: "2026-05-15", changefreq: "monthly", priority: "0.8" },

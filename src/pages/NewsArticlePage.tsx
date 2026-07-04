@@ -34,6 +34,15 @@ interface NewsArticle {
   cta_description?: string;
 }
 
+interface RelatedArticle {
+  id: string;
+  title: string;
+  slug: string;
+  excerpt: string | null;
+  featured_image: string | null;
+  published_at: string;
+}
+
 interface NewsAdvert {
   id: string;
   title: string;
@@ -135,6 +144,44 @@ export default function NewsArticlePage() {
         .limit(2);
       return data || [];
     },
+    staleTime: 10 * 60 * 1000,
+    gcTime: 20 * 60 * 1000,
+  });
+
+  const { data: relatedArticles = [] } = useQuery<RelatedArticle[]>({
+    queryKey: ['related-articles', article?.id],
+    queryFn: async () => {
+      if (!article) return [];
+      const { data: cats } = await supabase
+        .from('news_article_categories')
+        .select('category_id')
+        .eq('article_id', article.id);
+
+      if (!cats?.length) return [];
+
+      const categoryIds = cats.map((c: { category_id: string }) => c.category_id);
+
+      const { data: junction } = await supabase
+        .from('news_article_categories')
+        .select('article_id')
+        .in('category_id', categoryIds)
+        .neq('article_id', article.id);
+
+      if (!junction?.length) return [];
+
+      const ids = [...new Set(junction.map((j: { article_id: string }) => j.article_id))].slice(0, 9);
+
+      const { data } = await supabase
+        .from('news_articles')
+        .select('id, title, slug, excerpt, featured_image, published_at')
+        .in('id', ids)
+        .eq('status', 'published')
+        .order('published_at', { ascending: false })
+        .limit(3);
+
+      return data || [];
+    },
+    enabled: !!article,
     staleTime: 10 * 60 * 1000,
     gcTime: 20 * 60 * 1000,
   });
@@ -332,6 +379,47 @@ export default function NewsArticlePage() {
           </div>
         </div>
       </article>
+
+      {relatedArticles.length > 0 && (
+        <section className="bg-gray-50 py-12 lg:py-16">
+          <div className="container mx-auto px-4">
+            <div className="max-w-4xl mx-auto">
+              <h2 className="text-2xl font-bold text-gray-900 mb-8">Related Articles</h2>
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {relatedArticles.map((related) => (
+                  <Link
+                    key={related.id}
+                    to={`/news/${related.slug}`}
+                    className="group bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-md transition-shadow"
+                  >
+                    {related.featured_image && (
+                      <div className="aspect-video overflow-hidden bg-gray-100">
+                        <img
+                          src={related.featured_image}
+                          alt={related.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          loading="lazy"
+                        />
+                      </div>
+                    )}
+                    <div className="p-4">
+                      <time className="text-xs text-red-600 font-medium">
+                        {formatDate(related.published_at)}
+                      </time>
+                      <h3 className="text-sm font-bold text-gray-900 mt-1 mb-2 leading-snug group-hover:text-red-600 transition-colors line-clamp-2">
+                        {related.title}
+                      </h3>
+                      {related.excerpt && (
+                        <p className="text-xs text-gray-600 line-clamp-2">{related.excerpt}</p>
+                      )}
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
 
       {article.cta_enabled !== false && (
         <BottomCTA
