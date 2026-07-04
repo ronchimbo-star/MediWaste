@@ -13,38 +13,38 @@ interface SitemapEntry {
 }
 
 const STATIC_PAGES: Omit<SitemapEntry, 'source'>[] = [
-  { url: 'https://www.mediwaste.co.uk/', lastmod: '2026-04-10', changefreq: 'weekly', priority: '1.0' },
-  { url: 'https://www.mediwaste.co.uk/about', lastmod: '2026-04-10', changefreq: 'monthly', priority: '0.8' },
-  { url: 'https://www.mediwaste.co.uk/contact', lastmod: '2026-04-10', changefreq: 'monthly', priority: '0.9' },
-  { url: 'https://www.mediwaste.co.uk/quote', lastmod: '2026-04-10', changefreq: 'monthly', priority: '0.9' },
-  { url: 'https://www.mediwaste.co.uk/audit', lastmod: '2026-06-20', changefreq: 'monthly', priority: '0.9' },
-  { url: 'https://www.mediwaste.co.uk/faq', lastmod: '2026-04-10', changefreq: 'monthly', priority: '0.7' },
-  { url: 'https://www.mediwaste.co.uk/waste-services', lastmod: '2026-04-10', changefreq: 'monthly', priority: '0.9' },
-  { url: 'https://www.mediwaste.co.uk/waste-services/infectious-waste', lastmod: '2026-04-10', changefreq: 'monthly', priority: '0.8' },
-  { url: 'https://www.mediwaste.co.uk/waste-services/sharps-waste', lastmod: '2026-04-10', changefreq: 'monthly', priority: '0.8' },
-  { url: 'https://www.mediwaste.co.uk/waste-services/pharmaceutical-waste', lastmod: '2026-04-10', changefreq: 'monthly', priority: '0.8' },
-  { url: 'https://www.mediwaste.co.uk/waste-services/cytotoxic-waste', lastmod: '2026-04-10', changefreq: 'monthly', priority: '0.8' },
-  { url: 'https://www.mediwaste.co.uk/waste-services/dental-waste', lastmod: '2026-04-10', changefreq: 'monthly', priority: '0.8' },
-  { url: 'https://www.mediwaste.co.uk/waste-services/anatomical-waste', lastmod: '2026-04-10', changefreq: 'monthly', priority: '0.8' },
-  { url: 'https://www.mediwaste.co.uk/service-coverage', lastmod: '2026-04-10', changefreq: 'monthly', priority: '0.8' },
-  { url: 'https://www.mediwaste.co.uk/service-areas/london', lastmod: '2026-04-10', changefreq: 'monthly', priority: '0.9' },
-  { url: 'https://www.mediwaste.co.uk/service-areas/kent', lastmod: '2026-04-10', changefreq: 'monthly', priority: '0.8' },
-  { url: 'https://www.mediwaste.co.uk/service-areas/essex', lastmod: '2026-04-10', changefreq: 'monthly', priority: '0.8' },
-  { url: 'https://www.mediwaste.co.uk/service-areas/surrey', lastmod: '2026-04-10', changefreq: 'monthly', priority: '0.8' },
-  { url: 'https://www.mediwaste.co.uk/service-areas/sussex', lastmod: '2026-04-10', changefreq: 'monthly', priority: '0.8' },
-  { url: 'https://www.mediwaste.co.uk/service-areas/hampshire', lastmod: '2026-04-10', changefreq: 'monthly', priority: '0.8' },
-  { url: 'https://www.mediwaste.co.uk/clinical-waste-disposal-london', lastmod: '2026-04-10', changefreq: 'monthly', priority: '0.9' },
-  { url: 'https://www.mediwaste.co.uk/clinical-waste-disposal-kent', lastmod: '2026-04-10', changefreq: 'monthly', priority: '0.8' },
-  { url: 'https://www.mediwaste.co.uk/clinical-waste-disposal-essex', lastmod: '2026-04-10', changefreq: 'monthly', priority: '0.8' },
-  { url: 'https://www.mediwaste.co.uk/clinical-waste-disposal-surrey', lastmod: '2026-04-10', changefreq: 'monthly', priority: '0.8' },
-  { url: 'https://www.mediwaste.co.uk/clinical-waste-disposal-sussex', lastmod: '2026-04-10', changefreq: 'monthly', priority: '0.8' },
-  { url: 'https://www.mediwaste.co.uk/clinical-waste-disposal-hampshire', lastmod: '2026-04-10', changefreq: 'monthly', priority: '0.8' },
-  { url: 'https://www.mediwaste.co.uk/directory-listings', lastmod: '2026-05-15', changefreq: 'weekly', priority: '0.5' },
-  { url: 'https://www.mediwaste.co.uk/news', lastmod: '2026-04-10', changefreq: 'weekly', priority: '0.7' },
-  { url: 'https://www.mediwaste.co.uk/compliance', lastmod: '2026-04-10', changefreq: 'monthly', priority: '0.7' },
-  { url: 'https://www.mediwaste.co.uk/privacy', lastmod: '2026-04-10', changefreq: 'yearly', priority: '0.3' },
-  { url: 'https://www.mediwaste.co.uk/terms', lastmod: '2026-04-10', changefreq: 'yearly', priority: '0.3' },
-  { url: 'https://www.mediwaste.co.uk/cookies', lastmod: '2026-04-10', changefreq: 'yearly', priority: '0.3' },
+  { url: 'https://mediwaste.co.uk', lastmod: '2026-04-10', changefreq: 'weekly', priority: '1.0' },
+  { url: 'https://mediwaste.co.uk/about', lastmod: '2026-04-10', changefreq: 'monthly', priority: '0.8' },
+  { url: 'https://mediwaste.co.uk/contact', lastmod: '2026-04-10', changefreq: 'monthly', priority: '0.9' },
+  { url: 'https://mediwaste.co.uk/quote', lastmod: '2026-04-10', changefreq: 'monthly', priority: '0.9' },
+  { url: 'https://mediwaste.co.uk/audit', lastmod: '2026-06-20', changefreq: 'monthly', priority: '0.9' },
+  { url: 'https://mediwaste.co.uk/faq', lastmod: '2026-04-10', changefreq: 'monthly', priority: '0.7' },
+  { url: 'https://mediwaste.co.uk/waste-services', lastmod: '2026-04-10', changefreq: 'monthly', priority: '0.9' },
+  { url: 'https://mediwaste.co.uk/waste-services/infectious-waste', lastmod: '2026-04-10', changefreq: 'monthly', priority: '0.8' },
+  { url: 'https://mediwaste.co.uk/waste-services/sharps-waste', lastmod: '2026-04-10', changefreq: 'monthly', priority: '0.8' },
+  { url: 'https://mediwaste.co.uk/waste-services/pharmaceutical-waste', lastmod: '2026-04-10', changefreq: 'monthly', priority: '0.8' },
+  { url: 'https://mediwaste.co.uk/waste-services/cytotoxic-waste', lastmod: '2026-04-10', changefreq: 'monthly', priority: '0.8' },
+  { url: 'https://mediwaste.co.uk/waste-services/dental-waste', lastmod: '2026-04-10', changefreq: 'monthly', priority: '0.8' },
+  { url: 'https://mediwaste.co.uk/waste-services/anatomical-waste', lastmod: '2026-04-10', changefreq: 'monthly', priority: '0.8' },
+  { url: 'https://mediwaste.co.uk/service-coverage', lastmod: '2026-04-10', changefreq: 'monthly', priority: '0.8' },
+  { url: 'https://mediwaste.co.uk/service-areas/london', lastmod: '2026-04-10', changefreq: 'monthly', priority: '0.9' },
+  { url: 'https://mediwaste.co.uk/service-areas/kent', lastmod: '2026-04-10', changefreq: 'monthly', priority: '0.8' },
+  { url: 'https://mediwaste.co.uk/service-areas/essex', lastmod: '2026-04-10', changefreq: 'monthly', priority: '0.8' },
+  { url: 'https://mediwaste.co.uk/service-areas/surrey', lastmod: '2026-04-10', changefreq: 'monthly', priority: '0.8' },
+  { url: 'https://mediwaste.co.uk/service-areas/sussex', lastmod: '2026-04-10', changefreq: 'monthly', priority: '0.8' },
+  { url: 'https://mediwaste.co.uk/service-areas/hampshire', lastmod: '2026-04-10', changefreq: 'monthly', priority: '0.8' },
+  { url: 'https://mediwaste.co.uk/clinical-waste-disposal-london', lastmod: '2026-04-10', changefreq: 'monthly', priority: '0.9' },
+  { url: 'https://mediwaste.co.uk/clinical-waste-disposal-kent', lastmod: '2026-04-10', changefreq: 'monthly', priority: '0.8' },
+  { url: 'https://mediwaste.co.uk/clinical-waste-disposal-essex', lastmod: '2026-04-10', changefreq: 'monthly', priority: '0.8' },
+  { url: 'https://mediwaste.co.uk/clinical-waste-disposal-surrey', lastmod: '2026-04-10', changefreq: 'monthly', priority: '0.8' },
+  { url: 'https://mediwaste.co.uk/clinical-waste-disposal-sussex', lastmod: '2026-04-10', changefreq: 'monthly', priority: '0.8' },
+  { url: 'https://mediwaste.co.uk/clinical-waste-disposal-hampshire', lastmod: '2026-04-10', changefreq: 'monthly', priority: '0.8' },
+  { url: 'https://mediwaste.co.uk/directory-listings', lastmod: '2026-05-15', changefreq: 'weekly', priority: '0.5' },
+  { url: 'https://mediwaste.co.uk/news', lastmod: '2026-04-10', changefreq: 'weekly', priority: '0.7' },
+  { url: 'https://mediwaste.co.uk/compliance', lastmod: '2026-04-10', changefreq: 'monthly', priority: '0.7' },
+  { url: 'https://mediwaste.co.uk/privacy', lastmod: '2026-04-10', changefreq: 'yearly', priority: '0.3' },
+  { url: 'https://mediwaste.co.uk/terms', lastmod: '2026-04-10', changefreq: 'yearly', priority: '0.3' },
+  { url: 'https://mediwaste.co.uk/cookies', lastmod: '2026-04-10', changefreq: 'yearly', priority: '0.3' },
 ];
 
 const ROBOTS_CONTENT = `User-agent: *
@@ -61,7 +61,7 @@ Disallow: /quote/*
 
 Crawl-delay: 1
 
-Sitemap: https://www.mediwaste.co.uk/sitemap.xml`;
+Sitemap: https://mediwaste.co.uk/sitemap.xml`;
 
 const PER_PAGE = 50;
 
@@ -79,7 +79,7 @@ export default function SitemapPage() {
         .eq('status', 'published')
         .order('published_at', { ascending: false });
       return (data || []).map((p: any) => ({
-        url: `https://www.mediwaste.co.uk/c/${p.url_slug}`,
+        url: `https://mediwaste.co.uk/c/${p.url_slug}`,
         lastmod: (p.updated_at || p.published_at || '').split('T')[0],
         changefreq: 'weekly',
         priority: '0.7',
@@ -263,7 +263,7 @@ ${urls.join('\n')}
                   </thead>
                   <tbody className="divide-y divide-gray-100">
                     {paginatedEntries.map((entry, i) => {
-                      const path = entry.url.replace('https://www.mediwaste.co.uk', '');
+                      const path = entry.url.replace('https://mediwaste.co.uk', '');
                       return (
                         <tr key={entry.url} className="hover:bg-gray-50">
                           <td className="px-4 py-2.5 text-gray-400 font-mono text-xs">

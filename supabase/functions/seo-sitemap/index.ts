@@ -8,7 +8,7 @@ const corsHeaders = {
     "Content-Type, Authorization, X-Client-Info, Apikey",
 };
 
-const BASE_URL = "https://www.mediwaste.co.uk";
+const BASE_URL = "https://mediwaste.co.uk";
 
 const STATIC_URLS = [
   { loc: "/", lastmod: "2026-05-15", changefreq: "weekly", priority: "1.0" },
