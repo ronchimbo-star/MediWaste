@@ -278,7 +278,7 @@ export default function SeoPageEditPage() {
         {showPreview ? (
           <div className="bg-white rounded-xl border border-gray-200 p-6">
             <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-              <p className="text-sm text-blue-600 mb-1">https://www.mediwaste.co.uk/c/{form.url_slug}</p>
+              <p className="text-sm text-blue-600 mb-1">https://mediwaste.co.uk/c/{form.url_slug}</p>
               <p className="text-lg font-medium text-gray-900">{form.meta_title || form.h1 || 'Untitled'}</p>
               <p className="text-sm text-gray-600">{form.meta_description || 'No description set'}</p>
             </div>

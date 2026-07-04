@@ -115,7 +115,7 @@ export default function SeoPage() {
     );
   }
 
-  const baseUrl = 'https://www.mediwaste.co.uk';
+  const baseUrl = 'https://mediwaste.co.uk';
   const canonical = page.canonical_url || `${baseUrl}/c/${page.url_slug}`;
   const title = page.meta_title || page.h1 || page.target_keyword;
   const description = page.meta_description || `Professional ${page.target_keyword} services from MediWaste. Fully licensed, compliant clinical waste disposal across the UK.`;

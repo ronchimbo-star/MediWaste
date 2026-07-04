@@ -85,7 +85,7 @@ export default function DirectoryListingsPage() {
   const businessName = settings?.business_name || 'MediWaste';
   const metaTitle = settings?.meta_title_override || `${businessName} Directory Listings | Find Us Online`;
   const metaDescription = settings?.meta_description_override || `View all active directory listings for ${businessName}. Find and verify our business on Yell, Google Maps, FreeIndex, and more.`;
-  const canonical = 'https://www.mediwaste.co.uk/directory-listings';
+  const canonical = 'https://mediwaste.co.uk/directory-listings';
 
   // Group listings by category
   const grouped = listings.reduce<Record<string, DirectoryListing[]>>((acc, listing) => {
@@ -112,7 +112,7 @@ export default function DirectoryListingsPage() {
     mainEntity: {
       '@type': 'Organization',
       name: businessName,
-      url: 'https://www.mediwaste.co.uk',
+      url: 'https://mediwaste.co.uk',
     },
   };
 

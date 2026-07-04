@@ -3,6 +3,7 @@ import { Link, useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import SEO from '../components/SEO';
 
 interface NewsArticle {
   id: string;
@@ -142,6 +143,11 @@ export default function NewsCategoryPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
+      <SEO
+        title={`${category.name} | MediWaste News`}
+        description={category.description || `Browse MediWaste articles in the ${category.name} category. Guidance, regulation updates, and industry news.`}
+        canonical={`https://mediwaste.co.uk/news/category/${categorySlug}`}
+      />
 
       <nav className="bg-white border-b border-gray-200 py-4">
         <div className="container mx-auto px-4">
