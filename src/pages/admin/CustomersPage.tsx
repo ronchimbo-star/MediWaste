@@ -14,6 +14,9 @@ interface Customer {
   phone: string;
   mobile: string;
   status: 'active' | 'suspended' | 'cancelled';
+  collection_address: string;
+  postcode: string;
+  notes: string;
   created_at: string;
 }
 
@@ -34,7 +37,9 @@ export default function CustomersPage() {
     phone: '',
     mobile: '',
     status: 'active' as 'active' | 'suspended' | 'cancelled',
-    notes: ''
+    collection_address: '',
+    postcode: '',
+    notes: '',
   });
 
   useEffect(() => {
@@ -72,6 +77,8 @@ export default function CustomersPage() {
             phone: formData.phone,
             mobile: formData.mobile,
             status: formData.status,
+            collection_address: formData.collection_address,
+            postcode: formData.postcode,
             notes: formData.notes,
           })
           .eq('id', editingCustomer.id);
@@ -88,6 +95,8 @@ export default function CustomersPage() {
             phone: formData.phone,
             mobile: formData.mobile,
             status: formData.status,
+            collection_address: formData.collection_address,
+            postcode: formData.postcode,
             notes: formData.notes,
             customer_number: '',
           }]);
@@ -132,7 +141,9 @@ export default function CustomersPage() {
       phone: '',
       mobile: '',
       status: 'active',
-      notes: ''
+      collection_address: '',
+      postcode: '',
+      notes: '',
     });
   };
 
@@ -145,6 +156,8 @@ export default function CustomersPage() {
       phone: customer.phone || '',
       mobile: customer.mobile || '',
       status: customer.status,
+      collection_address: customer.collection_address || '',
+      postcode: customer.postcode || '',
       notes: customer.notes || '',
     });
     setShowModal(true);
@@ -391,6 +404,30 @@ export default function CustomersPage() {
                     <option value="suspended">Suspended</option>
                     <option value="cancelled">Cancelled</option>
                   </select>
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Collection Address
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.collection_address}
+                    onChange={(e) => setFormData({ ...formData, collection_address: e.target.value })}
+                    placeholder="Street address where waste is collected"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#F59E0B] focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Postcode
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.postcode}
+                    onChange={(e) => setFormData({ ...formData, postcode: e.target.value.toUpperCase() })}
+                    placeholder="e.g. SW3 6SP"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#F59E0B] focus:border-transparent"
+                  />
                 </div>
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
