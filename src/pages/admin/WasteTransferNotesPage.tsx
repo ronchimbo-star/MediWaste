@@ -25,13 +25,26 @@ interface WasteCarrier {
   registration_valid_until: string | null;
 }
 
+interface WtnCustomer {
+  id: string;
+  customer_number: string;
+  company_name: string;
+  contact_name: string;
+  email?: string;
+  phone?: string;
+  mobile?: string;
+  collection_address?: string;
+  postcode?: string;
+}
+
 interface WasteTransferNote {
   id: string;
   wtn_number: string;
   job: { job_number: string; service_type: string; } | null;
-  customer: { id: string; customer_number: string; company_name: string; contact_name: string; };
+  customer: WtnCustomer;
   carrier: WasteCarrier | null;
   issue_date: string;
+  collection_date: string | null;
   carrier_signature: string | null;
   customer_signature: string | null;
   mw_wtn_line_items?: WtnLineItem[];
@@ -44,20 +57,40 @@ interface WasteTransferNote {
   container_count?: number;
 }
 
-// EA waste codes for common healthcare waste types
+// EA / EWC waste codes for healthcare waste
 const WASTE_CODES: Record<string, string> = {
   clinical_waste: '18 01 03*',
   sharps: '18 01 01',
-  pharmaceutical: '18 01 08*',
+  pharmaceutical: '18 01 09',
   cytotoxic: '18 01 08*',
   anatomical: '18 01 02',
   dental: '18 01 03*',
   general_medical: '18 01 04',
 };
 
-const WASTE_TYPES = ['clinical_waste', 'sharps', 'pharmaceutical', 'cytotoxic', 'anatomical', 'dental', 'general_medical'];
+const WASTE_TYPE_LABELS: Record<string, string> = {
+  clinical_waste: 'Clinical Waste',
+  sharps: 'Sharps Waste',
+  pharmaceutical: 'Pharmaceutical Waste',
+  cytotoxic: 'Cytotoxic / Cytostatic',
+  anatomical: 'Anatomical Waste',
+  dental: 'Dental Waste',
+  general_medical: 'General Medical',
+};
+
+const WASTE_TYPES = Object.keys(WASTE_CODES);
 const CONTAINER_TYPES = ['yellow_bag', 'sharps_bin', 'rigid_container', 'drum', 'box', 'tiger_stripe_bag', 'purple_bag'];
 const QUANTITY_UNITS = ['kg', 'litres', 'units', 'bags'];
+
+const CONTAINER_TYPE_LABELS: Record<string, string> = {
+  yellow_bag: 'Yellow Bag',
+  sharps_bin: 'Sharps Bin',
+  rigid_container: 'Rigid Container',
+  drum: 'Drum',
+  box: 'Box',
+  tiger_stripe_bag: 'Tiger Stripe Bag',
+  purple_bag: 'Purple Bag',
+};
 
 const emptyLineItem = (): WtnLineItem => ({
   waste_type: 'clinical_waste',
@@ -69,9 +102,14 @@ const emptyLineItem = (): WtnLineItem => ({
   container_count: '1',
 });
 
+const todayStr = () => new Date().toISOString().split('T')[0];
+
 const emptyCreateForm = {
   customer_id: '', job_id: '', carrier_id: '',
+  collection_date: todayStr(),
 };
+
+const CUSTOMER_SELECT = 'id,customer_number,company_name,contact_name,email,phone,mobile,collection_address,postcode';
 
 export default function WasteTransferNotesPage() {
   const { toast } = useToastContext();
@@ -92,13 +130,12 @@ export default function WasteTransferNotesPage() {
 
   useEffect(() => { fetchWTNs(); }, []);
 
-  // Auto-open create modal when navigated here from a job card
   useEffect(() => {
     const prefill = (location.state as any)?.prefill;
     if (!prefill) return;
     (async () => {
       const [custRes, jobRes, carrierRes] = await Promise.all([
-        supabase.from('mw_customers').select('id,customer_number,company_name,contact_name').eq('status', 'active').order('company_name'),
+        supabase.from('mw_customers').select(CUSTOMER_SELECT).eq('status', 'active').order('company_name'),
         supabase.from('mw_service_jobs').select('id,job_number,service_type').in('status', ['completed', 'scheduled']).order('scheduled_date', { ascending: false }).limit(50),
         supabase.from('mw_waste_carriers').select('id,name,address,registration_number,registration_type,registration_valid_until').eq('is_active', true).order('name'),
       ]);
@@ -107,7 +144,6 @@ export default function WasteTransferNotesPage() {
       setCarriers(carrierRes.data || []);
       const newForm = { ...emptyCreateForm, customer_id: prefill.customer_id || '', job_id: prefill.job_id || '' };
       setCreateForm(newForm);
-      // Pre-populate items from job if provided
       if (prefill.job_id) {
         const items = await fetchJobItems(prefill.job_id);
         setLineItems(items.length > 0 ? items : [emptyLineItem()]);
@@ -126,7 +162,7 @@ export default function WasteTransferNotesPage() {
         .select(`
           *,
           job:mw_service_jobs(job_number, service_type),
-          customer:mw_customers!inner(id, customer_number, company_name, contact_name),
+          customer:mw_customers!inner(${CUSTOMER_SELECT}),
           carrier:mw_waste_carriers(id, name, address, registration_number, registration_type, registration_valid_until),
           mw_wtn_line_items(*)
         `)
@@ -160,7 +196,7 @@ export default function WasteTransferNotesPage() {
 
   const openCreateModal = async () => {
     const [custRes, jobRes, carrierRes] = await Promise.all([
-      supabase.from('mw_customers').select('id,customer_number,company_name,contact_name').eq('status', 'active').order('company_name'),
+      supabase.from('mw_customers').select(CUSTOMER_SELECT).eq('status', 'active').order('company_name'),
       supabase.from('mw_service_jobs').select('id,job_number,service_type').in('status', ['completed', 'scheduled']).order('scheduled_date', { ascending: false }).limit(50),
       supabase.from('mw_waste_carriers').select('id,name,address,registration_number,registration_type,registration_valid_until').eq('is_active', true).order('name'),
     ]);
@@ -175,7 +211,7 @@ export default function WasteTransferNotesPage() {
 
   const openEditModal = async (wtn: WasteTransferNote) => {
     const [custRes, jobRes, carrierRes] = await Promise.all([
-      supabase.from('mw_customers').select('id,customer_number,company_name,contact_name').eq('status', 'active').order('company_name'),
+      supabase.from('mw_customers').select(CUSTOMER_SELECT).eq('status', 'active').order('company_name'),
       supabase.from('mw_service_jobs').select('id,job_number,service_type').in('status', ['completed', 'scheduled']).order('scheduled_date', { ascending: false }).limit(50),
       supabase.from('mw_waste_carriers').select('id,name,address,registration_number,registration_type,registration_valid_until').eq('is_active', true).order('name'),
     ]);
@@ -183,7 +219,6 @@ export default function WasteTransferNotesPage() {
     setJobs(jobRes.data || []);
     setCarriers(carrierRes.data || []);
     setEditingWtn(wtn);
-    // Resolve job_id from the linked job
     let jobId = '';
     if (wtn.job) {
       const found = (jobRes.data || []).find((j: any) => j.job_number === wtn.job?.job_number);
@@ -193,12 +228,13 @@ export default function WasteTransferNotesPage() {
       customer_id: wtn.customer.id,
       job_id: jobId,
       carrier_id: wtn.carrier?.id || '',
+      collection_date: wtn.collection_date || todayStr(),
     });
     const existing = (wtn.mw_wtn_line_items && wtn.mw_wtn_line_items.length > 0)
       ? wtn.mw_wtn_line_items.map(i => ({
           id: i.id,
           waste_type: i.waste_type,
-          waste_code: i.waste_code,
+          waste_code: i.waste_code || WASTE_CODES[i.waste_type] || '',
           waste_description: i.waste_description,
           quantity: String(i.quantity),
           quantity_unit: i.quantity_unit,
@@ -239,6 +275,7 @@ export default function WasteTransferNotesPage() {
         job_id: createForm.job_id || null,
         carrier_id: createForm.carrier_id || null,
         issue_date: new Date().toISOString().split('T')[0],
+        collection_date: createForm.collection_date || null,
         carrier_signature: selectedCarrier?.name || null,
       }]).select('id').single();
       if (wtnErr || !wtn) throw wtnErr || new Error('WTN insert failed');
@@ -282,11 +319,11 @@ export default function WasteTransferNotesPage() {
         customer_id: createForm.customer_id,
         job_id: createForm.job_id || null,
         carrier_id: createForm.carrier_id || null,
+        collection_date: createForm.collection_date || null,
         carrier_signature: selectedCarrier?.name || null,
       }).eq('id', editingWtn.id);
       if (wtnErr) throw wtnErr;
 
-      // Replace all line items
       await supabase.from('mw_wtn_line_items').delete().eq('wtn_id', editingWtn.id);
       const { error: itemsErr } = await supabase.from('mw_wtn_line_items').insert(
         validItems.map((item, idx) => ({
@@ -325,7 +362,7 @@ export default function WasteTransferNotesPage() {
 
   function wtnSummary(wtn: WasteTransferNote) {
     if (wtn.mw_wtn_line_items && wtn.mw_wtn_line_items.length > 0) {
-      return wtn.mw_wtn_line_items.map(i => i.waste_type?.replace(/_/g, ' ')).join(', ');
+      return wtn.mw_wtn_line_items.map(i => WASTE_TYPE_LABELS[i.waste_type] || i.waste_type?.replace(/_/g, ' ')).join(', ');
     }
     return wtn.waste_type?.replace(/_/g, ' ') || '—';
   }
@@ -376,7 +413,7 @@ export default function WasteTransferNotesPage() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Carrier</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Waste Type(s)</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Quantity</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Issue Date</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Collection Date</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
                 </tr>
               </thead>
@@ -391,9 +428,11 @@ export default function WasteTransferNotesPage() {
                     <td className="px-6 py-4 text-sm text-gray-500">{wtn.job?.job_number || '—'}</td>
                     <td className="px-6 py-4 text-sm text-gray-900">{wtn.customer.company_name || wtn.customer.contact_name}</td>
                     <td className="px-6 py-4 text-sm text-gray-500">{wtn.carrier?.name || '—'}</td>
-                    <td className="px-6 py-4 text-sm text-gray-500 capitalize">{wtnSummary(wtn)}</td>
+                    <td className="px-6 py-4 text-sm text-gray-500">{wtnSummary(wtn)}</td>
                     <td className="px-6 py-4 text-sm text-gray-500">{wtnQtySummary(wtn)}</td>
-                    <td className="px-6 py-4 text-sm text-gray-500">{new Date(wtn.issue_date).toLocaleDateString('en-GB')}</td>
+                    <td className="px-6 py-4 text-sm text-gray-500">
+                      {wtn.collection_date ? new Date(wtn.collection_date).toLocaleDateString('en-GB') : '—'}
+                    </td>
                     <td className="px-6 py-4 text-sm">
                       <div className="flex items-center gap-2">
                         <button onClick={() => { setSelectedWtn(wtn); setShowModal(true); }} className="text-blue-600 hover:text-blue-900" title="View">
@@ -436,6 +475,17 @@ export default function WasteTransferNotesPage() {
                   {customers.map(c => <option key={c.id} value={c.id}>{c.company_name || c.contact_name} ({c.customer_number})</option>)}
                 </select>
               </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Collection Date</label>
+                <input
+                  type="date"
+                  value={createForm.collection_date}
+                  onChange={e => setCreateForm({ ...createForm, collection_date: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent"
+                />
+              </div>
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Linked Job (optional)</label>
                 <select
@@ -448,6 +498,7 @@ export default function WasteTransferNotesPage() {
                 </select>
                 {jobItemsLoading && <p className="text-xs text-orange-600 mt-1">Loading job items...</p>}
               </div>
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Waste Carrier</label>
                 <select
@@ -497,16 +548,16 @@ export default function WasteTransferNotesPage() {
                             onChange={e => updateLineItem(idx, 'waste_type', e.target.value)}
                             className="w-full px-2 py-1.5 border border-gray-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-orange-400 focus:border-transparent"
                           >
-                            {WASTE_TYPES.map(t => <option key={t} value={t}>{t.replace(/_/g, ' ')}</option>)}
+                            {WASTE_TYPES.map(t => <option key={t} value={t}>{WASTE_TYPE_LABELS[t] || t.replace(/_/g, ' ')}</option>)}
                           </select>
                         </div>
                         <div>
-                          <label className="block text-xs font-medium text-gray-600 mb-1">Waste Code (EA)</label>
+                          <label className="block text-xs font-medium text-gray-600 mb-1">EWC Code</label>
                           <input
                             type="text"
                             value={item.waste_code}
                             onChange={e => updateLineItem(idx, 'waste_code', e.target.value)}
-                            className="w-full px-2 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent"
+                            className="w-full px-2 py-1.5 border border-gray-300 rounded-lg text-sm font-mono focus:ring-2 focus:ring-orange-400 focus:border-transparent bg-orange-50"
                             placeholder="e.g. 18 01 03*"
                           />
                         </div>
@@ -529,7 +580,7 @@ export default function WasteTransferNotesPage() {
                             onChange={e => updateLineItem(idx, 'container_type', e.target.value)}
                             className="w-full px-2 py-1.5 border border-gray-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-orange-400 focus:border-transparent"
                           >
-                            {CONTAINER_TYPES.map(t => <option key={t} value={t}>{t.replace(/_/g, ' ')}</option>)}
+                            {CONTAINER_TYPES.map(t => <option key={t} value={t}>{CONTAINER_TYPE_LABELS[t] || t.replace(/_/g, ' ')}</option>)}
                           </select>
                         </div>
                         <div>
@@ -664,11 +715,26 @@ function WTNViewModal({ wtn, onClose }: WTNViewModalProps) {
         : [];
 
   const carrier = wtn.carrier;
+
   const registrationTypeLabel = (t: string) => {
     if (t === 'upper_tier') return 'Upper tier waste carrier, broker and dealer';
     if (t === 'lower_tier') return 'Lower tier waste carrier';
     return t;
   };
+
+  // Build collection address: prefer structured address table, fall back to customer fields
+  const collectionAddressLines: string[] = [];
+  if (customerAddress) {
+    if (customerAddress.address_line1) collectionAddressLines.push(customerAddress.address_line1);
+    if (customerAddress.address_line2) collectionAddressLines.push(customerAddress.address_line2);
+    const cityPost = [customerAddress.city, customerAddress.postcode].filter(Boolean).join(', ');
+    if (cityPost) collectionAddressLines.push(cityPost);
+  } else if (wtn.customer.collection_address) {
+    collectionAddressLines.push(wtn.customer.collection_address);
+    if (wtn.customer.postcode) collectionAddressLines.push(wtn.customer.postcode);
+  }
+
+  const customerPhone = wtn.customer.phone || wtn.customer.mobile || null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -689,9 +755,17 @@ function WTNViewModal({ wtn, onClose }: WTNViewModalProps) {
                 <img src={logoDataUrl} alt="MediWaste" style={{ height: '60px', width: 'auto', objectFit: 'contain' }} />
               </div>
               <div className="text-right">
-                <p className="text-sm font-semibold">WTN Number</p>
+                <p className="text-sm font-semibold text-gray-500">WASTE TRANSFER NOTE</p>
                 <p className="text-lg font-bold text-gray-900">{wtn.wtn_number}</p>
-                <p className="text-sm text-gray-600 mt-1">Issue Date: {new Date(wtn.issue_date).toLocaleDateString('en-GB')}</p>
+                <div className="mt-1 text-sm text-gray-600 space-y-0.5">
+                  <p><span className="font-medium">Issue Date:</span> {new Date(wtn.issue_date).toLocaleDateString('en-GB')}</p>
+                  {wtn.collection_date && (
+                    <p><span className="font-medium">Collection Date:</span> <span className="font-semibold text-gray-800">{new Date(wtn.collection_date).toLocaleDateString('en-GB')}</span></p>
+                  )}
+                  {wtn.job && (
+                    <p><span className="font-medium">Job Ref:</span> {wtn.job.job_number}</p>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -701,25 +775,25 @@ function WTNViewModal({ wtn, onClose }: WTNViewModalProps) {
               {carrier ? (
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <p className="font-semibold">Company Name:</p>
-                    <p>{carrier.name}</p>
+                    <p className="font-semibold text-gray-600">Company Name:</p>
+                    <p className="text-gray-900">{carrier.name}</p>
                   </div>
                   <div>
-                    <p className="font-semibold">Registration Number:</p>
-                    <p>{carrier.registration_number || '—'}</p>
+                    <p className="font-semibold text-gray-600">Registration Number:</p>
+                    <p className="text-gray-900 font-mono">{carrier.registration_number || '—'}</p>
                   </div>
                   <div className="col-span-2">
-                    <p className="font-semibold">Address:</p>
-                    <p>{carrier.address}</p>
+                    <p className="font-semibold text-gray-600">Address:</p>
+                    <p className="text-gray-900">{carrier.address}</p>
                   </div>
                   <div>
-                    <p className="font-semibold">Registration Type:</p>
-                    <p>{registrationTypeLabel(carrier.registration_type)}</p>
+                    <p className="font-semibold text-gray-600">Registration Type:</p>
+                    <p className="text-gray-900">{registrationTypeLabel(carrier.registration_type)}</p>
                   </div>
                   {carrier.registration_valid_until && (
                     <div>
-                      <p className="font-semibold">Registration Valid Until:</p>
-                      <p>{new Date(carrier.registration_valid_until).toLocaleDateString('en-GB')}</p>
+                      <p className="font-semibold text-gray-600">Registration Valid Until:</p>
+                      <p className="text-gray-900">{new Date(carrier.registration_valid_until).toLocaleDateString('en-GB')}</p>
                     </div>
                   )}
                 </div>
@@ -731,25 +805,34 @@ function WTNViewModal({ wtn, onClose }: WTNViewModalProps) {
             {/* Addresses */}
             <div className="grid grid-cols-2 gap-6 mb-4">
               <div>
-                <h4 className="font-bold text-gray-900 mb-3">Collection Address</h4>
-                <div className="text-sm">
-                  <p className="font-semibold">{wtn.customer.company_name || wtn.customer.contact_name}</p>
-                  <p className="text-gray-600">Customer: {wtn.customer.customer_number}</p>
-                  {customerAddress && (
-                    <div className="mt-2">
-                      <p>{customerAddress.address_line1}</p>
-                      {customerAddress.address_line2 && <p>{customerAddress.address_line2}</p>}
-                      <p>{customerAddress.city}, {customerAddress.postcode}</p>
+                <h4 className="font-bold text-gray-900 mb-3">Collection Address / Producer</h4>
+                <div className="text-sm space-y-0.5">
+                  <p className="font-semibold text-gray-900">{wtn.customer.company_name || wtn.customer.contact_name}</p>
+                  <p className="text-gray-600">Customer No: {wtn.customer.customer_number}</p>
+                  {wtn.customer.contact_name && wtn.customer.company_name && (
+                    <p className="text-gray-700">Contact: {wtn.customer.contact_name}</p>
+                  )}
+                  {wtn.customer.email && (
+                    <p className="text-gray-600">{wtn.customer.email}</p>
+                  )}
+                  {customerPhone && (
+                    <p className="text-gray-600">{customerPhone}</p>
+                  )}
+                  {collectionAddressLines.length > 0 && (
+                    <div className="mt-1 pt-1 border-t border-gray-100">
+                      {collectionAddressLines.map((line, i) => (
+                        <p key={i} className="text-gray-700">{line}</p>
+                      ))}
                     </div>
                   )}
                 </div>
               </div>
               <div>
-                <h4 className="font-bold text-gray-900 mb-3">Processing Site</h4>
+                <h4 className="font-bold text-gray-900 mb-3">Processing / Consignee Site</h4>
                 <div className="text-sm">
                   {carrier ? (
                     <>
-                      <p className="font-semibold">{carrier.name}</p>
+                      <p className="font-semibold text-gray-900">{carrier.name}</p>
                       <p className="text-gray-700 mt-1">{carrier.address}</p>
                     </>
                   ) : (
@@ -765,24 +848,34 @@ function WTNViewModal({ wtn, onClose }: WTNViewModalProps) {
               {lineItems.length > 0 ? (
                 <table className="w-full text-sm border-collapse">
                   <thead>
-                    <tr className="bg-gray-50">
-                      <th className="border border-gray-300 px-3 py-2 text-left font-semibold">Waste Type</th>
-                      <th className="border border-gray-300 px-3 py-2 text-left font-semibold">Waste Code</th>
-                      <th className="border border-gray-300 px-3 py-2 text-left font-semibold">Description</th>
-                      <th className="border border-gray-300 px-3 py-2 text-left font-semibold">Container</th>
-                      <th className="border border-gray-300 px-3 py-2 text-right font-semibold">Qty</th>
-                      <th className="border border-gray-300 px-3 py-2 text-right font-semibold">Containers</th>
+                    <tr className="bg-gray-100">
+                      <th className="border border-gray-300 px-3 py-2 text-left font-semibold text-gray-700">Waste Type</th>
+                      <th className="border border-gray-300 px-3 py-2 text-left font-semibold text-gray-700">EWC Code</th>
+                      <th className="border border-gray-300 px-3 py-2 text-left font-semibold text-gray-700">Description</th>
+                      <th className="border border-gray-300 px-3 py-2 text-left font-semibold text-gray-700">Container</th>
+                      <th className="border border-gray-300 px-3 py-2 text-center font-semibold text-gray-700">No.</th>
+                      <th className="border border-gray-300 px-3 py-2 text-right font-semibold text-gray-700">Quantity</th>
                     </tr>
                   </thead>
                   <tbody>
                     {lineItems.map((item, i) => (
                       <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                        <td className="border border-gray-300 px-3 py-2 capitalize">{item.waste_type?.replace(/_/g, ' ')}</td>
-                        <td className="border border-gray-300 px-3 py-2 font-mono text-xs">{item.waste_code || '—'}</td>
-                        <td className="border border-gray-300 px-3 py-2">{item.waste_description}</td>
-                        <td className="border border-gray-300 px-3 py-2 capitalize">{item.container_type?.replace(/_/g, ' ')}</td>
-                        <td className="border border-gray-300 px-3 py-2 text-right">{item.quantity} {item.quantity_unit}</td>
-                        <td className="border border-gray-300 px-3 py-2 text-right">{item.container_count}</td>
+                        <td className="border border-gray-300 px-3 py-2">
+                          {WASTE_TYPE_LABELS[item.waste_type] || item.waste_type?.replace(/_/g, ' ')}
+                        </td>
+                        <td className="border border-gray-300 px-3 py-2">
+                          <span className="font-mono font-semibold text-gray-800 bg-yellow-50 px-1.5 py-0.5 rounded text-xs">
+                            {item.waste_code || WASTE_CODES[item.waste_type] || '—'}
+                          </span>
+                        </td>
+                        <td className="border border-gray-300 px-3 py-2 text-gray-700">{item.waste_description}</td>
+                        <td className="border border-gray-300 px-3 py-2 text-gray-600">
+                          {CONTAINER_TYPE_LABELS[item.container_type] || item.container_type?.replace(/_/g, ' ')}
+                        </td>
+                        <td className="border border-gray-300 px-3 py-2 text-center text-gray-700">{item.container_count}</td>
+                        <td className="border border-gray-300 px-3 py-2 text-right text-gray-700">
+                          {item.quantity} {item.quantity_unit}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -792,35 +885,30 @@ function WTNViewModal({ wtn, onClose }: WTNViewModalProps) {
               )}
             </div>
 
-            {wtn.job && (
-              <div className="mb-4 text-sm">
-                <span className="font-semibold">Job Reference: </span>
-                <span>{wtn.job.job_number}</span>
-              </div>
-            )}
-
             {/* Signatures */}
             <div className="border-t border-gray-300 pt-4">
               <h4 className="font-bold text-gray-900 mb-3">Signatures</h4>
               <div className="grid grid-cols-2 gap-6">
                 <div>
-                  <p className="text-sm font-semibold mb-2">Carrier ({carrier?.name || 'Carrier'}):</p>
+                  <p className="text-sm font-semibold mb-1 text-gray-700">Carrier / Transporter:</p>
+                  <p className="text-xs text-gray-500 mb-2">{carrier?.name || '—'}</p>
                   <div className="border border-gray-300 rounded p-3 bg-gray-50 min-h-[48px]">
                     <p className="text-sm">{wtn.carrier_signature || carrier?.name || 'Not signed'}</p>
                   </div>
                 </div>
                 <div>
-                  <p className="text-sm font-semibold mb-2">Customer ({wtn.customer.company_name || wtn.customer.contact_name}):</p>
+                  <p className="text-sm font-semibold mb-1 text-gray-700">Producer / Consignor:</p>
+                  <p className="text-xs text-gray-500 mb-2">{wtn.customer.company_name || wtn.customer.contact_name}</p>
                   <div className="border border-gray-300 rounded p-3 bg-gray-50 min-h-[48px]">
-                  <p className="text-sm">{wtn.customer.company_name || wtn.customer.contact_name}</p>
+                    <p className="text-sm">{wtn.customer.company_name || wtn.customer.contact_name}</p>
                   </div>
                 </div>
               </div>
             </div>
 
             <div className="mt-6 text-xs text-gray-500 border-t border-gray-300 pt-4">
-              <p>This Waste Transfer Note is issued in accordance with the Waste (England and Wales) Regulations 2011.</p>
-              <p className="mt-1">This document must be retained for a minimum of 2 years.</p>
+              <p>This Waste Transfer Note is issued in accordance with the Waste (England and Wales) Regulations 2011 and the Environmental Protection Act 1990 (Duty of Care).</p>
+              <p className="mt-1">This document must be retained for a minimum of 2 years. EWC codes are listed in accordance with the European Waste Catalogue.</p>
             </div>
           </div>
 
