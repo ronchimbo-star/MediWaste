@@ -88,6 +88,7 @@ function splitContent(content: string | null | undefined) {
   if (!content) return { part1: '', part2: '', part3: '' };
 
   try {
+    if (typeof document === 'undefined') return { part1: content, part2: '', part3: '' };
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = content;
     const elements = Array.from(tempDiv.children);
