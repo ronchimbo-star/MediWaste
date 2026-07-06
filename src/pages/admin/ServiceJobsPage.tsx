@@ -2,9 +2,10 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
-import { Plus, Calendar as CalendarIcon, User, MapPin, X, FileEdit as Edit2, Trash2, Truck, Clock, CheckCircle, AlertCircle, ChevronDown, ChevronUp, Package, Download, FileText } from 'lucide-react';
+import { Plus, Calendar as CalendarIcon, User, MapPin, X, FileEdit as Edit2, Trash2, Truck, Clock, CheckCircle, AlertCircle, ChevronDown, ChevronUp, Package, Download, FileText, Camera } from 'lucide-react';
 import { useToastContext } from '../../contexts/ToastContext';
 import AdminLayout from '../../components/admin/AdminLayout';
+import PhotoUploadModal from '../../components/PhotoUploadModal';
 
 interface ServiceJob {
   id: string;
@@ -351,6 +352,7 @@ export default function ServiceJobsPage() {
   const [form, setForm] = useState({ ...emptyForm });
   const [wasteItems, setWasteItems] = useState<JobWasteItem[]>([emptyWasteItem()]);
   const [activeTab, setActiveTab] = useState<'jobs' | 'requests'>('jobs');
+  const [photoJob, setPhotoJob] = useState<{ id: string; job_number: string } | null>(null);
 
   const { data: jobs, isLoading } = useQuery({
     queryKey: ['service-jobs'],
@@ -606,6 +608,7 @@ export default function ServiceJobsPage() {
                         <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${statusBadge(job.status)}`}>{job.status.replace('_', ' ')}</span>
                         <button onClick={() => downloadICS(job)} className="text-green-500 hover:text-green-700 p-1" title="Download .ics"><Download size={14} /></button>
                         <button onClick={() => openEdit(job)} className="text-blue-500 hover:text-blue-700 p-1" title="Edit"><Edit2 size={14} /></button>
+                        <button onClick={() => setPhotoJob({ id: job.id, job_number: job.job_number })} className="text-purple-500 hover:text-purple-700 p-1" title="Upload photos"><Camera size={14} /></button>
                         <button
                           onClick={() => navigate('/admin/waste-transfer-notes', { state: { prefill: { job_id: job.id, customer_id: job.customer_id, job_number: job.job_number } } })}
                           className="text-orange-500 hover:text-orange-700 p-1"
@@ -825,6 +828,15 @@ export default function ServiceJobsPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {photoJob && (
+        <PhotoUploadModal
+          jobId={photoJob.id}
+          jobNumber={photoJob.job_number}
+          onClose={() => setPhotoJob(null)}
+          onPhotoAdded={() => { qc.invalidateQueries({ queryKey: ['service-jobs'] }); }}
+        />
       )}
     </AdminLayout>
   );

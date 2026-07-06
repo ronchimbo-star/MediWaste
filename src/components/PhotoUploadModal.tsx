@@ -59,7 +59,7 @@ export default function PhotoUploadModal({ jobId, jobNumber, onClose, onPhotoAdd
         const filePath = `job-photos/${fileName}`;
 
         const { error: uploadError } = await supabase.storage
-          .from('mediwaste-storage')
+          .from('media')
           .upload(filePath, file);
 
         if (uploadError) {
@@ -68,7 +68,7 @@ export default function PhotoUploadModal({ jobId, jobNumber, onClose, onPhotoAdd
         }
 
         const { data: { publicUrl } } = supabase.storage
-          .from('mediwaste-storage')
+          .from('media')
           .getPublicUrl(filePath);
 
         uploadedPhotos.push({
@@ -84,7 +84,8 @@ export default function PhotoUploadModal({ jobId, jobNumber, onClose, onPhotoAdd
             job_id: jobId,
             photo_url: photo.url,
             storage_path: photo.storage_path,
-            description: description || null
+            caption: description || null,
+            photo_type: 'collection',
           }]);
 
         if (dbError) throw dbError;

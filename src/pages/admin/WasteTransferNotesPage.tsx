@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
-import { Plus, Download, Eye, X, Pencil } from 'lucide-react';
+import { Plus, Download, Eye, X, Pencil, Camera, CheckSquare, Square, Image as ImageIcon } from 'lucide-react';
 import { useToastContext } from '../../contexts/ToastContext';
 import AdminLayout from '../../components/admin/AdminLayout';
+import PhotoUploadModal from '../../components/PhotoUploadModal';
 
 interface WtnLineItem {
   id?: string;
@@ -14,6 +15,18 @@ interface WtnLineItem {
   quantity_unit: string;
   container_type: string;
   container_count: string;
+}
+
+interface JobPhoto {
+  id: string;
+  photo_url: string;
+  caption: string | null;
+}
+
+interface WtnPhoto {
+  id: string;
+  photo_id: string;
+  job_photo: JobPhoto;
 }
 
 interface WasteCarrier {
@@ -40,7 +53,7 @@ interface WtnCustomer {
 interface WasteTransferNote {
   id: string;
   wtn_number: string;
-  job: { job_number: string; service_type: string; } | null;
+  job: { id?: string; job_number: string; service_type: string; } | null;
   customer: WtnCustomer;
   carrier: WasteCarrier | null;
   issue_date: string;
@@ -48,6 +61,7 @@ interface WasteTransferNote {
   carrier_signature: string | null;
   customer_signature: string | null;
   mw_wtn_line_items?: WtnLineItem[];
+  mw_wtn_photos?: WtnPhoto[];
   // legacy single-stream fields
   waste_description?: string;
   waste_type?: string;
@@ -127,6 +141,10 @@ export default function WasteTransferNotesPage() {
   const [jobs, setJobs] = useState<any[]>([]);
   const [carriers, setCarriers] = useState<WasteCarrier[]>([]);
   const [jobItemsLoading, setJobItemsLoading] = useState(false);
+  // Photo state
+  const [jobPhotos, setJobPhotos] = useState<JobPhoto[]>([]);
+  const [selectedPhotoIds, setSelectedPhotoIds] = useState<Set<string>>(new Set());
+  const [showPhotoUpload, setShowPhotoUpload] = useState(false);
 
   useEffect(() => { fetchWTNs(); }, []);
 
@@ -145,10 +163,17 @@ export default function WasteTransferNotesPage() {
       const newForm = { ...emptyCreateForm, customer_id: prefill.customer_id || '', job_id: prefill.job_id || '' };
       setCreateForm(newForm);
       if (prefill.job_id) {
-        const items = await fetchJobItems(prefill.job_id);
+        const [items, photos] = await Promise.all([
+          fetchJobItems(prefill.job_id),
+          fetchJobPhotos(prefill.job_id),
+        ]);
         setLineItems(items.length > 0 ? items : [emptyLineItem()]);
+        setJobPhotos(photos);
+        setSelectedPhotoIds(new Set(photos.map(p => p.id)));
       } else {
         setLineItems([emptyLineItem()]);
+        setJobPhotos([]);
+        setSelectedPhotoIds(new Set());
       }
       setShowCreateModal(true);
     })();
@@ -161,10 +186,11 @@ export default function WasteTransferNotesPage() {
         .from('mw_waste_transfer_notes')
         .select(`
           *,
-          job:mw_service_jobs(job_number, service_type),
+          job:mw_service_jobs(id, job_number, service_type),
           customer:mw_customers!inner(${CUSTOMER_SELECT}),
           carrier:mw_waste_carriers(id, name, address, registration_number, registration_type, registration_valid_until),
-          mw_wtn_line_items(*)
+          mw_wtn_line_items(*),
+          mw_wtn_photos(id, photo_id, job_photo:mw_job_photos(id, photo_url, caption))
         `)
         .order('issue_date', { ascending: false });
       if (error) throw error;
@@ -194,6 +220,15 @@ export default function WasteTransferNotesPage() {
     }));
   }
 
+  async function fetchJobPhotos(jobId: string): Promise<JobPhoto[]> {
+    const { data } = await supabase
+      .from('mw_job_photos')
+      .select('id, photo_url, caption')
+      .eq('job_id', jobId)
+      .order('uploaded_at', { ascending: true });
+    return (data || []) as JobPhoto[];
+  }
+
   const openCreateModal = async () => {
     const [custRes, jobRes, carrierRes] = await Promise.all([
       supabase.from('mw_customers').select(CUSTOMER_SELECT).eq('status', 'active').order('company_name'),
@@ -206,6 +241,8 @@ export default function WasteTransferNotesPage() {
     setEditingWtn(null);
     setCreateForm({ ...emptyCreateForm });
     setLineItems([emptyLineItem()]);
+    setJobPhotos([]);
+    setSelectedPhotoIds(new Set());
     setShowCreateModal(true);
   };
 
@@ -219,17 +256,20 @@ export default function WasteTransferNotesPage() {
     setJobs(jobRes.data || []);
     setCarriers(carrierRes.data || []);
     setEditingWtn(wtn);
-    let jobId = '';
-    if (wtn.job) {
+
+    let jobId = wtn.job?.id || '';
+    if (!jobId && wtn.job) {
       const found = (jobRes.data || []).find((j: any) => j.job_number === wtn.job?.job_number);
       if (found) jobId = found.id;
     }
+
     setCreateForm({
       customer_id: wtn.customer.id,
       job_id: jobId,
       carrier_id: wtn.carrier?.id || '',
       collection_date: wtn.collection_date || todayStr(),
     });
+
     const existing = (wtn.mw_wtn_line_items && wtn.mw_wtn_line_items.length > 0)
       ? wtn.mw_wtn_line_items.map(i => ({
           id: i.id,
@@ -243,19 +283,60 @@ export default function WasteTransferNotesPage() {
         }))
       : [emptyLineItem()];
     setLineItems(existing);
+
+    // Pre-select photos already attached to this WTN
+    const attachedIds = new Set((wtn.mw_wtn_photos || []).map(p => p.photo_id));
+    setSelectedPhotoIds(attachedIds);
+
+    // Load job photos if a job is linked
+    if (jobId) {
+      const photos = await fetchJobPhotos(jobId);
+      setJobPhotos(photos);
+    } else {
+      setJobPhotos([]);
+    }
+
     setShowCreateModal(true);
   };
 
   const handleJobChange = async (jobId: string) => {
     setCreateForm(f => ({ ...f, job_id: jobId }));
+    setJobPhotos([]);
+    setSelectedPhotoIds(new Set());
     if (!jobId) return;
+
     setJobItemsLoading(true);
-    const items = await fetchJobItems(jobId);
+    const [items, photos] = await Promise.all([
+      fetchJobItems(jobId),
+      fetchJobPhotos(jobId),
+    ]);
     setJobItemsLoading(false);
+
     if (items.length > 0) {
       setLineItems(items);
       toast.success(`Populated ${items.length} waste item${items.length !== 1 ? 's' : ''} from job`);
     }
+    setJobPhotos(photos);
+    setSelectedPhotoIds(new Set(photos.map(p => p.id)));
+  };
+
+  const togglePhotoSelection = (photoId: string) => {
+    setSelectedPhotoIds(prev => {
+      const next = new Set(prev);
+      if (next.has(photoId)) next.delete(photoId);
+      else next.add(photoId);
+      return next;
+    });
+  };
+
+  const saveWtnPhotos = async (wtnId: string) => {
+    if (selectedPhotoIds.size === 0) return;
+    const rows = Array.from(selectedPhotoIds).map((photoId, idx) => ({
+      wtn_id: wtnId,
+      photo_id: photoId,
+      sort_order: idx,
+    }));
+    await supabase.from('mw_wtn_photos').insert(rows);
   };
 
   const handleCreateWTN = async () => {
@@ -294,6 +375,8 @@ export default function WasteTransferNotesPage() {
         }))
       );
       if (itemsErr) throw itemsErr;
+
+      await saveWtnPhotos(wtn.id);
 
       toast.success(`WTN ${wtnNumber} created successfully`);
       setShowCreateModal(false);
@@ -340,6 +423,10 @@ export default function WasteTransferNotesPage() {
       );
       if (itemsErr) throw itemsErr;
 
+      // Replace photo attachments
+      await supabase.from('mw_wtn_photos').delete().eq('wtn_id', editingWtn.id);
+      await saveWtnPhotos(editingWtn.id);
+
       toast.success('WTN updated successfully');
       setShowCreateModal(false);
       setEditingWtn(null);
@@ -373,6 +460,10 @@ export default function WasteTransferNotesPage() {
     }
     return wtn.quantity ? `${wtn.quantity} ${wtn.quantity_unit || ''}` : '—';
   }
+
+  // The linked job id for photo upload in create/edit modal
+  const currentJobId = createForm.job_id;
+  const currentJobNumber = jobs.find(j => j.id === currentJobId)?.job_number || '';
 
   return (
     <AdminLayout pageTitle="Waste Transfer Notes" breadcrumbs={[{ label: 'Dashboard', path: '/admin' }, { label: 'Waste Transfer Notes' }]}>
@@ -413,6 +504,7 @@ export default function WasteTransferNotesPage() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Carrier</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Waste Type(s)</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Quantity</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Photos</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Collection Date</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
                 </tr>
@@ -420,7 +512,7 @@ export default function WasteTransferNotesPage() {
               <tbody className="divide-y divide-gray-200">
                 {wtns.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="px-6 py-12 text-center text-gray-500">No waste transfer notes found</td>
+                    <td colSpan={9} className="px-6 py-12 text-center text-gray-500">No waste transfer notes found</td>
                   </tr>
                 ) : wtns.map((wtn) => (
                   <tr key={wtn.id} className="hover:bg-gray-50">
@@ -430,6 +522,16 @@ export default function WasteTransferNotesPage() {
                     <td className="px-6 py-4 text-sm text-gray-500">{wtn.carrier?.name || '—'}</td>
                     <td className="px-6 py-4 text-sm text-gray-500">{wtnSummary(wtn)}</td>
                     <td className="px-6 py-4 text-sm text-gray-500">{wtnQtySummary(wtn)}</td>
+                    <td className="px-6 py-4 text-sm text-gray-500">
+                      {(wtn.mw_wtn_photos?.length ?? 0) > 0 ? (
+                        <span className="flex items-center gap-1 text-purple-600">
+                          <ImageIcon className="w-3.5 h-3.5" />
+                          {wtn.mw_wtn_photos!.length}
+                        </span>
+                      ) : (
+                        <span className="text-gray-300">—</span>
+                      )}
+                    </td>
                     <td className="px-6 py-4 text-sm text-gray-500">
                       {wtn.collection_date ? new Date(wtn.collection_date).toLocaleDateString('en-GB') : '—'}
                     </td>
@@ -619,6 +721,72 @@ export default function WasteTransferNotesPage() {
                   ))}
                 </div>
               </div>
+
+              {/* Collection Photos */}
+              {createForm.job_id && (
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="block text-sm font-medium text-gray-700 flex items-center gap-1.5">
+                      <Camera size={14} className="text-purple-500" />
+                      Collection Photos
+                      {jobPhotos.length > 0 && (
+                        <span className="text-xs text-gray-500 font-normal">({selectedPhotoIds.size} of {jobPhotos.length} selected)</span>
+                      )}
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setShowPhotoUpload(true)}
+                      className="flex items-center gap-1 text-xs text-purple-600 hover:text-purple-700 font-medium"
+                    >
+                      <Plus size={13} /> Upload Photos
+                    </button>
+                  </div>
+
+                  {jobPhotos.length === 0 ? (
+                    <div className="border border-dashed border-gray-300 rounded-lg p-4 text-center">
+                      <Camera className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+                      <p className="text-xs text-gray-500">No photos uploaded for this job yet.</p>
+                      <button
+                        type="button"
+                        onClick={() => setShowPhotoUpload(true)}
+                        className="mt-2 text-xs text-purple-600 hover:text-purple-700 font-medium underline"
+                      >
+                        Upload photos now
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-3 gap-2">
+                      {jobPhotos.map(photo => {
+                        const selected = selectedPhotoIds.has(photo.id);
+                        return (
+                          <button
+                            key={photo.id}
+                            type="button"
+                            onClick={() => togglePhotoSelection(photo.id)}
+                            className={`relative rounded-lg overflow-hidden border-2 transition-all ${
+                              selected ? 'border-purple-500 ring-2 ring-purple-200' : 'border-gray-200 hover:border-gray-400'
+                            }`}
+                          >
+                            <img
+                              src={photo.photo_url}
+                              alt={photo.caption || 'Collection photo'}
+                              className="w-full h-24 object-cover"
+                            />
+                            <div className={`absolute top-1.5 right-1.5 rounded-full p-0.5 ${selected ? 'text-purple-600 bg-white' : 'text-gray-400 bg-white bg-opacity-80'}`}>
+                              {selected ? <CheckSquare size={16} /> : <Square size={16} />}
+                            </div>
+                            {photo.caption && (
+                              <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs px-1.5 py-0.5 truncate">
+                                {photo.caption}
+                              </div>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
             <div className="p-5 border-t border-gray-100 flex justify-end gap-3">
               <button onClick={() => { setShowCreateModal(false); setEditingWtn(null); }} className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm hover:bg-gray-50">Cancel</button>
@@ -632,6 +800,23 @@ export default function WasteTransferNotesPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {showPhotoUpload && currentJobId && (
+        <PhotoUploadModal
+          jobId={currentJobId}
+          jobNumber={currentJobNumber}
+          onClose={() => setShowPhotoUpload(false)}
+          onPhotoAdded={async () => {
+            const photos = await fetchJobPhotos(currentJobId);
+            setJobPhotos(photos);
+            setSelectedPhotoIds(prev => {
+              const next = new Set(prev);
+              photos.forEach(p => next.add(p.id));
+              return next;
+            });
+          }}
+        />
       )}
     </AdminLayout>
   );
@@ -681,7 +866,7 @@ function WTNViewModal({ wtn, onClose }: WTNViewModalProps) {
       document.body.appendChild(clone);
       const images = clone.querySelectorAll('img');
       await Promise.all(Array.from(images).map(img => new Promise<void>(res => { if (img.complete) res(); else { img.onload = () => res(); img.onerror = () => res(); } })));
-      await new Promise(r => setTimeout(r, 150));
+      await new Promise(r => setTimeout(r, 300));
       const canvas = await html2canvas(clone, { scale: 2, useCORS: true, allowTaint: true, backgroundColor: '#ffffff', logging: false });
       document.body.removeChild(clone);
       const imgData = canvas.toDataURL('image/png');
@@ -689,10 +874,28 @@ function WTNViewModal({ wtn, onClose }: WTNViewModalProps) {
       const pageW = pdf.internal.pageSize.getWidth();
       const pageH = pdf.internal.pageSize.getHeight();
       const imgAspect = canvas.height / canvas.width;
-      const w = pageW;
-      const h = w * imgAspect;
-      const y = h < pageH ? (pageH - h) / 2 : 0;
-      pdf.addImage(imgData, 'PNG', 0, y, w, h);
+      const imgH = pageW * imgAspect;
+
+      if (imgH <= pageH) {
+        const y = (pageH - imgH) / 2;
+        pdf.addImage(imgData, 'PNG', 0, y, pageW, imgH);
+      } else {
+        // Multi-page: slice image across pages
+        let renderedH = 0;
+        let page = 0;
+        while (renderedH < imgH) {
+          if (page > 0) pdf.addPage();
+          const sliceY = renderedH / imgH * canvas.height;
+          const sliceH = Math.min(pageH / imgH * canvas.height, canvas.height - sliceY);
+          const sliceCanvas = document.createElement('canvas');
+          sliceCanvas.width = canvas.width;
+          sliceCanvas.height = sliceH;
+          sliceCanvas.getContext('2d')!.drawImage(canvas, 0, sliceY, canvas.width, sliceH, 0, 0, canvas.width, sliceH);
+          pdf.addImage(sliceCanvas.toDataURL('image/png'), 'PNG', 0, 0, pageW, (sliceH / canvas.width) * pageW);
+          renderedH += pageH;
+          page++;
+        }
+      }
       pdf.save(`WTN-${wtn.wtn_number}.pdf`);
     } finally {
       setSavingPdf(false);
@@ -715,6 +918,7 @@ function WTNViewModal({ wtn, onClose }: WTNViewModalProps) {
         : [];
 
   const carrier = wtn.carrier;
+  const wtnPhotos = (wtn.mw_wtn_photos || []).filter(p => p.job_photo?.photo_url);
 
   const registrationTypeLabel = (t: string) => {
     if (t === 'upper_tier') return 'Upper tier waste carrier, broker and dealer';
@@ -722,7 +926,6 @@ function WTNViewModal({ wtn, onClose }: WTNViewModalProps) {
     return t;
   };
 
-  // Build collection address: prefer structured address table, fall back to customer fields
   const collectionAddressLines: string[] = [];
   if (customerAddress) {
     if (customerAddress.address_line1) collectionAddressLines.push(customerAddress.address_line1);
@@ -905,6 +1108,29 @@ function WTNViewModal({ wtn, onClose }: WTNViewModalProps) {
                 </div>
               </div>
             </div>
+
+            {/* Collection Photos */}
+            {wtnPhotos.length > 0 && (
+              <div className="border-t border-gray-300 pt-4 mt-4">
+                <h4 className="font-bold text-gray-900 mb-3">Collection Evidence Photos ({wtnPhotos.length})</h4>
+                <div className="grid grid-cols-3 gap-3">
+                  {wtnPhotos.map((p, i) => (
+                    <div key={p.id} className="rounded-lg overflow-hidden border border-gray-200">
+                      <img
+                        src={p.job_photo.photo_url}
+                        alt={p.job_photo.caption || `Photo ${i + 1}`}
+                        crossOrigin="anonymous"
+                        className="w-full h-36 object-cover"
+                      />
+                      {p.job_photo.caption && (
+                        <p className="text-xs text-gray-600 px-2 py-1 bg-gray-50 truncate">{p.job_photo.caption}</p>
+                      )}
+                      <p className="text-xs text-gray-400 px-2 pb-1 bg-gray-50">Photo {i + 1}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div className="mt-6 text-xs text-gray-500 border-t border-gray-300 pt-4">
               <p>This Waste Transfer Note is issued in accordance with the Waste (England and Wales) Regulations 2011 and the Environmental Protection Act 1990 (Duty of Care).</p>
