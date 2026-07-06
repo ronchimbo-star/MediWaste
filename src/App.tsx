@@ -73,6 +73,7 @@ const SitemapPage = lazy(() => import('./pages/admin/SitemapPage'));
 const AuditPage = lazy(() => import('./pages/AuditPage'));
 const AdminAuditsPage = lazy(() => import('./pages/admin/AdminAuditsPage'));
 const AdminAuditDetailPage = lazy(() => import('./pages/admin/AdminAuditDetailPage'));
+const DriverUploadPage = lazy(() => import('./pages/DriverUploadPage'));
 
 function PageLoader() {
   return (
@@ -172,6 +173,7 @@ function App() {
           <Route path="/compliance/:token" element={<CompliancePage />} />
           <Route path="/directory-listings" element={<DirectoryListingsPage />} />
           <Route path="/audit" element={<AuditPage />} />
+          <Route path="/driver-upload" element={<DriverUploadPage />} />
           <Route path="/terms" element={<TermsPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/cookies" element={<CookiePage />} />
