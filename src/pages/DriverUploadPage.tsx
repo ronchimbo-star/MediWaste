@@ -1,8 +1,10 @@
 import { useState, useRef } from 'react';
 import { supabase } from '../lib/supabase';
-import { Camera, ChevronLeft, X, CheckCircle, Upload, Loader2, CalendarDays, Briefcase } from 'lucide-react';
+import { Camera, ChevronLeft, X, CheckCircle, Upload, Loader2, CalendarDays, Briefcase, AlertCircle } from 'lucide-react';
 
 const DRIVER_PIN = '1281';
+const MAX_WIDTH = 1200;
+const JPEG_QUALITY = 0.82;
 
 type Screen = 'pin' | 'jobs' | 'upload' | 'success';
 
@@ -18,6 +20,7 @@ interface SelectedFile {
   file: File;
   preview: string;
   caption: string;
+  sizeKb: number;
 }
 
 function formatDate(iso: string) {
@@ -26,6 +29,36 @@ function formatDate(iso: string) {
 
 function serviceLabel(type: string) {
   return type.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+}
+
+async function compressImage(file: File): Promise<File> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      let { width, height } = img;
+      if (width > MAX_WIDTH) {
+        height = Math.round((height * MAX_WIDTH) / width);
+        width = MAX_WIDTH;
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d')!;
+      ctx.drawImage(img, 0, 0, width, height);
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) { resolve(file); return; }
+          resolve(new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' }));
+        },
+        'image/jpeg',
+        JPEG_QUALITY
+      );
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); resolve(file); };
+    img.src = url;
+  });
 }
 
 export default function DriverUploadPage() {
@@ -38,6 +71,8 @@ export default function DriverUploadPage() {
   const [files, setFiles] = useState<SelectedFile[]>([]);
   const [uploading, setUploading] = useState(false);
   const [uploadedCount, setUploadedCount] = useState(0);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [compressing, setCompressing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handlePinDigit = (digit: string) => {
@@ -77,7 +112,7 @@ export default function DriverUploadPage() {
         .in('status', ['scheduled', 'in_progress', 'completed'])
         .gte('scheduled_date', from)
         .lte('scheduled_date', to)
-        .order('scheduled_date', { ascending: true });
+        .order('scheduled_date', { ascending: false });
 
       if (error) throw error;
       setJobs((data || []) as Job[]);
@@ -91,21 +126,35 @@ export default function DriverUploadPage() {
   const selectJob = (job: Job) => {
     setSelectedJob(job);
     setFiles([]);
+    setUploadError(null);
     setScreen('upload');
   };
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;
     const incoming = Array.from(e.target.files).filter(f => f.type.startsWith('image/'));
-    incoming.forEach(file => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFiles(prev => [...prev, { file, preview: reader.result as string, caption: '' }]);
-      };
-      reader.readAsDataURL(file);
-    });
-    // reset so same file can be selected again
     e.target.value = '';
+    if (incoming.length === 0) return;
+
+    setCompressing(true);
+    try {
+      for (const file of incoming) {
+        const compressed = await compressImage(file);
+        const preview = await new Promise<string>((res) => {
+          const reader = new FileReader();
+          reader.onloadend = () => res(reader.result as string);
+          reader.readAsDataURL(compressed);
+        });
+        setFiles(prev => [...prev, {
+          file: compressed,
+          preview,
+          caption: '',
+          sizeKb: Math.round(compressed.size / 1024),
+        }]);
+      }
+    } finally {
+      setCompressing(false);
+    }
   };
 
   const removeFile = (idx: number) => {
@@ -120,17 +169,17 @@ export default function DriverUploadPage() {
     if (!selectedJob || files.length === 0) return;
     setUploading(true);
     setUploadedCount(0);
+    setUploadError(null);
     try {
       for (let i = 0; i < files.length; i++) {
         const { file, caption } = files[i];
-        const ext = file.name.split('.').pop() || 'jpg';
-        const fileName = `${selectedJob.id}-${Date.now()}-${Math.random().toString(36).substring(7)}.${ext}`;
+        const fileName = `${selectedJob.id}-${Date.now()}-${Math.random().toString(36).substring(7)}.jpg`;
         const filePath = `job-photos/${fileName}`;
 
         const { error: storageErr } = await supabase.storage
           .from('media')
-          .upload(filePath, file);
-        if (storageErr) throw storageErr;
+          .upload(filePath, file, { contentType: 'image/jpeg' });
+        if (storageErr) throw new Error(`Storage: ${storageErr.message}`);
 
         const { data: { publicUrl } } = supabase.storage.from('media').getPublicUrl(filePath);
 
@@ -141,14 +190,15 @@ export default function DriverUploadPage() {
           photo_type: 'collection',
           caption: caption || null,
         });
-        if (dbErr) throw dbErr;
+        if (dbErr) throw new Error(`Database: ${dbErr.message}`);
 
         setUploadedCount(i + 1);
       }
       setScreen('success');
     } catch (err) {
-      console.error('Upload failed:', err);
-      alert('Upload failed. Please try again.');
+      const msg = err instanceof Error ? err.message : 'Unknown error';
+      console.error('Upload failed:', msg);
+      setUploadError(msg);
     } finally {
       setUploading(false);
     }
@@ -159,12 +209,13 @@ export default function DriverUploadPage() {
     setFiles([]);
     setSelectedJob(null);
     setUploadedCount(0);
+    setUploadError(null);
   };
 
   return (
     <div className="min-h-screen bg-gray-950 flex flex-col">
       {/* Header */}
-      <header className="bg-gray-950 border-b border-gray-800 px-4 py-3 flex items-center gap-3 safe-area-top">
+      <header className="bg-gray-950 border-b border-gray-800 px-4 py-3 flex items-center gap-3">
         {(screen === 'upload' || screen === 'jobs') && (
           <button
             onClick={() => {
@@ -198,7 +249,6 @@ export default function DriverUploadPage() {
                 <p className="text-gray-400 text-sm">Enter your PIN to upload collection photos</p>
               </div>
 
-              {/* PIN dots */}
               <div className="flex justify-center gap-4 mb-8">
                 {[0, 1, 2, 3].map(i => (
                   <div
@@ -216,7 +266,6 @@ export default function DriverUploadPage() {
                 <p className="text-center text-red-400 text-sm mb-4">Incorrect PIN. Try again.</p>
               )}
 
-              {/* Numeric keypad */}
               <div className="grid grid-cols-3 gap-3">
                 {['1','2','3','4','5','6','7','8','9'].map(d => (
                   <button
@@ -227,7 +276,7 @@ export default function DriverUploadPage() {
                     {d}
                   </button>
                 ))}
-                <div /> {/* empty cell */}
+                <div />
                 <button
                   onClick={() => handlePinDigit('0')}
                   className="h-16 bg-gray-800 hover:bg-gray-700 active:bg-gray-600 text-white text-2xl font-medium rounded-2xl transition-colors"
@@ -261,7 +310,7 @@ export default function DriverUploadPage() {
               <div className="flex-1 flex items-center justify-center px-6 text-center">
                 <div>
                   <Briefcase className="w-12 h-12 text-gray-700 mx-auto mb-3" />
-                  <p className="text-gray-400">No scheduled jobs found.</p>
+                  <p className="text-gray-400">No jobs found in this window.</p>
                   <p className="text-gray-600 text-sm mt-1">Contact the office if your job is missing.</p>
                 </div>
               </div>
@@ -276,7 +325,7 @@ export default function DriverUploadPage() {
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex-1 min-w-0">
                         <p className="font-bold text-white text-base">{job.job_number}</p>
-                        <p className="text-gray-400 text-sm mt-0.5 capitalize">{serviceLabel(job.service_type)}</p>
+                        <p className="text-gray-400 text-sm mt-0.5">{serviceLabel(job.service_type)}</p>
                       </div>
                       <div className="text-right flex-shrink-0">
                         <div className="flex items-center gap-1.5 text-gray-400 text-sm">
@@ -284,7 +333,9 @@ export default function DriverUploadPage() {
                           <span>{formatDate(job.scheduled_date)}</span>
                         </div>
                         <span className={`inline-block mt-1 text-xs font-semibold px-2 py-0.5 rounded-full ${
-                          job.status === 'in_progress'
+                          job.status === 'completed'
+                            ? 'bg-gray-700 text-gray-300'
+                            : job.status === 'in_progress'
                             ? 'bg-green-900 text-green-300'
                             : 'bg-blue-900 text-blue-300'
                         }`}>
@@ -309,7 +360,6 @@ export default function DriverUploadPage() {
             </div>
 
             <div className="flex-1 overflow-y-auto px-4 pt-4 pb-4">
-              {/* Add photos button */}
               <input
                 ref={fileInputRef}
                 type="file"
@@ -319,63 +369,90 @@ export default function DriverUploadPage() {
                 onChange={handleFileSelect}
                 className="hidden"
               />
+
               <button
                 onClick={() => fileInputRef.current?.click()}
-                disabled={uploading}
+                disabled={uploading || compressing}
                 className="w-full border-2 border-dashed border-gray-700 hover:border-red-600 rounded-2xl p-6 flex flex-col items-center gap-2 transition-colors mb-4 disabled:opacity-50"
               >
-                <Camera className="w-10 h-10 text-gray-500" />
-                <p className="text-white font-medium">Add Photos</p>
-                <p className="text-gray-500 text-xs">Tap to take a photo or choose from gallery</p>
+                {compressing ? (
+                  <>
+                    <Loader2 className="w-10 h-10 text-gray-500 animate-spin" />
+                    <p className="text-white font-medium">Compressing…</p>
+                  </>
+                ) : (
+                  <>
+                    <Camera className="w-10 h-10 text-gray-500" />
+                    <p className="text-white font-medium">Add Photos</p>
+                    <p className="text-gray-500 text-xs">Tap to take a photo or choose from gallery</p>
+                  </>
+                )}
               </button>
 
-              {/* Selected photos */}
+              {/* Error banner */}
+              {uploadError && (
+                <div className="mb-4 bg-red-950 border border-red-800 rounded-2xl p-4 flex gap-3">
+                  <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-red-300 text-sm font-medium">Upload failed</p>
+                    <p className="text-red-400 text-xs mt-0.5 break-all">{uploadError}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Photo grid — 2 columns */}
               {files.length > 0 && (
-                <div className="space-y-3 mb-4">
-                  <p className="text-gray-400 text-sm font-medium">{files.length} photo{files.length !== 1 ? 's' : ''} selected</p>
-                  {files.map((f, idx) => (
-                    <div key={idx} className="bg-gray-900 rounded-2xl overflow-hidden border border-gray-800">
-                      <div className="relative">
-                        <img
-                          src={f.preview}
-                          alt={`Photo ${idx + 1}`}
-                          className="w-full h-48 object-cover"
-                        />
-                        <button
-                          onClick={() => removeFile(idx)}
-                          disabled={uploading}
-                          className="absolute top-2 right-2 bg-black bg-opacity-60 text-white rounded-full p-1.5"
-                        >
-                          <X size={16} />
-                        </button>
-                        {uploading && uploadedCount > idx && (
-                          <div className="absolute inset-0 bg-green-600 bg-opacity-40 flex items-center justify-center">
-                            <CheckCircle className="w-10 h-10 text-white" />
-                          </div>
-                        )}
+                <div className="mb-4">
+                  <p className="text-gray-400 text-sm font-medium mb-3">
+                    {files.length} photo{files.length !== 1 ? 's' : ''} ready
+                  </p>
+                  <div className="grid grid-cols-2 gap-3">
+                    {files.map((f, idx) => (
+                      <div key={idx} className="bg-gray-900 rounded-xl overflow-hidden border border-gray-800">
+                        <div className="relative">
+                          <img
+                            src={f.preview}
+                            alt={`Photo ${idx + 1}`}
+                            className="w-full aspect-square object-cover"
+                          />
+                          <button
+                            onClick={() => removeFile(idx)}
+                            disabled={uploading}
+                            className="absolute top-1.5 right-1.5 bg-black bg-opacity-70 text-white rounded-full p-1"
+                          >
+                            <X size={14} />
+                          </button>
+                          {uploading && uploadedCount > idx && (
+                            <div className="absolute inset-0 bg-green-600 bg-opacity-50 flex items-center justify-center">
+                              <CheckCircle className="w-8 h-8 text-white" />
+                            </div>
+                          )}
+                          <span className="absolute bottom-1.5 left-1.5 bg-black bg-opacity-60 text-gray-300 text-xs px-1.5 py-0.5 rounded">
+                            {f.sizeKb}KB
+                          </span>
+                        </div>
+                        <div className="px-2 py-1.5">
+                          <input
+                            type="text"
+                            value={f.caption}
+                            onChange={e => updateCaption(idx, e.target.value)}
+                            placeholder="Note (optional)…"
+                            disabled={uploading}
+                            className="w-full bg-transparent text-gray-300 placeholder-gray-600 text-xs outline-none"
+                          />
+                        </div>
                       </div>
-                      <div className="px-3 py-2">
-                        <input
-                          type="text"
-                          value={f.caption}
-                          onChange={e => updateCaption(idx, e.target.value)}
-                          placeholder="Add a note (optional)..."
-                          disabled={uploading}
-                          className="w-full bg-transparent text-gray-300 placeholder-gray-600 text-sm outline-none"
-                        />
-                      </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
 
-            {/* Upload button — sticky at bottom */}
             {files.length > 0 && (
               <div className="px-4 pb-6 pt-3 border-t border-gray-800 bg-gray-950">
                 <button
                   onClick={handleUpload}
-                  disabled={uploading}
+                  disabled={uploading || compressing}
                   className="w-full bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-semibold py-4 rounded-2xl flex items-center justify-center gap-2 transition-colors disabled:opacity-60"
                 >
                   {uploading ? (
