@@ -411,7 +411,8 @@ function WtnDetailModal({ wtnId, onClose }: WtnDetailModalProps) {
           *,
           carrier:mw_waste_carriers(id, name, address, registration_number, registration_type, registration_valid_until),
           customer:mw_customers!inner(id, customer_number, company_name, contact_name),
-          mw_wtn_line_items(*)
+          mw_wtn_line_items(*),
+          mw_wtn_photos(id, photo_id, job_photo:mw_job_photos(id, photo_url, caption))
         `)
         .eq('id', wtnId)
         .single();
@@ -607,6 +608,31 @@ function WtnDetailModal({ wtnId, onClose }: WtnDetailModalProps) {
                     </div>
                   </div>
                 </div>
+
+                {(() => {
+                  const photos = (wtn.mw_wtn_photos || []).filter((p: any) => p.job_photo?.photo_url);
+                  if (photos.length === 0) return null;
+                  return (
+                    <div className="border-t border-gray-200 pt-4 mt-4">
+                      <h4 className="font-bold text-gray-900 mb-3">Collection Evidence Photos ({photos.length})</h4>
+                      <div className="grid grid-cols-3 gap-3">
+                        {photos.map((p: any, i: number) => (
+                          <div key={p.id} className="rounded-lg overflow-hidden border border-gray-200">
+                            <img
+                              src={p.job_photo.photo_url}
+                              alt={p.job_photo.caption || `Photo ${i + 1}`}
+                              crossOrigin="anonymous"
+                              className="w-full h-32 object-cover"
+                            />
+                            {p.job_photo.caption && (
+                              <p className="text-xs text-gray-600 px-2 py-1 bg-gray-50 truncate">{p.job_photo.caption}</p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()}
 
                 <div className="mt-4 text-xs text-gray-400 border-t border-gray-200 pt-3">
                   <p>This Waste Transfer Note is issued in accordance with the Waste (England and Wales) Regulations 2011.</p>
