@@ -187,7 +187,7 @@ export default function DriverUploadPage() {
           job_id: selectedJob.id,
           photo_url: publicUrl,
           storage_path: filePath,
-          photo_type: 'collection',
+          photo_type: 'completion',
           caption: caption || null,
         });
         if (dbErr) throw new Error(`Database: ${dbErr.message}`);
