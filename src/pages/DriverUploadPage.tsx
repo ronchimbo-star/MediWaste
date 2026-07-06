@@ -64,17 +64,17 @@ export default function DriverUploadPage() {
     setJobsLoading(true);
     setScreen('jobs');
     try {
-      const today = new Date();
-      today.setDate(today.getDate() - 1);
-      const from = today.toISOString().split('T')[0];
+      const past = new Date();
+      past.setDate(past.getDate() - 7);
+      const from = past.toISOString().split('T')[0];
       const future = new Date();
-      future.setDate(future.getDate() + 14);
+      future.setDate(future.getDate() + 7);
       const to = future.toISOString().split('T')[0];
 
       const { data, error } = await supabase
         .from('mw_service_jobs')
         .select('id, job_number, service_type, scheduled_date, status')
-        .in('status', ['scheduled', 'in_progress'])
+        .in('status', ['scheduled', 'in_progress', 'completed'])
         .gte('scheduled_date', from)
         .lte('scheduled_date', to)
         .order('scheduled_date', { ascending: true });
@@ -250,7 +250,7 @@ export default function DriverUploadPage() {
           <div className="flex-1 flex flex-col">
             <div className="px-4 pt-5 pb-3">
               <h2 className="text-lg font-bold text-white">Select Your Job</h2>
-              <p className="text-gray-400 text-sm mt-0.5">Today and the next 14 days</p>
+              <p className="text-gray-400 text-sm mt-0.5">Past 7 days and next 7 days</p>
             </div>
 
             {jobsLoading ? (
