@@ -410,7 +410,7 @@ function WtnDetailModal({ wtnId, onClose }: WtnDetailModalProps) {
         .select(`
           *,
           carrier:mw_waste_carriers(id, name, address, registration_number, registration_type, registration_valid_until),
-          customer:mw_customers!inner(id, customer_number, company_name, contact_name),
+          customer:mw_customers!inner(id, customer_number, company_name, contact_name, collection_address, billing_address, postcode),
           mw_wtn_line_items(*),
           mw_wtn_photos(id, photo_id, job_photo:mw_job_photos(id, photo_url, caption))
         `)
@@ -538,13 +538,22 @@ function WtnDetailModal({ wtnId, onClose }: WtnDetailModalProps) {
                     <h4 className="font-bold text-gray-900 mb-2">Collection Address</h4>
                     <div className="text-sm">
                       <p className="font-semibold">{wtn.customer.company_name || wtn.customer.contact_name}</p>
-                      <p className="text-gray-600">Customer: {wtn.customer.customer_number}</p>
-                      {customerAddress && (
+                      {customerAddress ? (
                         <div className="mt-1 text-gray-700">
-                          <p>{customerAddress.address_line1}</p>
+                          {customerAddress.address_line1 && <p>{customerAddress.address_line1}</p>}
                           {customerAddress.address_line2 && <p>{customerAddress.address_line2}</p>}
-                          <p>{customerAddress.city}, {customerAddress.postcode}</p>
+                          {(customerAddress.city || customerAddress.county) && (
+                            <p>{[customerAddress.city, customerAddress.county].filter(Boolean).join(', ')}</p>
+                          )}
+                          {customerAddress.postcode && <p className="font-medium">{customerAddress.postcode}</p>}
                         </div>
+                      ) : (wtn.customer.collection_address || wtn.customer.billing_address) ? (
+                        <div className="mt-1 text-gray-700">
+                          <p>{wtn.customer.collection_address || wtn.customer.billing_address}</p>
+                          {wtn.customer.postcode && <p className="font-medium">{wtn.customer.postcode}</p>}
+                        </div>
+                      ) : (
+                        <p className="text-gray-400 italic mt-1">No address on record</p>
                       )}
                     </div>
                   </div>
