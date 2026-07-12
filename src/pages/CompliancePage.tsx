@@ -409,6 +409,7 @@ function WtnDetailModal({ wtnId, onClose }: WtnDetailModalProps) {
         .from('mw_waste_transfer_notes')
         .select(`
           *,
+          job:mw_service_jobs(id, job_number, service_type),
           carrier:mw_waste_carriers(id, name, address, registration_number, registration_type, registration_valid_until),
           customer:mw_customers!inner(id, customer_number, company_name, contact_name, collection_address, billing_address, postcode),
           mw_wtn_line_items(*),
@@ -500,6 +501,12 @@ function WtnDetailModal({ wtnId, onClose }: WtnDetailModalProps) {
                     <p className="text-sm font-semibold">WTN Number</p>
                     <p className="text-lg font-bold text-gray-900">{wtn.wtn_number}</p>
                     <p className="text-sm text-gray-600 mt-1">Issue Date: {new Date(wtn.issue_date).toLocaleDateString('en-GB')}</p>
+                    {wtn.collection_date && (
+                      <p className="text-sm text-gray-600 mt-0.5">Collection Date: <span className="font-semibold text-gray-800">{new Date(wtn.collection_date).toLocaleDateString('en-GB')}</span></p>
+                    )}
+                    {wtn.job?.job_number && (
+                      <p className="text-sm text-gray-500 mt-0.5">Job Ref: {wtn.job.job_number}</p>
+                    )}
                   </div>
                 </div>
 
@@ -579,20 +586,26 @@ function WtnDetailModal({ wtnId, onClose }: WtnDetailModalProps) {
                       <thead>
                         <tr className="bg-gray-50">
                           <th className="border border-gray-200 px-3 py-2 text-left font-semibold">Waste Type</th>
-                          <th className="border border-gray-200 px-3 py-2 text-left font-semibold">Code</th>
+                          <th className="border border-gray-200 px-3 py-2 text-left font-semibold">EWC Code</th>
                           <th className="border border-gray-200 px-3 py-2 text-left font-semibold">Description</th>
-                          <th className="border border-gray-200 px-3 py-2 text-right font-semibold">Qty</th>
-                          <th className="border border-gray-200 px-3 py-2 text-right font-semibold">Containers</th>
+                          <th className="border border-gray-200 px-3 py-2 text-left font-semibold">Container</th>
+                          <th className="border border-gray-200 px-3 py-2 text-right font-semibold">Count</th>
+                          <th className="border border-gray-200 px-3 py-2 text-right font-semibold">Quantity</th>
                         </tr>
                       </thead>
                       <tbody>
                         {lineItems.map((item: any, i: number) => (
                           <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
                             <td className="border border-gray-200 px-3 py-2 capitalize">{item.waste_type?.replace(/_/g, ' ')}</td>
-                            <td className="border border-gray-200 px-3 py-2 font-mono text-xs">{item.waste_code || '—'}</td>
+                            <td className="border border-gray-200 px-3 py-2">
+                              {item.waste_code ? (
+                                <span className="inline-block bg-yellow-50 border border-yellow-200 text-yellow-800 font-mono text-xs font-semibold px-1.5 py-0.5 rounded">{item.waste_code}</span>
+                              ) : '—'}
+                            </td>
                             <td className="border border-gray-200 px-3 py-2">{item.waste_description}</td>
-                            <td className="border border-gray-200 px-3 py-2 text-right">{item.quantity} {item.quantity_unit}</td>
+                            <td className="border border-gray-200 px-3 py-2 capitalize">{item.container_type?.replace(/_/g, ' ') || '—'}</td>
                             <td className="border border-gray-200 px-3 py-2 text-right">{item.container_count}</td>
+                            <td className="border border-gray-200 px-3 py-2 text-right">{item.quantity} {item.quantity_unit}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -631,11 +644,14 @@ function WtnDetailModal({ wtnId, onClose }: WtnDetailModalProps) {
                               src={p.job_photo.photo_url}
                               alt={p.job_photo.caption || `Photo ${i + 1}`}
                               crossOrigin="anonymous"
-                              className="w-full h-32 object-cover"
+                              className="w-full h-36 object-cover"
                             />
-                            {p.job_photo.caption && (
-                              <p className="text-xs text-gray-600 px-2 py-1 bg-gray-50 truncate">{p.job_photo.caption}</p>
-                            )}
+                            <div className="px-2 py-1 bg-gray-50">
+                              <p className="text-xs text-gray-400">Photo {i + 1}</p>
+                              {p.job_photo.caption && (
+                                <p className="text-xs text-gray-600 truncate">{p.job_photo.caption}</p>
+                              )}
+                            </div>
                           </div>
                         ))}
                       </div>
