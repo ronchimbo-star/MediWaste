@@ -284,16 +284,17 @@ export default function WasteTransferNotesPage() {
       : [emptyLineItem()];
     setLineItems(existing);
 
-    // Pre-select photos already attached to this WTN
-    const attachedIds = new Set((wtn.mw_wtn_photos || []).map(p => p.photo_id));
-    setSelectedPhotoIds(attachedIds);
-
     // Load job photos if a job is linked
     if (jobId) {
       const photos = await fetchJobPhotos(jobId);
       setJobPhotos(photos);
+      // Auto-select all job photos (including any newly uploaded since WTN was created)
+      setSelectedPhotoIds(new Set(photos.map(p => p.id)));
     } else {
       setJobPhotos([]);
+      // Keep only the already-attached photos if no job is linked
+      const attachedIds = new Set((wtn.mw_wtn_photos || []).map(p => p.photo_id));
+      setSelectedPhotoIds(attachedIds);
     }
 
     setShowCreateModal(true);
