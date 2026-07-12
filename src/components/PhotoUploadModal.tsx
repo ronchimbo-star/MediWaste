@@ -126,7 +126,7 @@ export default function PhotoUploadModal({ jobId, jobNumber, onClose, onPhotoAdd
             photo_url: photo.url,
             storage_path: photo.storage_path,
             caption: description || null,
-            photo_type: 'collection',
+            photo_type: 'completion',
           }]);
 
         if (dbError) throw new Error(`Database: ${dbError.message}`);
