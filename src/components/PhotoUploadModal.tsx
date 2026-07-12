@@ -10,31 +10,73 @@ interface PhotoUploadModalProps {
   onPhotoAdded: () => void;
 }
 
+const MAX_WIDTH = 1200;
+const JPEG_QUALITY = 0.82;
+
+async function compressImage(file: File): Promise<File> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      let { width, height } = img;
+      if (width > MAX_WIDTH) {
+        height = Math.round((height * MAX_WIDTH) / width);
+        width = MAX_WIDTH;
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d')!;
+      ctx.drawImage(img, 0, 0, width, height);
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) { resolve(file); return; }
+          resolve(new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' }));
+        },
+        'image/jpeg',
+        JPEG_QUALITY
+      );
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); resolve(file); };
+    img.src = url;
+  });
+}
+
 export default function PhotoUploadModal({ jobId, jobNumber, onClose, onPhotoAdded }: PhotoUploadModalProps) {
   const { toast } = useToastContext();
   const [uploading, setUploading] = useState(false);
+  const [compressing, setCompressing] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [description, setDescription] = useState('');
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      const files = Array.from(e.target.files);
-      const validFiles = files.filter(f => f.type.startsWith('image/'));
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files) return;
+    const files = Array.from(e.target.files);
+    const validFiles = files.filter(f => f.type.startsWith('image/'));
 
-      if (validFiles.length !== files.length) {
-        toast.error('Only image files are allowed');
-      }
+    if (validFiles.length !== files.length) {
+      toast.error('Only image files are allowed');
+    }
+    if (validFiles.length === 0) return;
 
-      setSelectedFiles(prev => [...prev, ...validFiles]);
-
-      validFiles.forEach(file => {
+    setCompressing(true);
+    try {
+      for (const file of validFiles) {
+        const compressed = await compressImage(file);
         const reader = new FileReader();
-        reader.onloadend = () => {
-          setPreviewUrls(prev => [...prev, reader.result as string]);
-        };
-        reader.readAsDataURL(file);
-      });
+        await new Promise<void>(res => {
+          reader.onloadend = () => {
+            setPreviewUrls(prev => [...prev, reader.result as string]);
+            res();
+          };
+          reader.readAsDataURL(compressed);
+        });
+        setSelectedFiles(prev => [...prev, compressed]);
+      }
+    } finally {
+      setCompressing(false);
     }
   };
 
@@ -54,17 +96,16 @@ export default function PhotoUploadModal({ jobId, jobNumber, onClose, onPhotoAdd
       const uploadedPhotos = [];
 
       for (const file of selectedFiles) {
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${jobId}-${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+        const fileName = `${jobId}-${Date.now()}-${Math.random().toString(36).substring(7)}.jpg`;
         const filePath = `job-photos/${fileName}`;
 
         const { error: uploadError } = await supabase.storage
           .from('media')
-          .upload(filePath, file);
+          .upload(filePath, file, { contentType: 'image/jpeg' });
 
         if (uploadError) {
           console.error('Upload error:', uploadError);
-          throw uploadError;
+          throw new Error(`Storage: ${uploadError.message}`);
         }
 
         const { data: { publicUrl } } = supabase.storage
@@ -88,16 +129,16 @@ export default function PhotoUploadModal({ jobId, jobNumber, onClose, onPhotoAdd
             photo_type: 'collection',
           }]);
 
-        if (dbError) throw dbError;
+        if (dbError) throw new Error(`Database: ${dbError.message}`);
       }
 
       toast.success(`${uploadedPhotos.length} photo(s) uploaded successfully`);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
       onPhotoAdded();
       onClose();
     } catch (error) {
       console.error('Error uploading photos:', error);
-      toast.error('Failed to upload photos. Please try again.');
+      const msg = error instanceof Error ? error.message : 'Unknown error';
+      toast.error(`Failed to upload photos: ${msg}`);
     } finally {
       setUploading(false);
     }
@@ -145,20 +186,20 @@ export default function PhotoUploadModal({ jobId, jobNumber, onClose, onPhotoAdd
                 accept="image/*"
                 multiple
                 onChange={handleFileSelect}
-                disabled={uploading}
+                disabled={uploading || compressing}
                 className="hidden"
                 id="photo-upload"
               />
               <label
                 htmlFor="photo-upload"
-                className="cursor-pointer flex flex-col items-center"
+                className={`cursor-pointer flex flex-col items-center ${(uploading || compressing) ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 <Upload className="w-12 h-12 text-gray-400 mb-2" />
                 <p className="text-sm text-gray-600">
-                  Click to select photos or drag and drop
+                  {compressing ? 'Compressing images…' : 'Click to select photos or drag and drop'}
                 </p>
                 <p className="text-xs text-gray-500 mt-1">
-                  PNG, JPG, JPEG up to 10MB each
+                  PNG, JPG, JPEG — compressed automatically
                 </p>
               </label>
             </div>
@@ -185,7 +226,7 @@ export default function PhotoUploadModal({ jobId, jobNumber, onClose, onPhotoAdd
                       <X className="w-4 h-4" />
                     </button>
                     <div className="absolute bottom-2 left-2 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded">
-                      {(selectedFiles[index].size / 1024 / 1024).toFixed(2)} MB
+                      {(selectedFiles[index].size / 1024).toFixed(0)} KB
                     </div>
                   </div>
                 ))}
@@ -196,20 +237,25 @@ export default function PhotoUploadModal({ jobId, jobNumber, onClose, onPhotoAdd
           <div className="flex justify-end gap-3">
             <button
               onClick={onClose}
-              disabled={uploading}
+              disabled={uploading || compressing}
               className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
             >
               Cancel
             </button>
             <button
               onClick={handleUpload}
-              disabled={uploading || selectedFiles.length === 0}
+              disabled={uploading || compressing || selectedFiles.length === 0}
               className="flex items-center gap-2 px-4 py-2 bg-[#F59E0B] text-white rounded-lg hover:bg-[#D97706] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {uploading ? (
                 <>
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                   Uploading...
+                </>
+              ) : compressing ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  Compressing...
                 </>
               ) : (
                 <>
