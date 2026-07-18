@@ -173,9 +173,12 @@ export default function ServiceAgreementEditPage() {
 
     try {
       const statusToUse = newStatus || form.status;
+      let savedId: string | null = null;
+      let savedToken: string = '';
+      let savedAgreementNumber: string = '';
 
       if (id && id !== 'create') {
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from('service_agreements')
           .update({
             ...form,
@@ -183,9 +186,14 @@ export default function ServiceAgreementEditPage() {
             status: statusToUse,
             updated_at: new Date().toISOString()
           })
-          .eq('id', id);
+          .eq('id', id)
+          .select('id, secure_token, agreement_number')
+          .single();
 
         if (error) throw error;
+        savedId = id;
+        savedToken = data.secure_token;
+        savedAgreementNumber = data.agreement_number;
       } else {
         const newAgreementNumber = generateAgreementNumber();
         const newSecureToken = generateSecureToken();
@@ -198,7 +206,7 @@ export default function ServiceAgreementEditPage() {
           endDate = endDateCalc.toISOString().split('T')[0];
         }
 
-        const { error } = await supabase.from('service_agreements').insert({
+        const { data, error } = await supabase.from('service_agreements').insert({
           ...form,
           agreement_number: newAgreementNumber,
           secure_token: newSecureToken,
@@ -206,9 +214,16 @@ export default function ServiceAgreementEditPage() {
           end_date: endDate,
           status: statusToUse,
           created_by: user.id
-        });
+        }).select('id, secure_token, agreement_number').single();
 
         if (error) throw error;
+        savedId = data.id;
+        savedToken = data.secure_token;
+        savedAgreementNumber = data.agreement_number;
+      }
+
+      if (statusToUse === 'sent' && savedId) {
+        await sendAgreementEmail(savedToken, savedAgreementNumber);
       }
 
       navigate('/admin/service-agreements');
@@ -217,6 +232,33 @@ export default function ServiceAgreementEditPage() {
     } finally {
       setSaving(false);
     }
+  };
+
+  const sendAgreementEmail = async (token: string, agreementNum: string) => {
+    if (!form.contact_email) {
+      throw new Error('Client contact email is required to send the agreement');
+    }
+    const agreementUrl = `${window.location.origin}/service-agreement/${token}`;
+    const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-service-agreement-email`;
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+      },
+      body: JSON.stringify({
+        to: form.contact_email,
+        client_name: form.client_name,
+        contact_name: form.contact_name,
+        agreement_number: agreementNum,
+        agreement_url: agreementUrl,
+      }),
+    });
+    if (!response.ok) {
+      const errBody = await response.json().catch(() => ({}));
+      throw new Error(errBody.error || `Email send failed (${response.status})`);
+    }
+    toast.success(`Agreement link emailed to ${form.contact_email}`);
   };
 
   const handleSendToClient = async () => {
