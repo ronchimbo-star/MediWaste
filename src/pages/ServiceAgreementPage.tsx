@@ -460,11 +460,14 @@ export default function ServiceAgreementPage() {
 
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label htmlFor="accept-name" className="block text-sm font-medium text-gray-700 mb-2">
                         Your Full Name *
                       </label>
                       <input
+                        id="accept-name"
+                        name="name"
                         type="text"
+                        autoComplete="name"
                         value={acceptForm.name}
                         onChange={(e) => setAcceptForm({ ...acceptForm, name: e.target.value })}
                         className="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-transparent"
@@ -473,11 +476,14 @@ export default function ServiceAgreementPage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label htmlFor="accept-date" className="block text-sm font-medium text-gray-700 mb-2">
                         Date *
                       </label>
                       <input
+                        id="accept-date"
+                        name="date"
                         type="date"
+                        autoComplete="off"
                         value={acceptForm.date}
                         onChange={(e) => setAcceptForm({ ...acceptForm, date: e.target.value })}
                         className="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-transparent"
@@ -485,11 +491,14 @@ export default function ServiceAgreementPage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label htmlFor="accept-position" className="block text-sm font-medium text-gray-700 mb-2">
                         Your Position *
                       </label>
                       <input
+                        id="accept-position"
+                        name="position"
                         type="text"
+                        autoComplete="organization-title"
                         value={acceptForm.position}
                         onChange={(e) => setAcceptForm({ ...acceptForm, position: e.target.value })}
                         className="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-transparent"
@@ -609,10 +618,12 @@ export default function ServiceAgreementPage() {
             <h3 className="text-xl font-bold text-gray-900 mb-4">Decline Service Agreement</h3>
 
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="decline-reason" className="block text-sm font-medium text-gray-700 mb-2">
                 Please tell us why you're declining (optional)
               </label>
               <textarea
+                id="decline-reason"
+                name="decline_reason"
                 value={declineReason}
                 onChange={(e) => setDeclineReason(e.target.value)}
                 rows={4}
