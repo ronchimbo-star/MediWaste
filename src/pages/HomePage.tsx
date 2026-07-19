@@ -36,12 +36,13 @@ export default function HomePage() {
     const message = `${subject}\n\nName: ${auditForm.name}\nPractice / Business: ${auditForm.practice}\nEmail: ${auditForm.email}\nPhone: ${auditForm.phone || 'Not provided'}`;
 
     try {
-      const { error: insertError } = await supabase.from('contact_submissions').insert({
-        name: auditForm.name,
+      const { error: insertError } = await supabase.from('contact_enquiries').insert({
+        contact_name: auditForm.name,
         email: auditForm.email,
         phone: auditForm.phone || null,
+        subject,
         message,
-        status: 'new',
+        status: 'pending',
       });
 
       if (insertError) throw insertError;
