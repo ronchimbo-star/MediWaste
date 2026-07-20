@@ -73,46 +73,56 @@ interface WasteTransferNote {
 
 // EA / EWC waste codes for healthcare waste
 const WASTE_CODES: Record<string, string> = {
-  clinical_waste: '18 01 03*',
+  offensive_waste: '18 01 04',
+  hazardous_infectious_waste: '18 01 03*',
+  hazardous_non_infectious_waste: '18 01 06*',
   sharps: '18 01 01',
   pharmaceutical: '18 01 09',
   cytotoxic: '18 01 08*',
-  anatomical: '18 01 02',
   dental: '18 01 03*',
+  anatomical: '18 01 02',
+  general: '18 01 04',
+  clinical_waste: '18 01 03*',
   general_medical: '18 01 04',
 };
 
 const WASTE_TYPE_LABELS: Record<string, string> = {
+  offensive_waste: 'Offensive Waste',
+  hazardous_infectious_waste: 'Hazardous Infectious Waste',
+  hazardous_non_infectious_waste: 'Hazardous Non-Infectious Waste',
+  sharps: 'Sharps',
+  pharmaceutical: 'Pharmaceutical',
+  cytotoxic: 'Cytotoxic',
+  dental: 'Dental',
+  anatomical: 'Anatomical',
+  general: 'General',
   clinical_waste: 'Clinical Waste',
-  sharps: 'Sharps Waste',
-  pharmaceutical: 'Pharmaceutical Waste',
-  cytotoxic: 'Cytotoxic / Cytostatic',
-  anatomical: 'Anatomical Waste',
-  dental: 'Dental Waste',
   general_medical: 'General Medical',
 };
 
-const WASTE_TYPES = Object.keys(WASTE_CODES);
-const CONTAINER_TYPES = ['yellow_bag', 'sharps_bin', 'rigid_container', 'drum', 'box', 'tiger_stripe_bag', 'purple_bag'];
+const WASTE_TYPES = ['offensive_waste', 'hazardous_infectious_waste', 'hazardous_non_infectious_waste', 'sharps', 'pharmaceutical', 'cytotoxic', 'dental', 'anatomical', 'general'];
+const CONTAINER_TYPES = ['sharps_bin', 'bag', 'drum', 'box', 'container'];
 const QUANTITY_UNITS = ['kg', 'litres', 'units', 'bags'];
 
 const CONTAINER_TYPE_LABELS: Record<string, string> = {
-  yellow_bag: 'Yellow Bag',
   sharps_bin: 'Sharps Bin',
-  rigid_container: 'Rigid Container',
+  bag: 'Bag',
   drum: 'Drum',
   box: 'Box',
+  container: 'Container',
+  yellow_bag: 'Yellow Bag',
+  rigid_container: 'Rigid Container',
   tiger_stripe_bag: 'Tiger Stripe Bag',
   purple_bag: 'Purple Bag',
 };
 
 const emptyLineItem = (): WtnLineItem => ({
-  waste_type: 'clinical_waste',
-  waste_code: WASTE_CODES['clinical_waste'],
+  waste_type: 'hazardous_infectious_waste',
+  waste_code: WASTE_CODES['hazardous_infectious_waste'],
   waste_description: '',
   quantity: '',
   quantity_unit: 'kg',
-  container_type: 'yellow_bag',
+  container_type: 'sharps_bin',
   container_count: '1',
 });
 
@@ -210,12 +220,12 @@ export default function WasteTransferNotesPage() {
       .order('created_at');
     if (!data || data.length === 0) return [];
     return data.map(i => ({
-      waste_type: i.waste_type || 'clinical_waste',
+      waste_type: i.waste_type || 'hazardous_infectious_waste',
       waste_code: WASTE_CODES[i.waste_type] || '',
       waste_description: i.description || '',
       quantity: String(i.quantity || ''),
       quantity_unit: i.quantity_unit || 'kg',
-      container_type: i.container_type || 'yellow_bag',
+      container_type: i.container_type || 'sharps_bin',
       container_count: String(i.container_count || 1),
     }));
   }
@@ -913,7 +923,7 @@ function WTNViewModal({ wtn, onClose }: WTNViewModalProps) {
             waste_description: wtn.waste_description || '',
             quantity: String(wtn.quantity || ''),
             quantity_unit: wtn.quantity_unit || 'kg',
-            container_type: wtn.container_type || 'yellow_bag',
+            container_type: wtn.container_type || 'sharps_bin',
             container_count: String(wtn.container_count || 1),
           }]
         : [];

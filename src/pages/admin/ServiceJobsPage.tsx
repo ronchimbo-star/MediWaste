@@ -53,13 +53,36 @@ interface CollectionRequest {
 }
 
 const STATUS_OPTIONS = ['scheduled', 'in_progress', 'completed', 'cancelled', 'rescheduled'];
-const SERVICE_TYPES = ['sharps_collection', 'clinical_waste', 'pharmaceutical', 'cytotoxic', 'anatomical', 'dental', 'general'];
-const WASTE_TYPES = SERVICE_TYPES;
-const CONTAINER_TYPES = ['yellow_bag', 'sharps_bin', 'rigid_container', 'drum', 'box'];
+const WASTE_TYPES = ['offensive_waste', 'hazardous_infectious_waste', 'hazardous_non_infectious_waste', 'sharps', 'pharmaceutical', 'cytotoxic', 'dental', 'anatomical', 'general'];
+const WASTE_TYPE_LABELS: Record<string, string> = {
+  offensive_waste: 'Offensive Waste',
+  hazardous_infectious_waste: 'Hazardous Infectious Waste',
+  hazardous_non_infectious_waste: 'Hazardous Non-Infectious Waste',
+  sharps: 'Sharps',
+  pharmaceutical: 'Pharmaceutical',
+  cytotoxic: 'Cytotoxic',
+  dental: 'Dental',
+  anatomical: 'Anatomical',
+  general: 'General',
+  clinical_waste: 'Clinical Waste',
+  general_medical: 'General Medical',
+};
+const CONTAINER_TYPES = ['sharps_bin', 'bag', 'drum', 'box', 'container'];
+const CONTAINER_TYPE_LABELS: Record<string, string> = {
+  sharps_bin: 'Sharps Bin',
+  bag: 'Bag',
+  drum: 'Drum',
+  box: 'Box',
+  container: 'Container',
+  yellow_bag: 'Yellow Bag',
+  rigid_container: 'Rigid Container',
+  tiger_stripe_bag: 'Tiger Stripe Bag',
+  purple_bag: 'Purple Bag',
+};
 const QUANTITY_UNITS = ['kg', 'litres', 'units', 'bags'];
 
 const emptyWasteItem = (): JobWasteItem => ({
-  waste_type: 'clinical_waste', container_type: 'yellow_bag',
+  waste_type: 'hazardous_infectious_waste', container_type: 'sharps_bin',
   quantity: '', quantity_unit: 'kg', container_count: '1', description: '',
 });
 
@@ -404,7 +427,7 @@ export default function ServiceJobsPage() {
   const saveMutation = useMutation({
     mutationFn: async (f: typeof form) => {
       // derive a summary service_type for legacy column from the first waste item
-      const primaryType = wasteItems[0]?.waste_type || 'clinical_waste';
+      const primaryType = wasteItems[0]?.waste_type || 'hazardous_infectious_waste';
       const payload = {
         customer_id: f.customer_id, assigned_staff_id: f.assigned_staff_id || null,
         scheduled_date: f.scheduled_date, service_type: primaryType,
@@ -627,7 +650,7 @@ export default function ServiceJobsPage() {
                         <div className="mt-1 space-y-0.5">
                           {job.mw_job_waste_items.map((item, i) => (
                             <p key={i} className="text-xs text-gray-500 capitalize">
-                              {item.waste_type?.replace(/_/g, ' ')} — {item.quantity} {item.quantity_unit}
+                              {WASTE_TYPE_LABELS[item.waste_type] || item.waste_type?.replace(/_/g, ' ')} — {item.quantity} {item.quantity_unit}
                             </p>
                           ))}
                         </div>
@@ -751,7 +774,7 @@ export default function ServiceJobsPage() {
                             onChange={e => setWasteItems(wasteItems.map((w, i) => i === idx ? { ...w, waste_type: e.target.value } : w))}
                             className="w-full px-2 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent bg-white"
                           >
-                            {WASTE_TYPES.map(t => <option key={t} value={t}>{t.replace(/_/g, ' ')}</option>)}
+                            {WASTE_TYPES.map(t => <option key={t} value={t}>{WASTE_TYPE_LABELS[t] || t.replace(/_/g, ' ')}</option>)}
                           </select>
                         </div>
                         <div>
@@ -761,7 +784,7 @@ export default function ServiceJobsPage() {
                             onChange={e => setWasteItems(wasteItems.map((w, i) => i === idx ? { ...w, container_type: e.target.value } : w))}
                             className="w-full px-2 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent bg-white"
                           >
-                            {CONTAINER_TYPES.map(t => <option key={t} value={t}>{t.replace(/_/g, ' ')}</option>)}
+                            {CONTAINER_TYPES.map(t => <option key={t} value={t}>{CONTAINER_TYPE_LABELS[t] || t.replace(/_/g, ' ')}</option>)}
                           </select>
                         </div>
                       </div>
