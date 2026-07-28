@@ -20,6 +20,7 @@ https://www.mediwaste.co.uk/* https://mediwaste.co.uk/:splat 301!
 /register/ /quote 301
 /service-area /service-coverage 301
 /service-area/ /service-coverage 301
+/service-coverage/ /service-coverage 301
 
 # Old listing / directory URLs
 /listing/* /directory-listings 301

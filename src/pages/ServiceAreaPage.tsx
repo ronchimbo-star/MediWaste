@@ -22,6 +22,11 @@ interface Town {
   description: string;
 }
 
+interface SeoLocationLink {
+  slug: string;
+  meta_title: string;
+}
+
 export default function ServiceAreaPage() {
   const { countySlug } = useParams<{ countySlug: string }>();
   const navigate = useNavigate();
@@ -30,6 +35,8 @@ export default function ServiceAreaPage() {
   const [towns, setTowns] = useState<Town[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>('');
+
+  const [seoLocations, setSeoLocations] = useState<SeoLocationLink[]>([]);
 
   const fetchAllCounties = async () => {
     try {
@@ -53,6 +60,15 @@ export default function ServiceAreaPage() {
       })) || [];
 
       setCounties(countiesData);
+
+      // Fetch SEO location pages for internal linking
+      const { data: seoData } = await supabase
+        .from('seo_pages')
+        .select('slug, meta_title')
+        .eq('status', 'published')
+        .order('created_at', { ascending: false })
+        .limit(40);
+      if (seoData) setSeoLocations(seoData as SeoLocationLink[]);
     } catch (err) {
       console.error('Error fetching counties:', err);
       setError('Unable to load service areas');
@@ -200,6 +216,32 @@ export default function ServiceAreaPage() {
             </div>
           </div>
         </section>
+
+        {seoLocations.length > 0 && (
+          <section className="py-16 bg-white">
+            <div className="container mx-auto px-4">
+              <div className="max-w-6xl mx-auto">
+                <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 text-center">
+                  Clinical Waste Collection Locations
+                </h2>
+                <p className="text-center text-gray-600 mb-12 max-w-2xl mx-auto">
+                  Find clinical waste collection services in your area. We serve towns and cities across London and the South East.
+                </p>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                  {seoLocations.map((loc) => (
+                    <a
+                      key={loc.slug}
+                      href={`/c/${loc.slug}`}
+                      className="block px-4 py-3 rounded-lg border border-gray-200 hover:border-red-600 hover:bg-red-50 transition-colors text-sm font-medium text-gray-700 hover:text-red-600"
+                    >
+                      {loc.meta_title?.replace(/\s*\|\s*MediWaste.*$/i, '') || loc.slug.replace(/-/g, ' ')}
+                    </a>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
 
         <section className="py-16 bg-gray-50">
           <div className="container mx-auto px-4 text-center">

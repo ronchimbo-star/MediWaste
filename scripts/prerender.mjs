@@ -470,6 +470,17 @@ async function main() {
     });
 
     console.log(`[prerender]   ${pages.length} SEO pages`);
+
+    // Collect slugs/titles so we can inject internal links into the
+    // service-coverage page (fixes ahrefs "orphan pages" issue).
+    const seoLocationLinks = pages.map((page) => {
+      const title = page.meta_title || page.h1 || page.target_keyword || page.url_slug;
+      return `<a href="/c/${page.url_slug}">${esc(title.replace(/\s*\|\s*MediWaste.*$/i, ''))}</a>`;
+    });
+    const locationLinksHtml = seoLocationLinks.length
+      ? `<section><h2>Clinical Waste Collection Locations</h2><p>Find clinical waste collection services in your area. We serve towns and cities across London and the South East.</p><div>${seoLocationLinks.join(' ')}</div></section>`
+      : '';
+
     for (const page of pages) {
       const canonical = page.canonical_url || `${BASE_URL}/c/${page.url_slug}`;
       const title = page.meta_title || page.h1 || page.target_keyword;
@@ -512,6 +523,19 @@ async function main() {
         content: page.content,
       }));
       count++;
+    }
+
+    // Re-write the service-coverage page with internal links to all SEO
+    // location pages so crawlers can discover them via internal links,
+    // not just the sitemap.
+    if (locationLinksHtml) {
+      writeRoute('/service-coverage', buildHtml(template, {
+        title: 'Service Coverage Areas | Clinical Waste Disposal UK | MediWaste',
+        description: 'Professional clinical waste collection and disposal services across the UK. Licensed medical waste management for London, Kent, Surrey, Sussex, Hampshire, and Essex.',
+        canonical: `${BASE_URL}/service-coverage`,
+        h1: 'Service Coverage Areas',
+        content: locationLinksHtml,
+      }));
     }
   } catch (err) {
     console.warn(`[prerender]   ⚠ SEO pages fetch failed: ${err.message}`);

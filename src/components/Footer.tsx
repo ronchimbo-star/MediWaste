@@ -1,9 +1,29 @@
 import { Link } from 'react-router-dom';
 import { Facebook, Linkedin, Instagram, MapPin } from 'lucide-react';
 import { useSiteSettings } from '../hooks/useSiteSettings';
+import { useState, useEffect } from 'react';
+import { supabase } from '../lib/supabase';
+
+interface SeoLocationLink {
+  slug: string;
+  meta_title: string;
+}
 
 export default function Footer() {
   const { settings } = useSiteSettings();
+  const [locationLinks, setLocationLinks] = useState<SeoLocationLink[]>([]);
+
+  useEffect(() => {
+    supabase
+      .from('seo_pages')
+      .select('slug, meta_title')
+      .eq('status', 'published')
+      .order('created_at', { ascending: false })
+      .limit(12)
+      .then(({ data }) => {
+        if (data) setLocationLinks(data as SeoLocationLink[]);
+      });
+  }, []);
 
   return (
     <footer className="bg-gray-900 text-white py-12">
@@ -117,6 +137,23 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-gray-800 pt-8">
+          {locationLinks.length > 0 && (
+            <div className="mb-8">
+              <h4 className="font-bold mb-3 text-white">Locations We Serve</h4>
+              <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-400">
+                {locationLinks.map((loc) => (
+                  <Link
+                    key={loc.slug}
+                    to={`/c/${loc.slug}`}
+                    className="hover:text-white transition-colors"
+                  >
+                    {loc.meta_title?.replace(/\s*\|\s*MediWaste.*$/i, '') || loc.slug.replace(/-/g, ' ')}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="flex flex-wrap justify-center gap-4 mb-4 text-sm">
             <Link to="/terms" className="text-gray-400 hover:text-white transition-colors">
               Terms of Service
