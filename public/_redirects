@@ -4,23 +4,6 @@ https://www.mediwaste.co.uk/* https://mediwaste.co.uk/:splat 301!
 # Sitemap proxy
 /sitemap.xml https://xezovslgxkhzjumtfrjn.supabase.co/functions/v1/seo-sitemap 200!
 
-# SEO render proxy — serve fully-rendered HTML for all crawlable routes
-# These take priority over the SPA fallback so crawlers get real content
-/c/* https://xezovslgxkhzjumtfrjn.supabase.co/functions/v1/seo-render/c/:splat 200!
-/news/* https://xezovslgxkhzjumtfrjn.supabase.co/functions/v1/seo-render/news/:splat 200!
-/service-coverage https://xezovslgxkhzjumtfrjn.supabase.co/functions/v1/seo-render/service-coverage 200!
-/waste-services/* https://xezovslgxkhzjumtfrjn.supabase.co/functions/v1/seo-render/waste-services/:splat 200!
-/waste-services https://xezovslgxkhzjumtfrjn.supabase.co/functions/v1/seo-render/waste-services 200!
-/service-areas/* https://xezovslgxkhzjumtfrjn.supabase.co/functions/v1/seo-render/service-areas/:splat 200!
-/about https://xezovslgxkhzjumtfrjn.supabase.co/functions/v1/seo-render/about 200!
-/compliance https://xezovslgxkhzjumtfrjn.supabase.co/functions/v1/seo-render/compliance 200!
-/faq https://xezovslgxkhzjumtfrjn.supabase.co/functions/v1/seo-render/faq 200!
-/contact https://xezovslgxkhzjumtfrjn.supabase.co/functions/v1/seo-render/contact 200!
-/quote https://xezovslgxkhzjumtfrjn.supabase.co/functions/v1/seo-render/quote 200!
-/audit https://xezovslgxkhzjumtfrjn.supabase.co/functions/v1/seo-render/audit 200!
-/directory-listings https://xezovslgxkhzjumtfrjn.supabase.co/functions/v1/seo-render/directory-listings 200!
-/ https://xezovslgxkhzjumtfrjn.supabase.co/functions/v1/seo-render/ 200!
-
 # Legacy WordPress assets – serve SPA so app can handle gracefully
 /wp-content/* /index.html 200
 /wp-admin/* /index.html 200
