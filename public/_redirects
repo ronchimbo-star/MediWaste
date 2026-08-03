@@ -5,6 +5,7 @@ https://www.mediwaste.co.uk/* https://mediwaste.co.uk/:splat 301!
 /sitemap.xml https://xezovslgxkhzjumtfrjn.supabase.co/functions/v1/seo-sitemap 200!
 
 # Legacy WordPress assets – serve SPA so app can handle gracefully
+# (No prerendered files under these prefixes — safe to use 200 rewrite)
 /wp-content/* /index.html 200
 /wp-admin/* /index.html 200
 /wp-includes/* /index.html 200
@@ -15,12 +16,8 @@ https://www.mediwaste.co.uk/* https://mediwaste.co.uk/:splat 301!
 /sectors/nursing-care /waste-services 301
 /sectors /waste-services 301
 /waste-collection-service /waste-services 301
-/waste-collection-service/ /waste-services 301
 /register /quote 301
-/register/ /quote 301
 /service-area /service-coverage 301
-/service-area/ /service-coverage 301
-/service-coverage/ /service-coverage 301
 
 # Old listing / directory URLs
 /listing/* /directory-listings 301
@@ -31,7 +28,9 @@ https://www.mediwaste.co.uk/* https://mediwaste.co.uk/:splat 301!
 
 # Old individual business page URLs (WordPress)
 /fki-aesthetics-wellness /directory-listings 301
-/fki-aesthetics-wellness/ /directory-listings 301
 
-# SPA fallback – must be last
-/* /index.html 200
+# NOTE: No SPA catch-all here. All public routes have prerendered HTML files
+# in dist/ that Netlify serves directly. Routes without prerendered files
+# (admin sub-pages, /quote/:token, /service-agreement/:token, etc.) are
+# handled by netlify.toml's force=false fallback, which serves /index.html
+# ONLY when no static file exists at the requested path.

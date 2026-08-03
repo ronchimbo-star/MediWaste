@@ -598,6 +598,61 @@ async function main() {
     console.warn(`[prerender]   ⚠ News articles fetch failed: ${err.message}`);
   }
 
+  // ── SPA-only routes (no SEO content, just the app shell) ───────────────────
+  // These routes need client-side JavaScript to function (auth, dynamic tokens,
+  // interactive forms). We write a copy of the bare SPA shell with noindex so
+  // crawlers skip them, and no _redirects catch-all is needed.
+  console.log('[prerender] Writing SPA-only routes…');
+  const spaShell = buildHtml(template, {
+    title: 'MediWaste',
+    canonical: BASE_URL,
+    noindex: true,
+  });
+  const SPA_ROUTES = [
+    '/login',
+    '/driver-upload',
+    '/admin',
+  ];
+  for (const route of SPA_ROUTES) {
+    writeRoute(route, spaShell);
+    count++;
+  }
+  // Wildcard SPA routes — write a shell for each known pattern prefix
+  // so Netlify has a static file to serve (no catch-all rewrite needed).
+  const SPA_WILDCARD_PREFIXES = [
+    '/admin/quote-requests',
+    '/admin/quotes',
+    '/admin/contact-enquiries',
+    '/admin/settings',
+    '/admin/news',
+    '/admin/customers',
+    '/admin/mailing-lists',
+    '/admin/subscriptions',
+    '/admin/jobs',
+    '/admin/staff',
+    '/admin/invoices',
+    '/admin/waste-transfer-notes',
+    '/admin/waste-carriers',
+    '/admin/service-agreements',
+    '/admin/email-inbox',
+    '/admin/certificates',
+    '/admin/notes',
+    '/admin/backup',
+    '/admin/resources',
+    '/admin/collection-requests',
+    '/admin/seo-pages',
+    '/admin/directory-listings',
+    '/admin/sitemap',
+    '/admin/audits',
+    '/staff/dashboard',
+    '/customer/dashboard',
+    '/news/category',
+  ];
+  for (const prefix of SPA_WILDCARD_PREFIXES) {
+    writeRoute(prefix, spaShell);
+    count++;
+  }
+
   console.log(`[prerender] Done. ${count} routes written.\n`);
 }
 

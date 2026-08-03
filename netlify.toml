@@ -1,0 +1,14 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+# SPA fallback: serve index.html for any path that has no static file.
+# force = false is critical — it makes this rule apply ONLY when no
+# prerendered HTML file exists at the requested path. Without it, the
+# rewrite would shadow all 87 prerendered pages and serve the bare SPA
+# shell to crawlers (the root cause of the SEO issues).
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+  force = false
