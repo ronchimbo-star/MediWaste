@@ -22,6 +22,13 @@ function truncateDescription(desc: string): string {
   return (lastSpace > 120 ? truncated.slice(0, lastSpace) : truncated) + '\u2026';
 }
 
+function withTrailingSlash(url: string): string {
+  if (!url) return url;
+  if (url.endsWith('/')) return url;
+  if (/\.[a-z0-9]+$/i.test(url.split('?')[0])) return url;
+  return url + '/';
+}
+
 export default function SEO({
   title,
   description,
@@ -40,6 +47,7 @@ export default function SEO({
   const resolvedKeywords = keywords || settings?.default_meta_keywords || '';
   const resolvedImage = ogImage || image || DEFAULT_OG_IMAGE;
   const safeDescription = resolvedDescription ? truncateDescription(resolvedDescription) : '';
+  const canon = withTrailingSlash(canonical);
   const schemas = schema ? (Array.isArray(schema) ? schema : [schema]) : [];
 
   return (
@@ -52,11 +60,11 @@ export default function SEO({
       ) : (
         <meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1" />
       )}
-      <link rel="canonical" href={canonical} />
+      <link rel="canonical" href={canon} />
 
       <meta property="og:site_name" content="MediWaste" />
       <meta property="og:type" content={type} />
-      <meta property="og:url" content={canonical} />
+      <meta property="og:url" content={canon} />
       <meta property="og:title" content={resolvedTitle} />
       {safeDescription && <meta property="og:description" content={safeDescription} />}
       <meta property="og:image" content={resolvedImage} />

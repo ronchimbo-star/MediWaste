@@ -48,14 +48,22 @@ function toDateStr(dateVal: string | null): string {
   }
 }
 
+function withTrailingSlash(loc: string): string {
+  if (!loc || loc === "/") return loc;
+  if (loc.endsWith("/")) return loc;
+  if (/\.[a-z0-9]+$/i.test(loc.split("?")[0])) return loc;
+  return loc + "/";
+}
+
 function urlEntry(
   loc: string,
   lastmod: string,
   changefreq: string,
   priority: string
 ): string {
+  const safeLoc = withTrailingSlash(loc);
   return `  <url>
-    <loc>${BASE_URL}${loc}</loc>${lastmod ? `\n    <lastmod>${lastmod}</lastmod>` : ""}
+    <loc>${BASE_URL}${safeLoc}</loc>${lastmod ? `\n    <lastmod>${lastmod}</lastmod>` : ""}
     <changefreq>${changefreq}</changefreq>
     <priority>${priority}</priority>
   </url>`;

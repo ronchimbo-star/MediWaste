@@ -5,8 +5,8 @@
 # SPA fallback: serve index.html for any path that has no static file.
 # force = false is critical — it makes this rule apply ONLY when no
 # prerendered HTML file exists at the requested path. Without it, the
-# rewrite would shadow all 87 prerendered pages and serve the bare SPA
-# shell to crawlers (the root cause of the SEO issues).
+# rewrite would shadow all prerendered pages and serve the bare SPA
+# shell to crawlers.
 [[redirects]]
   from = "/*"
   to = "/index.html"

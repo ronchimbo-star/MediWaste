@@ -63,7 +63,7 @@ export default function NewsPage() {
       <SEO
         title="News & Updates | MediWaste Clinical Waste Disposal"
         description="Stay updated with the latest news, regulations, and insights on clinical waste management from MediWaste. Expert guidance for healthcare facilities."
-        canonical="https://mediwaste.co.uk/news"
+        canonical="https://mediwaste.co.uk/news/"
         schema={{
           '@context': 'https://schema.org',
           '@type': 'Blog',

@@ -249,7 +249,7 @@ export default function NewsArticlePage() {
       <SEO
         title={article.seo_title || article.title}
         description={article.seo_description || article.excerpt}
-        canonical={`https://mediwaste.co.uk/news/${article.slug}`}
+        canonical={`https://mediwaste.co.uk/news/${article.slug}/`}
         keywords={article.seo_keywords?.join(', ') || ''}
         ogImage={article.og_image || article.featured_image}
         schema={articleSchema}

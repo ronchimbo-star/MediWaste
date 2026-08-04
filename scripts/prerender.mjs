@@ -96,6 +96,18 @@ function trimDesc(str) {
   return (space > 100 ? cut.slice(0, space) : cut) + '\u2026';
 }
 
+/** Normalise a canonical URL to end with a trailing slash so it matches
+ *  the URL Netlify actually serves (directory-based prerendered pages are
+ *  served at /path/ not /path).  Prevents Ahrefs redirect-chain warnings. */
+function withTrailingSlash(url) {
+  if (!url) return url;
+  // Don't touch URLs that already end with /
+  if (url.endsWith('/')) return url;
+  // Don't touch file-like URLs (e.g. /sitemap.xml)
+  if (/\.[a-z0-9]+$/i.test(url.split('?')[0])) return url;
+  return url + '/';
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Head + noscript injection
 // ─────────────────────────────────────────────────────────────────────────────
@@ -124,16 +136,17 @@ function buildHtml(template, meta) {
   const robots = noindex
     ? 'noindex,nofollow'
     : 'index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1';
+  const canon = withTrailingSlash(canonical);
 
   const metaLines = [
     `<title>${esc(title)}</title>`,
     desc       ? `    <meta name="description" content="${escAttr(desc)}" />`    : '',
     keywords   ? `    <meta name="keywords" content="${escAttr(keywords)}" />`   : '',
     `    <meta name="robots" content="${robots}" />`,
-    `    <link rel="canonical" href="${escAttr(canonical)}" />`,
+    `    <link rel="canonical" href="${escAttr(canon)}" />`,
     `    <meta property="og:site_name" content="MediWaste" />`,
     `    <meta property="og:type" content="${type}" />`,
-    `    <meta property="og:url" content="${escAttr(canonical)}" />`,
+    `    <meta property="og:url" content="${escAttr(canon)}" />`,
     `    <meta property="og:title" content="${escAttr(title)}" />`,
     desc       ? `    <meta property="og:description" content="${escAttr(desc)}" />` : '',
     `    <meta property="og:image" content="${escAttr(ogImage)}" />`,
@@ -1130,7 +1143,7 @@ async function main() {
       : '';
 
     for (const page of pages) {
-      const canonical = page.canonical_url || `${BASE_URL}/c/${page.url_slug}`;
+      const canonical = withTrailingSlash(page.canonical_url || `${BASE_URL}/c/${page.url_slug}`);
       const title = page.meta_title || page.h1 || page.target_keyword;
       const description =
         page.meta_description ||
@@ -1199,7 +1212,7 @@ async function main() {
 
     console.log(`[prerender]   ${articles.length} news articles`);
     for (const article of articles) {
-      const canonical = `${BASE_URL}/news/${article.slug}`;
+      const canonical = withTrailingSlash(`${BASE_URL}/news/${article.slug}`);
       const title = article.seo_title || article.title;
       const description = article.seo_description || article.excerpt;
       const keywords = Array.isArray(article.seo_keywords)
@@ -1253,7 +1266,7 @@ async function main() {
   console.log('[prerender] Writing SPA-only routes…');
   const spaShell = buildHtml(template, {
     title: 'MediWaste',
-    canonical: BASE_URL,
+    canonical: withTrailingSlash(BASE_URL),
     noindex: true,
   });
   const SPA_ROUTES = [
