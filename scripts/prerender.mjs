@@ -174,13 +174,21 @@ function buildHtml(template, meta) {
     ? `<article>${rootParts.join('')}</article>`
     : '';
 
+  // Wrap crawlable content in <noscript> so it is invisible to JS-enabled
+  // browsers (preventing flash of unstyled text before CSS loads) but still
+  // fully present in the HTML source for non-JS crawlers (aHREFS, Bing,
+  // social scrapers). React replaces #root entirely on hydration.
+  const rootContent = rootInner
+    ? `<noscript>${rootInner}</noscript>`
+    : '';
+
   return template
     // Remove the generic title added by vite build
     .replace(/<title>[^<]*<\/title>/, '')
     // Inject all meta tags before closing </head>
     .replace('</head>', `    ${metaLines}\n  </head>`)
     // Inject crawlable content inside <div id="root">
-    .replace('<div id="root"></div>', `<div id="root">${rootInner}</div>`);
+    .replace('<div id="root"></div>', `<div id="root">${rootContent}</div>`);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
