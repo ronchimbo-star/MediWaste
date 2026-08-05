@@ -208,7 +208,7 @@ function writeRoute(routePath, html) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 // Shared content blocks used across multiple pages
-const EXTERNAL_LINKS = '<h2>Useful Resources</h2><ul><li><a href="https://www.gov.uk/government/publications/management-of-clinical-and-healthcare-waste" target="_blank" rel="noopener noreferrer">GOV.UK: Management of clinical and healthcare waste guidance</a></li><li><a href="https://www.hse.gov.uk/biologicalagents/blood-borne-viruses/needlestick-injuries.htm" target="_blank" rel="noopener noreferrer">HSE: Safe disposal of sharps and needlestick injuries</a></li><li><a href="https://www.nhs.uk/conditions/clinical-waste/" target="_blank" rel="noopener noreferrer">NHS: How to dispose of clinical waste</a></li></ul>';
+const EXTERNAL_LINKS = '<h2>Useful Resources</h2><ul><li><a href="https://www.gov.uk/guidance/healthcare-waste-appropriate-measures-for-permitted-facilities" target="_blank" rel="noopener noreferrer">GOV.UK: Healthcare waste appropriate measures for permitted facilities</a></li><li><a href="https://www.hse.gov.uk/biosafety/blood-borne-viruses/avoiding-sharps-injuries.htm" target="_blank" rel="noopener noreferrer">HSE: Avoiding needlestick or sharps injuries</a></li><li><a href="https://www.england.nhs.uk/long-read/nhs-clinical-waste-strategy" target="_blank" rel="noopener noreferrer">NHS England: Clinical waste strategy</a></li></ul>';
 
 const SERVICE_LINKS = '<h2>Our Clinical Waste Services</h2><ul><li><a href="/waste-services/infectious-waste">Infectious waste collection</a> — yellow bag waste including contaminated dressings, swabs and PPE</li><li><a href="/waste-services/sharps-waste">Sharps disposal</a> — needles, syringes, lancets and other medical sharps</li><li><a href="/waste-services/pharmaceutical-waste">Pharmaceutical waste disposal</a> — expired medicines and controlled drugs</li><li><a href="/waste-services/cytotoxic-waste">Cytotoxic waste disposal</a> — chemotherapy and cytostatic waste</li><li><a href="/waste-services/dental-waste">Dental waste disposal</a> — amalgam, impression materials and dental sharps</li><li><a href="/waste-services/anatomical-waste">Anatomical waste disposal</a> — human tissue and pathology waste</li></ul>';
 
@@ -241,8 +241,8 @@ const LOCAL_BUSINESS_SCHEMA = {
 const STATIC_ROUTES = [
   {
     path: '/',
-    title: 'Clinical Waste Collection London & South East | MediWaste',
-    description: 'Fully compliant clinical waste disposal for GP surgeries, dental practices, and care homes across London and the South East. Registered waste carrier. Free compliance audit available.',
+    title: 'Clinical Waste Collection London & SE | MediWaste',
+    description: 'Compliant clinical waste disposal for GP surgeries, dental practices and care homes across London and the South East. Registered waste carrier.',
     keywords: 'clinical waste collection, medical waste disposal, sharps disposal, clinical waste London',
     canonical: `${BASE_URL}/`,
     h1: 'Clinical Waste Collection London & South East',
@@ -342,7 +342,7 @@ ${EXTERNAL_LINKS}
 <p>MediWaste provides licensed clinical waste disposal services for healthcare providers across London and the South East. We handle all categories of clinical waste, from infectious waste and sharps to pharmaceutical and anatomical waste, ensuring full compliance with UK regulations at every stage.</p>
 ${SERVICE_LINKS}
 <h2>Waste Segregation</h2>
-<p>Proper waste segregation is essential for compliance. The <a href="https://www.gov.uk/government/publications/management-of-clinical-and-healthcare-waste" target="_blank" rel="noopener noreferrer">GOV.UK guidance on clinical waste management</a> specifies colour-coded containers for different waste streams:</p>
+<p>Proper waste segregation is essential for compliance. The <a href="https://www.gov.uk/guidance/healthcare-waste-appropriate-measures-for-permitted-facilities" target="_blank" rel="noopener noreferrer">GOV.UK guidance on clinical waste management</a> specifies colour-coded containers for different waste streams:</p>
 <ul>
 <li><strong>Yellow bags</strong> — infectious waste requiring incineration</li>
 <li><strong>Orange bags</strong> — infectious waste suitable for alternative treatment</li>
@@ -388,7 +388,7 @@ ${EXTERNAL_LINKS}
 <h2>Yellow Bag vs Orange Bag</h2>
 <p>Yellow bags are used for infectious waste that requires incineration, such as waste contaminated with chemicals or pharmaceuticals. Orange bags are used for infectious waste that can be treated by alternative treatment methods. Our team will advise you on the correct segregation for your waste streams during your free consultation.</p>
 <h2>Regulatory Compliance</h2>
-<p>Infectious waste disposal is governed by the <a href="https://www.gov.uk/government/publications/management-of-clinical-and-healthcare-waste" target="_blank" rel="noopener noreferrer">GOV.UK clinical waste management guidance</a> and the Hazardous Waste Regulations 2005. MediWaste ensures full compliance with all relevant regulations, providing waste transfer notes within 48 hours of every collection.</p>
+<p>Infectious waste disposal is governed by the <a href="https://www.gov.uk/guidance/healthcare-waste-appropriate-measures-for-permitted-facilities" target="_blank" rel="noopener noreferrer">GOV.UK clinical waste management guidance</a> and the Hazardous Waste Regulations 2005. MediWaste ensures full compliance with all relevant regulations, providing waste transfer notes within 48 hours of every collection.</p>
 ${PROCESS_STEPS}
 ${COMPLIANCE_BOX}
 <h2>Related Services</h2>
@@ -426,7 +426,7 @@ ${EXTERNAL_LINKS}
 <li><strong>Acupuncture needles</strong> — from acupuncture and dry needling clinics</li>
 </ul>
 <h2>Sharps Bin Colour Coding</h2>
-<p>The <a href="https://www.hse.gov.uk/biologicalagents/blood-borne-viruses/needlestick-injuries.htm" target="_blank" rel="noopener noreferrer">HSE guidance on sharps disposal</a> specifies colour-coded bins:</p>
+<p>The <a href="https://www.hse.gov.uk/biosafety/blood-borne-viruses/avoiding-sharps-injuries.htm" target="_blank" rel="noopener noreferrer">HSE guidance on sharps disposal</a> specifies colour-coded bins:</p>
 <ul>
 <li><strong>Orange sharps bins</strong> — sharps not contaminated with pharmaceuticals (e.g. blood sampling needles)</li>
 <li><strong>Yellow sharps bins</strong> — sharps contaminated with pharmaceuticals (e.g. injection needles)</li>
@@ -472,7 +472,7 @@ ${EXTERNAL_LINKS}
 <li><strong>Cytotoxic and cytostatic medicines</strong> — must be segregated into purple containers</li>
 </ul>
 <h2>Legal Regulations</h2>
-<p>Pharmaceutical waste disposal is governed by the Hazardous Waste Regulations 2005, the Misuse of Drugs Regulations 2001, and the <a href="https://www.gov.uk/government/publications/management-of-clinical-and-healthcare-waste" target="_blank" rel="noopener noreferrer">GOV.UK clinical waste management guidance</a>. Controlled drugs require denaturing before disposal and must be witnessed and documented. MediWaste ensures full compliance with all regulatory requirements.</p>
+<p>Pharmaceutical waste disposal is governed by the Hazardous Waste Regulations 2005, the Misuse of Drugs Regulations 2001, and the <a href="https://www.gov.uk/guidance/healthcare-waste-appropriate-measures-for-permitted-facilities" target="_blank" rel="noopener noreferrer">GOV.UK clinical waste management guidance</a>. Controlled drugs require denaturing before disposal and must be witnessed and documented. MediWaste ensures full compliance with all regulatory requirements.</p>
 <h2>Benefits of Professional Pharmaceutical Waste Disposal</h2>
 <ul>
 <li>Prevents environmental contamination from improper disposal</li>
@@ -516,7 +516,7 @@ ${EXTERNAL_LINKS}
 <li><strong>Body waste from treated patients</strong> — subject to specific protocols</li>
 </ul>
 <h2>Regulatory Compliance</h2>
-<p>Cytotoxic waste is classified as hazardous under the Hazardous Waste Regulations 2005. It must be segregated into purple-coloured containers with the cytotoxic hazard symbol and disposed of by high-temperature incineration. The <a href="https://www.gov.uk/government/publications/management-of-clinical-and-healthcare-waste" target="_blank" rel="noopener noreferrer">GOV.UK clinical waste management guidance</a> provides detailed requirements for cytotoxic waste handling.</p>
+<p>Cytotoxic waste is classified as hazardous under the Hazardous Waste Regulations 2005. It must be segregated into purple-coloured containers with the cytotoxic hazard symbol and disposed of by high-temperature incineration. The <a href="https://www.gov.uk/guidance/healthcare-waste-appropriate-measures-for-permitted-facilities" target="_blank" rel="noopener noreferrer">GOV.UK clinical waste management guidance</a> provides detailed requirements for cytotoxic waste handling.</p>
 <h2>Benefits of Professional Cytotoxic Waste Disposal</h2>
 <ul>
 <li>Protects healthcare workers and the public from exposure to hazardous drugs</li>
@@ -561,7 +561,7 @@ ${EXTERNAL_LINKS}
 <li><strong>PPE</strong> — contaminated gloves, masks and gowns</li>
 </ul>
 <h2>Regulations and Compliance</h2>
-<p>Dental waste disposal is regulated under the Hazardous Waste Regulations 2005 and the <a href="https://www.gov.uk/government/publications/management-of-clinical-and-healthcare-waste" target="_blank" rel="noopener noreferrer">GOV.UK clinical waste management guidance</a>. Amalgam waste containing mercury is classified as hazardous and must be stored in specialised containers with mercury recovery. Dental practices must also comply with CQC requirements for waste management.</p>
+<p>Dental waste disposal is regulated under the Hazardous Waste Regulations 2005 and the <a href="https://www.gov.uk/guidance/healthcare-waste-appropriate-measures-for-permitted-facilities" target="_blank" rel="noopener noreferrer">GOV.UK clinical waste management guidance</a>. Amalgam waste containing mercury is classified as hazardous and must be stored in specialised containers with mercury recovery. Dental practices must also comply with CQC requirements for waste management.</p>
 <h2>Benefits of Professional Dental Waste Disposal</h2>
 <ul>
 <li>Ensures mercury is recovered safely, protecting the environment</li>
@@ -606,7 +606,7 @@ ${EXTERNAL_LINKS}
 <li><strong>Animal tissue from research</strong> — from veterinary and laboratory settings</li>
 </ul>
 <h2>Legal Regulations and Compliance</h2>
-<p>Anatomical waste is classified as hazardous under the Hazardous Waste Regulations 2005. It must be stored in red-coloured containers with the anatomical waste symbol and disposed of by high-temperature incineration. The <a href="https://www.gov.uk/government/publications/management-of-clinical-and-healthcare-waste" target="_blank" rel="noopener noreferrer">GOV.UK clinical waste management guidance</a> provides detailed requirements. Human tissue may also be subject to the Human Tissue Act 2004.</p>
+<p>Anatomical waste is classified as hazardous under the Hazardous Waste Regulations 2005. It must be stored in red-coloured containers with the anatomical waste symbol and disposed of by high-temperature incineration. The <a href="https://www.gov.uk/guidance/healthcare-waste-appropriate-measures-for-permitted-facilities" target="_blank" rel="noopener noreferrer">GOV.UK clinical waste management guidance</a> provides detailed requirements. Human tissue may also be subject to the Human Tissue Act 2004.</p>
 <h2>Process of Disposal</h2>
 <ol>
 <li><strong>Free consultation</strong> — We assess your anatomical waste streams and provide appropriate red containers.</li>
@@ -736,7 +736,7 @@ ${EXTERNAL_LINKS}
 <li><a href="/waste-services/anatomical-waste">Anatomical waste</a> — human tissue, pathology specimens</li>
 </ul>
 <h2>Compliance and Regulations</h2>
-<p>All clinical waste disposal is governed by the Hazardous Waste Regulations 2005 and the <a href="https://www.gov.uk/government/publications/management-of-clinical-and-healthcare-waste" target="_blank" rel="noopener noreferrer">GOV.UK clinical waste management guidance</a>. MediWaste ensures full compliance with all regulations. See our <a href="/compliance">compliance page</a> for more information.</p>
+<p>All clinical waste disposal is governed by the Hazardous Waste Regulations 2005 and the <a href="https://www.gov.uk/guidance/healthcare-waste-appropriate-measures-for-permitted-facilities" target="_blank" rel="noopener noreferrer">GOV.UK clinical waste management guidance</a>. MediWaste ensures full compliance with all regulations. See our <a href="/compliance">compliance page</a> for more information.</p>
 ${PROCESS_STEPS}
 ${COMPLIANCE_BOX}
 <h2>What to Expect</h2>
@@ -776,9 +776,9 @@ ${EXTERNAL_LINKS}
 <p>From the environmental impact of clinical waste disposal to the latest innovations in waste treatment technology, we provide insights to help healthcare facilities make informed decisions about their waste management.</p>
 <h2>Useful Resources</h2>
 <ul>
-<li><a href="https://www.gov.uk/government/publications/management-of-clinical-and-healthcare-waste" target="_blank" rel="noopener noreferrer">GOV.UK: Management of clinical and healthcare waste guidance</a></li>
-<li><a href="https://www.hse.gov.uk/biologicalagents/" target="_blank" rel="noopener noreferrer">HSE: Biological agents guidance</a></li>
-<li><a href="https://www.nhs.uk/conditions/clinical-waste/" target="_blank" rel="noopener noreferrer">NHS: Clinical waste disposal</a></li>
+<li><a href="https://www.gov.uk/guidance/healthcare-waste-appropriate-measures-for-permitted-facilities" target="_blank" rel="noopener noreferrer">GOV.UK: Management of clinical and healthcare waste guidance</a></li>
+<li><a href="https://www.hse.gov.uk/biosafety/" target="_blank" rel="noopener noreferrer">HSE: Biological agents guidance</a></li>
+<li><a href="https://www.england.nhs.uk/long-read/nhs-clinical-waste-strategy" target="_blank" rel="noopener noreferrer">NHS: Clinical waste disposal</a></li>
 </ul>
 <p>Looking for a specific topic? <a href="/contact">Contact us</a> with your questions or browse our <a href="/faq">FAQ page</a>.</p>
 `,
@@ -803,7 +803,7 @@ ${EXTERNAL_LINKS}
 <li><strong>Health and Safety (Sharp Instruments in Healthcare) Regulations 2013</strong> — requires safe sharps disposal</li>
 <li><strong>GOV.UK clinical waste management guidance</strong> — provides detailed segregation and disposal requirements</li>
 </ul>
-<p>For the full guidance, see the <a href="https://www.gov.uk/government/publications/management-of-clinical-and-healthcare-waste" target="_blank" rel="noopener noreferrer">GOV.UK clinical waste management page</a>.</p>
+<p>For the full guidance, see the <a href="https://www.gov.uk/guidance/healthcare-waste-appropriate-measures-for-permitted-facilities" target="_blank" rel="noopener noreferrer">GOV.UK clinical waste management page</a>.</p>
 <h2>Documentation We Provide</h2>
 <ul>
 <li><strong>Waste transfer notes</strong> — for every collection of non-hazardous clinical waste</li>

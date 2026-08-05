@@ -4,64 +4,29 @@ https://www.mediwaste.co.uk/* https://mediwaste.co.uk/:splat 301!
 # Sitemap proxy
 /sitemap.xml https://xezovslgxkhzjumtfrjn.supabase.co/functions/v1/seo-sitemap 200!
 
-# ── Force trailing slash on prerendered pages ──────────────────────────────
-# Netlify serves directory-based pages at both /path and /path/ (both 200).
-# These 301 redirects collapse every URL to the trailing-slash version so
-# there is a single canonical URL per page (fixes Ahrefs redirect-chain /
-# canonical-mismatch warnings).
-/about /about/ 301!
-/contact /contact/ 301!
-/quote /quote/ 301!
-/faq /faq/ 301!
-/compliance /compliance/ 301!
-/audit /audit/ 301!
-/waste-services /waste-services/ 301!
-/waste-services/infectious-waste /waste-services/infectious-waste/ 301!
-/waste-services/sharps-waste /waste-services/sharps-waste/ 301!
-/waste-services/pharmaceutical-waste /waste-services/pharmaceutical-waste/ 301!
-/waste-services/cytotoxic-waste /waste-services/cytotoxic-waste/ 301!
-/waste-services/dental-waste /waste-services/dental-waste/ 301!
-/waste-services/anatomical-waste /waste-services/anatomical-waste/ 301!
-/service-coverage /service-coverage/ 301!
-/service-areas/london /service-areas/london/ 301!
-/service-areas/kent /service-areas/kent/ 301!
-/service-areas/essex /service-areas/essex/ 301!
-/service-areas/surrey /service-areas/surrey/ 301!
-/service-areas/sussex /service-areas/sussex/ 301!
-/service-areas/hampshire /service-areas/hampshire/ 301!
-/news /news/ 301!
-/directory-listings /directory-listings/ 301!
-/privacy /privacy/ 301!
-/terms /terms/ 301!
-/cookies /cookies/ 301!
-/c/:slug /c/:slug/ 301!
-/news/:slug /news/:slug/ 301!
-/news/category/:slug /news/category/:slug/ 301!
-
 # Legacy WordPress assets – serve SPA so app can handle gracefully
-# (No prerendered files under these prefixes — safe to use 200 rewrite)
 /wp-content/* /index.html 200
 /wp-admin/* /index.html 200
 /wp-includes/* /index.html 200
 
-# Old route redirects to current equivalents (with trailing slash to avoid chains)
-/healthcare-waste/sharps /waste-services/sharps-waste/ 301
-/sectors/dental-practices /waste-services/dental-waste/ 301
-/sectors/nursing-care /waste-services/ 301
-/sectors /waste-services/ 301
-/waste-collection-service /waste-services/ 301
-/register /quote/ 301
-/service-area /service-coverage/ 301
+# Old route redirects to current equivalents
+/healthcare-waste/sharps /waste-services/sharps-waste 301
+/sectors/dental-practices /waste-services/dental-waste 301
+/sectors/nursing-care /waste-services 301
+/sectors /waste-services 301
+/waste-collection-service /waste-services 301
+/register /quote 301
+/service-area /service-coverage 301
 
 # Old listing / directory URLs
-/listing/* /directory-listings/ 301
-/listings/* /directory-listings/ 301
+/listing/* /directory-listings 301
+/listings/* /directory-listings 301
 
 # Old profile URLs
-/profile/* /about/ 301
+/profile/* /about 301
 
 # Old individual business page URLs (WordPress)
-/fki-aesthetics-wellness /directory-listings/ 301
+/fki-aesthetics-wellness /directory-listings 301
 
 # NOTE: No SPA catch-all here. All public routes have prerendered HTML files
 # in dist/ that Netlify serves directly. Routes without prerendered files

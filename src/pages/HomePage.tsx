@@ -68,8 +68,8 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-white">
       <SEO
-        title="Clinical Waste Collection London & South East | MediWaste"
-        description="Fully compliant clinical waste disposal for GP surgeries, dental practices, and care homes across London and the South East. Registered waste carrier. Free compliance audit available."
+        title="Clinical Waste Collection London & SE | MediWaste"
+        description="Compliant clinical waste disposal for GP surgeries, dental practices and care homes across London and the South East. Registered waste carrier."
         canonical="https://mediwaste.co.uk/"
         schema={organizationSchema}
       />
