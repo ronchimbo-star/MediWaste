@@ -174,13 +174,18 @@ function buildHtml(template, meta) {
     ? `<article>${rootParts.join('')}</article>`
     : '';
 
+  // Crawlable footer navigation — visible to non-JS crawlers (aHREFS, Bing)
+  // so every page has incoming internal links. Hidden from JS browsers via
+  // <noscript> to avoid duplicate nav with the React footer.
+  const FOOTER_NAV = `<nav style="display:none"><h2>Site Navigation</h2><ul><li><a href="/">Home</a></li><li><a href="/about">About Us</a></li><li><a href="/waste-services">Waste Services</a></li><li><a href="/waste-services/infectious-waste">Infectious Waste</a></li><li><a href="/waste-services/sharps-waste">Sharps Disposal</a></li><li><a href="/waste-services/pharmaceutical-waste">Pharmaceutical Waste</a></li><li><a href="/waste-services/cytotoxic-waste">Cytotoxic Waste</a></li><li><a href="/waste-services/dental-waste">Dental Waste</a></li><li><a href="/waste-services/anatomical-waste">Anatomical Waste</a></li><li><a href="/service-coverage">Service Coverage</a></li><li><a href="/service-areas/london">London</a></li><li><a href="/service-areas/kent">Kent</a></li><li><a href="/service-areas/essex">Essex</a></li><li><a href="/service-areas/surrey">Surrey</a></li><li><a href="/service-areas/sussex">Sussex</a></li><li><a href="/service-areas/hampshire">Hampshire</a></li><li><a href="/compliance">Compliance</a></li><li><a href="/audit">Clinical Waste Audit</a></li><li><a href="/quote">Get a Quote</a></li><li><a href="/contact">Contact Us</a></li><li><a href="/faq">FAQ</a></li><li><a href="/news">News</a></li><li><a href="/directory-listings">Directory</a></li><li><a href="/terms">Terms of Service</a></li><li><a href="/privacy">Privacy Policy</a></li><li><a href="/cookies">Cookie Policy</a></li></ul></nav>`;
+
   // Wrap crawlable content in <noscript> so it is invisible to JS-enabled
   // browsers (preventing flash of unstyled text before CSS loads) but still
   // fully present in the HTML source for non-JS crawlers (aHREFS, Bing,
   // social scrapers). React replaces #root entirely on hydration.
   const rootContent = rootInner
-    ? `<noscript>${rootInner}</noscript>`
-    : '';
+    ? `<noscript>${rootInner}${FOOTER_NAV}</noscript>`
+    : `<noscript>${FOOTER_NAV}</noscript>`;
 
   return template
     // Remove the generic title added by vite build
