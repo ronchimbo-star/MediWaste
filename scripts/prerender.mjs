@@ -306,6 +306,23 @@ ${EXTERNAL_LINKS}
 <h2>Our Approach</h2>
 <p>We believe clinical waste disposal should be simple, transparent and fully compliant. Our process begins with a free consultation to understand your waste streams and recommend the right containers and collection schedule. We then provide ongoing collections with full documentation, so you always have the records you need for inspections and audits.</p>
 <p>Every collection is backed by waste transfer notes or consignment notes, issued within 48 hours. We supply all containers free of charge, and our pricing is transparent with no hidden fees.</p>
+<h2>Our Values</h2>
+<ul>
+<li><strong>Compliance first</strong> — we help healthcare providers meet their regulatory obligations without the administrative burden</li>
+<li><strong>Transparency</strong> — clear pricing, full documentation and no hidden charges</li>
+<li><strong>Reliability</strong> — collections on the agreed schedule, every time</li>
+<li><strong>Environmental responsibility</strong> — route-optimised collections and licensed disposal facilities</li>
+</ul>
+<h2>Our Accreditations</h2>
+<ul>
+<li>Environment Agency registered upper tier waste carrier</li>
+<li>Safe Contractor approved</li>
+<li>ISO 14001 certified environmental management</li>
+<li>Comprehensive public and employer liability insurance</li>
+</ul>
+<p>MediWaste is audited annually by the Environment Agency and holds a registered waste carrier licence (upper tier). All waste transfer notes and consignment notes are provided within 48 hours of collection.</p>
+<h2>Our Commitment to Sustainability</h2>
+<p>We are committed to reducing the environmental impact of clinical waste disposal. Our route-optimised collection schedules reduce vehicle emissions, and we ensure all waste is processed at licensed facilities that meet the latest environmental standards. Where alternative treatment is safe and appropriate, we prioritise it over incineration to reduce carbon footprint. We also advise clients on waste minimisation strategies to help reduce the overall volume of clinical waste sent for disposal.</p>
 <h2>Who We Serve</h2>
 <ul>
 <li><strong>GP surgeries and medical centres</strong> — infectious waste, sharps, pharmaceutical waste</li>
@@ -325,7 +342,7 @@ ${EXTERNAL_LINKS}
   },
   {
     path: '/waste-services',
-    title: 'Clinical Waste Disposal Services UK | Medical Waste Collection | Sharps Disposal',
+    title: 'Clinical Waste Disposal & Sharps Collection | MediWaste',
     description: 'Licensed clinical waste disposal: infectious waste, sharps, pharmaceutical, cytotoxic, dental and anatomical waste. Compliant UK medical waste collection. Free quote.',
     keywords: 'clinical waste disposal, medical waste collection, sharps disposal UK',
     canonical: `${BASE_URL}/waste-services`,
@@ -356,6 +373,15 @@ ${PROCESS_STEPS}
 <h2>Compliance and Documentation</h2>
 <p>Every collection is documented with waste transfer notes or hazardous waste consignment notes, issued within 48 hours. We maintain records for the statutory minimum of two years and can provide copies on request. <a href="/compliance">Learn more about our compliance services</a>.</p>
 ${COMPLIANCE_BOX}
+<h2>Frequently Asked Questions</h2>
+<h3>What clinical waste services do you provide?</h3>
+<p>We collect and dispose of all clinical waste categories including infectious waste, sharps, pharmaceutical waste, cytotoxic waste, dental waste and anatomical waste. Each stream is segregated into the correct colour-coded containers and collected on a schedule that suits your practice.</p>
+<h3>How often do you collect clinical waste?</h3>
+<p>Collection frequency depends on the volume of waste your practice generates. We offer weekly, fortnightly, monthly and ad-hoc collections. Most GP surgeries and dental practices opt for fortnightly collections, while high-volume settings such as hospitals and care homes may require weekly or even multiple collections per week.</p>
+<h3>Do you provide the containers?</h3>
+<p>Yes, all colour-coded bags, sharps bins and rigid containers are provided free of charge as part of your service agreement. We deliver them before your first collection and top up supplies as needed.</p>
+<h3>How quickly can you start collections?</h3>
+<p>We can usually begin collections within 7 days of your signed service agreement. For urgent requirements, we offer an emergency collection service that can be arranged within 48 hours.</p>
 <h2>Get a Quote</h2>
 <p><a href="/quote">Request a free, no-obligation quote</a> or call us on 0800 046 9806. We can usually start collections within 7 days.</p>
 ${EXTERNAL_LINKS}
@@ -363,7 +389,7 @@ ${EXTERNAL_LINKS}
   },
   {
     path: '/waste-services/infectious-waste',
-    title: 'Infectious Clinical Waste Disposal UK | Yellow Bag Waste Collection Service',
+    title: 'Infectious Waste Disposal UK | Yellow Bag Collection',
     description: 'Licensed infectious clinical waste disposal. Collection of contaminated dressings, swabs, PPE and infectious materials. Yellow bag waste with compliant incineration.',
     keywords: 'infectious waste disposal, clinical waste collection, yellow bag waste',
     canonical: `${BASE_URL}/waste-services/infectious-waste`,
@@ -397,13 +423,22 @@ ${COMPLIANCE_BOX}
 <li><a href="/waste-services/pharmaceutical-waste">Pharmaceutical waste disposal</a></li>
 <li><a href="/waste-services">All clinical waste services</a></li>
 </ul>
+<h2>Frequently Asked Questions</h2>
+<h3>What goes in yellow vs orange bags?</h3>
+<p>Yellow bags are for infectious waste that requires incineration, such as waste contaminated with chemicals or pharmaceuticals. Orange bags are for infectious waste that can be treated by alternative treatment methods. If you are unsure, our team will advise during your free consultation.</p>
+<h3>Can I put PPE in infectious waste bags?</h3>
+<p>Yes, disposable PPE such as gloves, aprons, masks and gowns that have been in contact with bodily fluids should be placed in the appropriate infectious waste bag. Clean, uncontaminated PPE can go in general waste.</p>
+<h3>How should infectious waste be stored before collection?</h3>
+<p>Infectious waste should be stored in a designated, secure area away from public access, in the correct colour-coded bag, sealed when three-quarters full. Store bags in a cool, well-ventilated area and keep them off the floor.</p>
+<h3>Do you provide documentation for CQC inspections?</h3>
+<p>Yes, we provide waste transfer notes within 48 hours of every collection and hazardous waste consignment notes where applicable. All records are retained for a minimum of two years and can be provided for inspections.</p>
 <p><a href="/quote">Request a free quote</a> or call 0800 046 9806.</p>
 ${EXTERNAL_LINKS}
 `,
   },
   {
     path: '/waste-services/sharps-waste',
-    title: 'Sharps Waste Disposal UK | Needle & Syringe Disposal Service | Sharps Bins',
+    title: 'Sharps Waste Disposal UK | Needle & Syringe Collection',
     description: 'Licensed sharps waste disposal for needles, syringes and medical sharps. Puncture-proof bins supplied free. Compliant collection and incineration. Get a quote.',
     keywords: 'sharps disposal, needle disposal UK, sharps bins, sharps waste collection',
     canonical: `${BASE_URL}/waste-services/sharps-waste`,
@@ -443,13 +478,22 @@ ${COMPLIANCE_BOX}
 <li><a href="/waste-services/cytotoxic-waste">Cytotoxic waste disposal</a></li>
 <li><a href="/waste-services">All clinical waste services</a></li>
 </ul>
+<h2>Frequently Asked Questions</h2>
+<h3>What size sharps bins do you provide?</h3>
+<p>We supply sharps bins in 1 litre, 5 litre, 7 litre and 11 litre sizes depending on your needs. Smaller clinics typically use 5 or 7 litre bins, while high-volume settings may require 11 litre or multiple bins.</p>
+<h3>How full should a sharps bin be before collection?</h3>
+<p>Sharps bins should be sealed when they reach the fill line indicated on the container, usually around three-quarters full. Never overfill a sharps bin, as this increases the risk of needlestick injuries.</p>
+<h3>Can you collect sharps from tattoo and beauty studios?</h3>
+<p>Yes, we collect sharps waste from tattoo studios, beauty salons, aesthetic clinics, acupuncture clinics and any business that generates sharps waste. All businesses producing sharps waste have a legal duty to dispose of it safely.</p>
+<h3>What records do I need to keep for sharps disposal?</h3>
+<p>You must retain waste transfer notes or hazardous waste consignment notes for a minimum of two years. We provide all documentation within 48 hours of collection and can supply copies on request.</p>
 <p><a href="/quote">Request a free quote</a> or call 0800 046 9806.</p>
 ${EXTERNAL_LINKS}
 `,
   },
   {
     path: '/waste-services/pharmaceutical-waste',
-    title: 'Pharmaceutical Waste Disposal UK | Medicine & Drug Disposal Service',
+    title: 'Pharmaceutical Waste Disposal UK | Medicine Disposal',
     description: 'Licensed pharmaceutical waste disposal for expired medicines, controlled drugs and pharmaceutical waste. Blue bin collection with compliant incineration. Free quote.',
     keywords: 'pharmaceutical waste disposal, medicine disposal UK, drug waste collection',
     canonical: `${BASE_URL}/waste-services/pharmaceutical-waste`,
@@ -488,13 +532,24 @@ ${COMPLIANCE_BOX}
 <li><a href="/waste-services/cytotoxic-waste">Cytotoxic waste disposal</a></li>
 <li><a href="/waste-services">All clinical waste services</a></li>
 </ul>
+<h2>Frequently Asked Questions</h2>
+<h3>How should controlled drugs be disposed of?</h3>
+<p>Controlled drugs must be denatured before disposal using a licensed denaturing kit. The process must be witnessed and documented. We provide the correct blue containers and can advise on denaturing requirements for your specific controlled drugs.</p>
+<h3>Can expired medicines go in the pharmaceutical waste bin?</h3>
+<p>Yes, expired tablets, capsules, liquids and topical preparations should be placed in blue pharmaceutical waste bins. Ensure all packaging is removed where possible and that cytotoxic or cytostatic medicines are segregated into purple containers.</p>
+<h3>Do you collect pharmaceutical waste from pharmacies?</h3>
+<p>Yes, we collect pharmaceutical waste from community pharmacies, hospital pharmacies, GP practices, care homes and veterinary practices. We provide the correct containers and documentation for each setting.</p>
+<h3>How often should pharmaceutical waste be collected?</h3>
+<p>Pharmaceutical waste is typically collected monthly or quarterly, depending on volume. We can adjust the frequency based on your needs and can arrange emergency collections if required.</p>
+<h3>What is a hazardous waste consignment note?</h3>
+<p>A consignment note is a legal document that accompanies hazardous waste during transport. It details the waste type, quantity, producer, carrier and disposal facility. We prepare all consignment notes on your behalf and provide copies within 48 hours of collection.</p>
 <p><a href="/quote">Request a free quote</a> or call 0800 046 9806.</p>
 ${EXTERNAL_LINKS}
 `,
   },
   {
     path: '/waste-services/cytotoxic-waste',
-    title: 'Cytotoxic Waste Disposal UK | Chemotherapy Waste Collection Service',
+    title: 'Cytotoxic & Chemotherapy Waste Disposal UK | MediWaste',
     description: 'Licensed cytotoxic and cytostatic waste disposal. Collection of chemotherapy waste, contaminated PPE and cancer treatment materials. Purple bin. Free quote.',
     keywords: 'cytotoxic waste disposal, chemotherapy waste, cytostatic waste UK',
     canonical: `${BASE_URL}/waste-services/cytotoxic-waste`,
@@ -526,19 +581,23 @@ ${EXTERNAL_LINKS}
 </ul>
 ${PROCESS_STEPS}
 ${COMPLIANCE_BOX}
+<h2>Safe Handling of Cytotoxic Waste</h2>
+<p>Cytotoxic waste requires specialist handling at every stage. Our drivers are fully trained in the handling of hazardous materials, and our vehicles are equipped with spill kits and protective equipment. Cytotoxic waste is transported in sealed, UN-approved purple containers with full chain-of-custody documentation from collection to final disposal.</p>
 <h2>Related Services</h2>
-<ul>
-<li><a href="/waste-services/pharmaceutical-waste">Pharmaceutical waste disposal</a></li>
-<li><a href="/waste-services/sharps-waste">Sharps waste disposal</a></li>
-<li><a href="/waste-services">All clinical waste services</a></li>
-</ul>
+<p>Cytotoxic and cytostatic waste must be segregated into purple-coloured containers with the cytotoxic hazard symbol. This includes contaminated sharps, PPE, drug packaging and absorbent materials from chemotherapy procedures.</p>
+<h3>Can cytotoxic waste be mixed with other clinical waste?</h3>
+<p>No, cytotoxic waste must never be mixed with other waste streams. It requires specialist handling, separate storage and disposal by high-temperature incineration at a licensed facility.</p>
+<h3>Do you collect cytotoxic waste from veterinary practices?</h3>
+<p>Yes, we collect cytotoxic waste from veterinary practices that handle chemotherapy treatments for animals. We provide the correct purple containers and full chain-of-custody documentation.</p>
+<h3>How is cytotoxic waste transported?</h3>
+<p>Cytotoxic waste is transported in sealed, UN-approved purple containers by licensed waste carriers. Vehicles are equipped with spill kits and drivers are trained in handling hazardous materials. Full documentation is provided for every collection.</p>
 <p><a href="/quote">Request a free quote</a> or call 0800 046 9806.</p>
 ${EXTERNAL_LINKS}
 `,
   },
   {
     path: '/waste-services/dental-waste',
-    title: 'Dental Waste Disposal UK | Amalgam Waste & Dental Clinical Waste Collection',
+    title: 'Dental Waste Disposal UK | Amalgam & Sharps Collection',
     description: 'Licensed dental waste disposal including amalgam, sharps and infectious dental materials. Mercury waste collection with compliant incineration. Free quote.',
     keywords: 'dental waste disposal, amalgam waste UK, dental clinical waste',
     canonical: `${BASE_URL}/waste-services/dental-waste`,
@@ -578,13 +637,22 @@ ${COMPLIANCE_BOX}
 <li><a href="/waste-services/pharmaceutical-waste">Pharmaceutical waste disposal</a></li>
 <li><a href="/waste-services">All clinical waste services</a></li>
 </ul>
+<h2>Frequently Asked Questions</h2>
+<h3>How should dental amalgam be stored?</h3>
+<p>Dental amalgam waste must be stored in specialised amalgam containers with a mercury vapour suppressant. Extracted teeth containing amalgam fillings should also be stored in these containers, not in infectious waste bags.</p>
+<h3>Can dental X-ray chemicals go in the drain?</h3>
+<p>No, X-ray developer and fixer solutions contain silver and other chemicals that are hazardous to the environment. They must be collected separately in approved containers and disposed of by a licensed waste carrier.</p>
+<h3>Do you collect dental waste from single-practitioner clinics?</h3>
+<p>Yes, we serve dental practices of all sizes, from single-practitioner clinics to multi-site groups. Collection frequency is tailored to your waste volume, with most small practices opting for monthly or fortnightly collections.</p>
+<h3>What documentation do I need for CQC inspections?</h3>
+<p>You must have current waste transfer notes, hazardous waste consignment notes (for amalgam and X-ray chemicals), and a valid waste carrier registration number. We provide all documentation within 48 hours of collection and can supply a compliance pack for inspections.</p>
 <p><a href="/quote">Request a free quote</a> or call 0800 046 9806.</p>
 ${EXTERNAL_LINKS}
 `,
   },
   {
     path: '/waste-services/anatomical-waste',
-    title: 'Anatomical Waste Disposal UK | Human Tissue & Pathology Waste Collection',
+    title: 'Anatomical Waste Disposal UK | Tissue & Pathology Waste',
     description: 'Licensed anatomical waste disposal. Dignified collection and incineration of human tissue, organs and pathology waste. Fully compliant. Free quote.',
     keywords: 'anatomical waste disposal, human tissue waste, pathology waste UK',
     canonical: `${BASE_URL}/waste-services/anatomical-waste`,
@@ -614,12 +682,18 @@ ${EXTERNAL_LINKS}
 <li><strong>Compliant incineration</strong> — Waste is transported to a licensed high-temperature incineration facility with full chain-of-custody documentation.</li>
 </ol>
 ${COMPLIANCE_BOX}
+<h2>Safe Handling of Anatomical Waste</h2>
+<p>Anatomical waste requires careful, dignified handling at every stage. Our drivers are trained in the sensitive handling of human and animal tissue, and our vehicles are equipped with sealed, temperature-controlled containers where required. Anatomical waste is transported in UN-approved red containers with full chain-of-custody documentation from collection to final disposal.</p>
 <h2>Related Services</h2>
-<ul>
-<li><a href="/waste-services/infectious-waste">Infectious waste disposal</a></li>
-<li><a href="/waste-services/pharmaceutical-waste">Pharmaceutical waste disposal</a></li>
-<li><a href="/waste-services">All clinical waste services</a></li>
-</ul>
+<p>Anatomical waste must be stored in red-coloured containers with the anatomical waste symbol. This includes human tissue, organs, body parts and pathology specimens.</p>
+<h3>How is anatomical waste disposed of?</h3>
+<p>Anatomical waste is disposed of by high-temperature incineration at a licensed facility. The waste is transported in sealed, UN-approved red containers with full chain-of-custody documentation.</p>
+<h3>Do you collect anatomical waste from veterinary practices?</h3>
+<p>Yes, we collect animal tissue and anatomical waste from veterinary practices, research facilities and veterinary hospitals. Animal anatomical waste is handled with the same care and compliance as human tissue.</p>
+<h3>Is the Human Tissue Act relevant to waste disposal?</h3>
+<p>Yes, human tissue may be subject to the Human Tissue Act 2004, which regulates the removal, storage and disposal of human tissue. We ensure all anatomical waste is handled in accordance with both the Hazardous Waste Regulations 2005 and the Human Tissue Act.</p>
+<h3>How quickly can you collect anatomical waste?</h3>
+<p>We can usually arrange anatomical waste collection within 48 hours for urgent cases. Regular collections are scheduled based on your facility's needs. Contact us on 0800 046 9806 for emergency collection.</p>
 <p><a href="/quote">Request a free quote</a> or call 0800 046 9806.</p>
 ${EXTERNAL_LINKS}
 `,
@@ -664,6 +738,14 @@ ${EXTERNAL_LINKS}
 <p>We can usually begin collections within 7 days of your initial enquiry. In urgent cases, we may be able to arrange a first collection sooner.</p>
 <h3>What areas do you cover?</h3>
 <p>We cover London, Kent, Essex, Surrey, Sussex and Hampshire. See our <a href="/service-coverage">service coverage page</a> for a full list of areas.</p>
+<h3>Can I switch from my current waste contractor?</h3>
+<p>Yes, we manage the entire transition process. We coordinate with your existing contractor to collect any remaining containers, deliver our own containers and begin collections with minimal disruption. Most practices switch in under 7 days.</p>
+<h3>Do you offer emergency or ad-hoc collections?</h3>
+<p>Yes, we offer emergency collections for urgent situations such as container overflow or unexpected waste volume increases. Call us on 0800 046 9806 to arrange an emergency collection.</p>
+<h3>How do I know which waste goes in which container?</h3>
+<p>We provide a free waste segregation guide as part of your service agreement, and our team will advise you during your initial consultation. The guide covers all colour-coded containers and which waste streams belong in each one.</p>
+<h3>What happens to my waste after collection?</h3>
+<p>All clinical waste is transported to licensed treatment facilities. Infectious waste is treated by alternative treatment or incineration, sharps are incinerated, pharmaceutical waste is incinerated, and anatomical waste is incinerated. We provide certificates of disposal on request.</p>
 ${EXTERNAL_LINKS}
 `,
   },
@@ -701,13 +783,30 @@ ${EXTERNAL_LINKS}
 </ul>
 <h2>Our Services</h2>
 <p>We collect all types of clinical waste including <a href="/waste-services/infectious-waste">infectious waste</a>, <a href="/waste-services/sharps-waste">sharps</a>, <a href="/waste-services/pharmaceutical-waste">pharmaceutical waste</a>, <a href="/waste-services/cytotoxic-waste">cytotoxic waste</a>, <a href="/waste-services/dental-waste">dental waste</a> and <a href="/waste-services/anatomical-waste">anatomical waste</a>. See our full range of <a href="/waste-services">waste services</a>.</p>
+<h2>What Happens When You Call</h2>
+<p>When you contact MediWaste, our team will ask about your healthcare facility type, the waste streams you produce, your current collection frequency and your location. We use this information to recommend the right containers and collection schedule for your needs. We then provide a free, no-obligation quote within one business day.</p>
+<h2>Service Areas</h2>
+<p>We currently provide clinical waste collection across London, Kent, Essex, Surrey, Sussex and Hampshire. If you are outside these areas, please contact us as we are continually expanding our coverage. See our <a href="/service-coverage">service coverage page</a> for a full list of locations.</p>
+<h2>Why Choose MediWaste</h2>
+<ul>
+<li>Environment Agency registered upper tier waste carrier</li>
+<li>Safe Contractor approved and ISO 14001 certified</li>
+<li>All containers supplied free of charge</li>
+<li>Waste transfer notes issued within 48 hours of every collection</li>
+<li>Collections typically start within 7 days</li>
+<li>Transparent pricing with no hidden fees</li>
+</ul>
 <h2>Frequently Asked Questions</h2>
 <h3>How quickly can you start collections?</h3>
-<p>We can usually begin collections within 7 days of your enquiry.</p>
+<p>We can usually begin collections within 7 days of your enquiry. For urgent requirements, we may be able to arrange a first collection sooner.</p>
 <h3>Do you supply containers?</h3>
-<p>Yes, all containers are supplied free of charge.</p>
+<p>Yes, all containers are supplied free of charge as part of your service agreement. We deliver them before your first collection and top up supplies as needed.</p>
 <h3>Are you Environment Agency registered?</h3>
 <p>Yes, we are a registered upper tier waste carrier. See our <a href="/compliance">compliance page</a> for details.</p>
+<h3>What areas do you cover?</h3>
+<p>We cover London, Kent, Essex, Surrey, Sussex and Hampshire. See our <a href="/service-coverage">service coverage page</a> for a full list of areas.</p>
+<h3>How much does clinical waste collection cost?</h3>
+<p>Pricing depends on waste volume, type and collection frequency. We offer free, no-obligation quotes tailored to your needs. Call 0800 046 9806 for a personalised price.</p>
 ${EXTERNAL_LINKS}
 `,
   },
@@ -746,9 +845,26 @@ ${COMPLIANCE_BOX}
 <li><strong>7-day startup</strong> — We can usually begin collections within a week.</li>
 <li><strong>Flexible scheduling</strong> — Weekly, fortnightly, monthly or ad-hoc collections.</li>
 </ul>
+<h2>What Information to Prepare</h2>
+<p>To get the most accurate quote, have the following information ready:</p>
+<ul>
+<li>Your facility type (GP surgery, dental practice, care home, aesthetic clinic, etc.)</li>
+<li>The types of waste you produce (infectious, sharps, pharmaceutical, dental, etc.)</li>
+<li>Approximate waste volume per collection</li>
+<li>Your current collection frequency (if applicable)</li>
+<li>Your postcode or area</li>
+</ul>
 <h2>Client Testimonials</h2>
 <p>"MediWaste provided a competitive quote and started collections within 5 days. Excellent service." — Care Home, Surrey</p>
 <p>"The quote process was straightforward and the pricing was transparent. Highly recommended." — Aesthetic Clinic, London</p>
+<p>"We switched from our previous contractor and the transition was seamless. Documentation is always on time." — Dental Practice, Kent</p>
+<h2>Frequently Asked Questions</h2>
+<h3>How long does it take to get a quote?</h3>
+<p>We typically provide a personalised quote within one business day of receiving your enquiry.</p>
+<h3>Is there an obligation to sign up?</h3>
+<p>No, our quotes are completely free and carry no obligation. You only sign a service agreement if you decide to proceed.</p>
+<h3>Can you match my current pricing?</h3>
+<p>We offer competitive pricing and are happy to discuss your current arrangements. Many of our clients save 20-40% by switching to our cluster collection model.</p>
 <p>Ready to get started? Fill in the form above or call <a href="/contact">0800 046 9806</a>.</p>
 ${EXTERNAL_LINKS}
 `,
@@ -773,7 +889,27 @@ ${EXTERNAL_LINKS}
 <h2>Best Practices</h2>
 <p>Proper waste segregation is essential for compliance. Our articles cover best practices for segregating infectious waste, sharps, pharmaceutical waste and other clinical waste streams. We also cover topics such as reducing waste volumes, improving documentation and preparing for inspections.</p>
 <h2>Industry Insights</h2>
-<p>From the environmental impact of clinical waste disposal to the latest innovations in waste treatment technology, we provide insights to help healthcare facilities make informed decisions about their waste management.</p>
+<p>From the environmental impact of clinical waste disposal to the latest innovations in waste treatment technology, we provide insights to help healthcare facilities make informed decisions about their waste management. Topics we cover include the NHS Clinical Waste Strategy, sustainability in healthcare waste, cost-saving through cluster collections and the impact of regulatory changes on small practices.</p>
+<h2>Who Should Read Our News</h2>
+<p>Our articles are written for practice managers, dental practice owners, care home managers, aesthetic clinic owners and anyone responsible for clinical waste compliance in a healthcare setting. We aim to provide practical, actionable guidance rather than theoretical overviews.</p>
+<h2>Recent Topics</h2>
+<ul>
+<li>Changes to Environment Agency waste classification guidance</li>
+<li>NHS Clinical Waste Strategy and what it means for private practices</li>
+<li>How to prepare for a CQC inspection of your waste management</li>
+<li>Reducing clinical waste costs through cluster collections</li>
+<li>Sustainable clinical waste disposal options</li>
+<li>Sharps disposal regulations for beauty and aesthetic clinics</li>
+<li>HTM 07-01 updates and what they mean for your practice</li>
+<li>How to switch clinical waste contractors without disruption</li>
+<li>Environmental responsibility in clinical waste disposal</li>
+</ul>
+<h2>Subscribe to Updates</h2>
+<p>To receive our latest articles and regulatory updates directly, <a href="/contact">contact us</a> and ask to be added to our newsletter. We send updates no more than once a month and never share your details with third parties.</p>
+<h2>Why Our News Matters</h2>
+<p>Staying informed about clinical waste regulations is essential for any healthcare facility. Non-compliance can result in fines, failed inspections and reputational damage. Our news articles help you stay ahead of regulatory changes, implement best practices and make informed decisions about your waste management. We also share case studies and client success stories to demonstrate how proper waste management can save money and improve compliance.</p>
+<h2>Get Involved</h2>
+<p>If you have a topic you would like us to cover, or if you have a case study or success story to share, please <a href="/contact">contact us</a>. We welcome contributions from healthcare professionals who have insights into clinical waste management best practices.</p>
 <h2>Useful Resources</h2>
 <ul>
 <li><a href="https://www.gov.uk/guidance/healthcare-waste-appropriate-measures-for-permitted-facilities" target="_blank" rel="noopener noreferrer">GOV.UK: Management of clinical and healthcare waste guidance</a></li>
@@ -785,7 +921,7 @@ ${EXTERNAL_LINKS}
   },
   {
     path: '/compliance',
-    title: 'Clinical Waste Compliance | Regulations & Certificates | MediWaste',
+    title: 'Clinical Waste Compliance & Regulations | MediWaste',
     description: 'Understand your Duty of Care obligations for clinical waste. MediWaste provides waste disposal certificates, hazardous waste consignment notes, and ensures full regulatory compliance.',
     canonical: `${BASE_URL}/compliance`,
     h1: 'Clinical Waste Compliance',
@@ -827,13 +963,19 @@ ${COMPLIANCE_BOX}
 <p>You need waste transfer notes for non-hazardous waste and hazardous waste consignment notes for hazardous waste. These must be retained for at least two years.</p>
 <h3>How often is MediWaste audited?</h3>
 <p>MediWaste is audited annually by the Environment Agency and holds a registered upper tier waste carrier licence.</p>
+<h3>What happens if my waste is incorrectly segregated?</h3>
+<p>Incorrectly segregated waste can lead to regulatory breaches and potential fines. Our team advises on correct segregation during your free consultation, and we provide ongoing support to ensure your waste streams remain compliant. If we notice incorrect segregation during collection, we will notify you immediately.</p>
+<h3>What insurance does MediWaste carry?</h3>
+<p>MediWaste holds comprehensive public liability and employer liability insurance. Certificates are available on request and can be included in your compliance documentation pack.</p>
+<h3>Can you help with CQC inspection preparation?</h3>
+<p>Yes, we can help you prepare for CQC inspections by reviewing your waste management practices, ensuring your documentation is up to date and providing a compliance summary. Our <a href="/audit">free audit tool</a> is also designed to identify gaps before an inspection.</p>
 <p><a href="/quote">Request a free quote</a> or call 0800 046 9806 to discuss your compliance requirements.</p>
 ${EXTERNAL_LINKS}
 `,
   },
   {
     path: '/service-coverage',
-    title: 'Service Coverage Areas | Clinical Waste Disposal UK | MediWaste',
+    title: 'Service Coverage | Clinical Waste Disposal UK | MediWaste',
     description: 'Professional clinical waste collection and disposal services across the UK. Licensed medical waste management for London, Kent, Surrey, Sussex, Hampshire, and Essex.',
     canonical: `${BASE_URL}/service-coverage`,
     h1: 'Service Coverage Areas',
@@ -851,6 +993,30 @@ ${EXTERNAL_LINKS}
 </ul>
 <h2>Our Services</h2>
 <p>We collect all types of clinical waste including <a href="/waste-services/infectious-waste">infectious waste</a>, <a href="/waste-services/sharps-waste">sharps</a>, <a href="/waste-services/pharmaceutical-waste">pharmaceutical waste</a>, <a href="/waste-services/cytotoxic-waste">cytotoxic waste</a>, <a href="/waste-services/dental-waste">dental waste</a> and <a href="/waste-services/anatomical-waste">anatomical waste</a>. See our full range of <a href="/waste-services">waste services</a>.</p>
+<h2>Collection Frequency by Area</h2>
+<p>Collection frequency depends on your waste volume and location. Most GP surgeries and dental practices in London and major towns opt for fortnightly collections, while rural practices may prefer monthly collections. High-volume settings such as hospitals and care homes may require weekly or multiple collections per week. We also offer ad-hoc and emergency collections across all areas.</p>
+<h2>Pricing by Area</h2>
+<p>Pricing varies by location due to travel distances and route density. Our cluster collection model groups nearby practices for shared routes, which can reduce costs by 20-40% compared to individual collections. Contact us for a free, no-obligation quote tailored to your area and waste volume.</p>
+<p>If your area is not listed, please <a href="/contact">contact us</a> as we are continually expanding our coverage.</p>
+<h2>What Happens After You Contact Us</h2>
+<p>Once you contact us, we will arrange a free consultation to assess your waste streams and recommend the right containers and collection schedule. We then provide a no-obligation quote within one business day. If you decide to proceed, we deliver containers and begin collections within 7 days.</p>
+<h2>Why Choose MediWaste for Your Area</h2>
+<p>Healthcare providers across our coverage areas trust MediWaste for reliable, compliant waste collection. We understand local requirements and work closely with practices, clinics and care homes to ensure full compliance with Environment Agency regulations. Our drivers are fully trained and DBS-checked, and we provide all containers free of charge as part of your service agreement.</p>
+<h2>Compliance Support Across All Areas</h2>
+<p>Whether you are a GP surgery in central London or a rural dental practice in Kent, we tailor our service to your needs. We help you prepare for CQC inspections by maintaining accurate waste records, providing audit-ready documentation and ensuring your waste segregation meets current standards. Our team can also advise on local waste management initiatives specific to your area.</p>
+<h2>Environmental Responsibility</h2>
+<p>MediWaste is committed to reducing the environmental impact of clinical waste disposal. We use route-optimised collection schedules across all our coverage areas to minimise vehicle emissions, and we ensure all waste is processed at licensed facilities that meet the latest environmental standards. Where alternative treatment is safe and appropriate, we prioritise it over incineration to reduce carbon footprint.</p>
+<h2>Client Types We Serve</h2>
+<ul>
+<li>GP surgeries and medical centres</li>
+<li>Dental practices</li>
+<li>Care homes and nursing homes</li>
+<li>Aesthetic clinics and beauty salons</li>
+<li>Veterinary practices</li>
+<li>Pharmacies</li>
+<li>Tattoo and piercing studios</li>
+<li>Laboratories and research facilities</li>
+</ul>
 ${PROCESS_STEPS}
 ${COMPLIANCE_BOX}
 <h2>Can We Start in Your Area?</h2>
@@ -860,7 +1026,7 @@ ${EXTERNAL_LINKS}
   },
   {
     path: '/audit',
-    title: 'Free Clinical Waste Audit Tool | MediWaste',
+    title: 'Free Clinical Waste Audit Tool | Compliance | MediWaste',
     description: 'Answer 15 questions about your waste streams. Our AI generates a free, personalised clinical waste audit report — identifying risks and giving you a prioritised action plan.',
     canonical: `${BASE_URL}/audit`,
     h1: 'Free Clinical Waste Audit Tool',
@@ -896,6 +1062,26 @@ ${EXTERNAL_LINKS}
 <li>Helps prepare for CQC and Environment Agency inspections</li>
 <li>Completely free, with no obligation</li>
 </ul>
+<h2>Who Should Use the Audit Tool</h2>
+<p>The audit tool is designed for any UK healthcare facility that produces clinical waste, including:</p>
+<ul>
+<li>GP surgeries and medical centres</li>
+<li>Dental practices</li>
+<li>Care homes and nursing homes</li>
+<li>Aesthetic clinics and beauty salons</li>
+<li>Veterinary practices</li>
+<li>Pharmacies</li>
+<li>Tattoo and piercing studios</li>
+<li>Laboratories and research facilities</li>
+</ul>
+<h2>What Regulations Does the Audit Check Against?</h2>
+<p>The audit tool analyses your responses against key UK clinical waste regulations including:</p>
+<ul>
+<li><strong>HTM 07-01</strong> — Safe Management of Healthcare Waste</li>
+<li><strong>Hazardous Waste Regulations 2005</strong> — classification, segregation and disposal of hazardous waste</li>
+<li><strong>Environmental Protection Act 1990</strong> — Duty of Care for waste producers</li>
+<li><strong>Health and Safety (Sharp Instruments in Healthcare) Regulations 2013</strong> — sharps disposal requirements</li>
+</ul>
 <h2>Frequently Asked Questions</h2>
 <h3>Is the audit really free?</h3>
 <p>Yes, the clinical waste audit tool is completely free to use. There is no obligation to use our services after completing the audit.</p>
@@ -903,12 +1089,14 @@ ${EXTERNAL_LINKS}
 <p>The questionnaire takes approximately 10-15 minutes to complete. Your personalised report is generated immediately after submission.</p>
 <h3>What do I do with the results?</h3>
 <p>The report includes a prioritised action plan. You can use this to improve your waste management practices, or contact us for help implementing the recommendations. <a href="/contact">Get in touch</a> or call 0800 046 9806.</p>
+<h3>Will my data be shared?</h3>
+<p>No. Your audit responses are kept private and are never shared with third parties. We may use your email address to send you your report and follow up on any recommendations.</p>
 ${EXTERNAL_LINKS}
 `,
   },
   {
     path: '/directory-listings',
-    title: 'Clinical Waste Business Directory | MediWaste',
+    title: 'Clinical Waste Business Directory & Listings | MediWaste',
     description: 'Directory of healthcare businesses and clinical waste service providers across the UK served by MediWaste.',
     canonical: `${BASE_URL}/directory-listings`,
     h1: 'Clinical Waste Business Directory',
@@ -928,6 +1116,35 @@ ${EXTERNAL_LINKS}
 </ul>
 <h2>Our Waste Services</h2>
 <p>We provide licensed collection of all clinical waste streams. See our <a href="/waste-services">waste services page</a> for details, or <a href="/quote">request a free quote</a>.</p>
+<h2>Benefits of Being Listed</h2>
+<ul>
+<li>Increased visibility for your healthcare business</li>
+<li>Association with a trusted, licensed waste carrier</li>
+<li>Free listing for all MediWaste clients</li>
+<li>Helping other healthcare providers find reliable waste services in their area</li>
+</ul>
+<h2>How to Get Listed</h2>
+<p>If you are a MediWaste client and would like to be added to the directory, please <a href="/contact">contact us</a> with your business name, location, services offered and contact information. Listings are free for all current clients.</p>
+<h2>Directory Categories</h2>
+<p>The directory includes healthcare businesses across multiple categories:</p>
+<ul>
+<li>GP surgeries and medical centres</li>
+<li>Dental practices</li>
+<li>Care homes and nursing homes</li>
+<li>Aesthetic and beauty clinics</li>
+<li>Veterinary practices</li>
+<li>Pharmacies</li>
+<li>Tattoo and piercing studios</li>
+</ul>
+<h2>Why We Maintain a Directory</h2>
+<p>We believe in supporting the healthcare community. Our directory helps patients and service users find trusted healthcare providers in their area, and helps healthcare businesses connect with reliable waste collection services. By listing our clients, we also demonstrate the breadth of our coverage and the trust placed in us by healthcare providers across the UK.</p>
+<h2>Frequently Asked Questions</h2>
+<h3>Is there a cost to be listed in the directory?</h3>
+<p>No, directory listings are free for all current MediWaste clients.</p>
+<h3>How do I update my listing?</h3>
+<p>Contact us with the updated information and we will update your listing within one business day.</p>
+<h3>Can non-clients be listed?</h3>
+<p>The directory is currently for MediWaste clients only. If you would like to join our service, <a href="/quote">request a free quote</a>.</p>
 ${COMPLIANCE_BOX}
 <p>For more information about our services, call 0800 046 9806 or <a href="/contact">contact us online</a>.</p>
 ${EXTERNAL_LINKS}
@@ -935,11 +1152,11 @@ ${EXTERNAL_LINKS}
   },
   {
     path: '/terms',
-    title: 'Terms of Service | MediWaste',
-    description: 'Terms and conditions for using MediWaste clinical waste disposal services. Read our service agreements and policies.',
+    title: 'Terms of Service | Clinical Waste Disposal | MediWaste',
+    description: 'Terms and conditions for MediWaste clinical waste disposal services. Service agreements, client responsibilities, cancellation and pricing.',
     canonical: `${BASE_URL}/terms`,
-    noindex: true,
     h1: 'Terms of Service',
+    schema: LOCAL_BUSINESS_SCHEMA,
     content: `
 <p>These terms and conditions govern the use of MediWaste clinical waste disposal services. By engaging our services, you agree to the following terms.</p>
 <h2>Service Agreement</h2>
@@ -966,17 +1183,37 @@ ${EXTERNAL_LINKS}
 <p>MediWaste accepts liability for waste once it has been collected and signed for by our licensed drivers. The client remains responsible for correct segregation and storage of waste prior to collection.</p>
 <h2>Pricing and Payment</h2>
 <p>Pricing is agreed in the service agreement and is inclusive of containers, collection, disposal and documentation. Invoices are issued monthly and are payable within 30 days.</p>
+<h2>Service Levels</h2>
+<p>MediWaste commits to collecting waste on the agreed schedule. If a collection is missed due to our error, we will arrange a replacement collection at no additional cost. Clients must provide access to the waste storage area on collection days and ensure waste is correctly segregated and ready for collection.</p>
+<h2>Client Responsibilities</h2>
+<p>Clients are responsible for:</p>
+<ul>
+<li>Correctly segregating waste into the provided containers</li>
+<li>Ensuring containers are accessible on scheduled collection days</li>
+<li>Not overfilling containers beyond the indicated fill line</li>
+<li>Not mixing incompatible waste streams in the same container</li>
+<li>Maintaining a secure storage area for waste awaiting collection</li>
+<li>Providing accurate information about waste types and volumes</li>
+</ul>
+<h2>Cancellation</h2>
+<p>Either party may terminate the service agreement with 30 days written notice. Upon termination, MediWaste will collect any remaining containers and provide final documentation. Outstanding invoices remain payable in accordance with the agreed payment terms.</p>
+<h2>Force Majeure</h2>
+<p>Neither party shall be liable for failure to perform obligations where the failure is caused by circumstances beyond reasonable control, including but not limited to severe weather, transport disruption, industrial action or government action.</p>
+<h2>Changes to These Terms</h2>
+<p>MediWaste reserves the right to update these terms and conditions. Clients will be notified of any material changes at least 30 days before they take effect.</p>
+<h2>Governing Law</h2>
+<p>These terms are governed by the laws of England and Wales. Any disputes shall be subject to the exclusive jurisdiction of the courts of England and Wales.</p>
 <h2>Contact</h2>
 <p>For questions about these terms, please <a href="/contact">contact us</a> or call 0800 046 9806.</p>
 `,
   },
   {
     path: '/privacy',
-    title: 'Privacy Policy | MediWaste',
-    description: 'Privacy policy for MediWaste. Learn how we collect, use, and protect your personal data in accordance with UK GDPR.',
+    title: 'Privacy Policy | UK GDPR Data Protection | MediWaste',
+    description: 'How MediWaste collects, uses and protects your personal data under UK GDPR. Your rights, data retention and security measures.',
     canonical: `${BASE_URL}/privacy`,
-    noindex: true,
     h1: 'Privacy Policy',
+    schema: LOCAL_BUSINESS_SCHEMA,
     content: `
 <p>This privacy policy explains how MediWaste collects, uses and protects your personal data in accordance with the UK General Data Protection Regulation (UK GDPR) and the Data Protection Act 2018.</p>
 <h2>Data We Collect</h2>
@@ -1002,10 +1239,39 @@ ${EXTERNAL_LINKS}
 <li><strong>Right to data portability</strong> — you can request your data in a portable format</li>
 <li><strong>Right to object</strong> — you can object to certain types of processing</li>
 </ul>
+<h2>Data Retention</h2>
+<p>We retain personal data only for as long as necessary to fulfil the purposes for which it was collected:</p>
+<ul>
+<li><strong>Quote enquiries</strong> — retained for 12 months after the last contact</li>
+<li><strong>Client records</strong> — retained for the duration of the service agreement plus 6 years for tax and legal compliance</li>
+<li><strong>Waste transfer notes</strong> — retained for a minimum of 2 years as required by law</li>
+<li><strong>Website analytics</strong> — retained for 26 months</li>
+</ul>
+<h2>Third-Party Sharing</h2>
+<p>We do not sell or rent your personal data to third parties. We may share data with:</p>
+<ul>
+<li><strong>Licensed disposal facilities</strong> — waste type and volume information required for compliance</li>
+<li><strong>HMRC</strong> — for tax and invoicing purposes where required by law</li>
+<li><strong>Environment Agency</strong> — waste documentation as required by regulations</li>
+</ul>
+<h2>Cookies</h2>
+<p>We use cookies on our website to improve user experience and analyse website traffic. See our <a href="/cookies">cookie policy</a> for details on the types of cookies we use and how to manage them.</p>
 <h2>Data Security</h2>
 <p>We implement appropriate technical and organisational measures to protect your personal data, including secure storage, access controls and regular security reviews. Data is only retained for as long as necessary to fulfil the purposes for which it was collected, or as required by law.</p>
+<h2>Your Rights Under UK GDPR</h2>
+<p>Under the UK GDPR and Data Protection Act 2018, you have the following rights:</p>
+<ul>
+<li>The right to be informed about how your data is used</li>
+<li>The right of access to your personal data</li>
+<li>The right to rectification of inaccurate data</li>
+<li>The right to erasure of your personal data</li>
+<li>The right to restrict processing</li>
+<li>The right to data portability</li>
+<li>The right to object to processing</li>
+</ul>
+<p>To exercise any of these rights, please <a href="/contact">contact us</a>.</p>
 <h2>Contact</h2>
-<p>To exercise your rights or for any privacy-related questions, please <a href="/contact">contact us</a> or call 0800 046 9806.</p>
+<p>To exercise your rights or for any privacy-related questions, please <a href="/contact">contact us</a> or call 0800 046 9806. You can also write to us at: MediWaste, Data Protection, Dartford, Kent.</p>
 `,
   },
   {
@@ -1050,7 +1316,7 @@ ${EXTERNAL_LINKS}
     { slug: 'hampshire', name: 'Hampshire', towns: 'Southampton, Portsmouth, Basingstoke, Winchester and Farnborough', keywords: 'clinical waste disposal Hampshire, medical waste collection Hampshire' },
   ].map((area) => ({
     path: `/service-areas/${area.slug}`,
-    title: `Clinical Waste Disposal ${area.name} | Licensed Collection Service | MediWaste`,
+    title: `Clinical Waste Disposal ${area.name} | Licensed | MediWaste`,
     description: `Licensed clinical waste collection across ${area.name}. Serving ${area.towns}. Fully compliant, free quote available. Call 0800 046 9806.`,
     keywords: area.keywords,
     canonical: `${BASE_URL}/service-areas/${area.slug}`,
@@ -1082,6 +1348,12 @@ ${EXTERNAL_LINKS}
 <li>Veterinary practices</li>
 <li>Pharmacies</li>
 </ul>
+<h2>Why Choose MediWaste in ${area.name}</h2>
+<p>Healthcare providers across ${area.name} trust MediWaste for reliable, compliant waste collection. We understand the local requirements and work closely with practices, clinics and care homes to ensure full compliance with Environment Agency regulations. Our drivers are fully trained and DBS-checked, and we provide all containers free of charge as part of your service agreement.</p>
+<h2>Local Compliance Support in ${area.name}</h2>
+<p>Whether you are a GP surgery in a busy city centre or a rural dental practice, we tailor our service to your needs. We help you prepare for CQC inspections by maintaining accurate waste records, providing audit-ready documentation and ensuring your waste segregation meets current standards. Our team can also advise on any local waste management initiatives specific to ${area.name}.</p>
+<h2>Environmental Responsibility in ${area.name}</h2>
+<p>MediWaste is committed to reducing the environmental impact of clinical waste disposal. We use route-optimised collection schedules across ${area.name} to minimise vehicle emissions, and we ensure all waste is processed at licensed facilities that meet the latest environmental standards. Where alternative treatment is safe and appropriate, we prioritise it over incineration to reduce carbon footprint.</p>
 ${PROCESS_STEPS}
 ${COMPLIANCE_BOX}
 <h2>Frequently Asked Questions</h2>
@@ -1196,14 +1468,17 @@ async function main() {
 
     // Re-write the service-coverage page with internal links to all SEO
     // location pages so crawlers can discover them via internal links,
-    // not just the sitemap.
+    // not just the sitemap. Preserve the static content and append links.
     if (locationLinksHtml) {
+      const staticRoute = STATIC_ROUTES.find(r => r.path === '/service-coverage');
+      const staticContent = staticRoute ? (staticRoute.content || '') : '';
       writeRoute('/service-coverage', buildHtml(template, {
-        title: 'Service Coverage Areas | Clinical Waste Disposal UK | MediWaste',
+        title: 'Service Coverage | Clinical Waste Disposal UK | MediWaste',
         description: 'Professional clinical waste collection and disposal services across the UK. Licensed medical waste management for London, Kent, Surrey, Sussex, Hampshire, and Essex.',
         canonical: `${BASE_URL}/service-coverage`,
         h1: 'Service Coverage Areas',
-        content: locationLinksHtml,
+        schema: LOCAL_BUSINESS_SCHEMA,
+        content: staticContent + locationLinksHtml,
       }));
     }
   } catch (err) {
