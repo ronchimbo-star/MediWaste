@@ -1547,6 +1547,33 @@ async function main() {
     console.warn(`[prerender]   ⚠ News articles fetch failed: ${err.message}`);
   }
 
+  // ── News index page (/news) ────────────────────────────────────────────────
+  // Generates a /news index page listing all published articles so crawlers
+  // can discover every news article via internal links.
+  console.log('[prerender] Writing /news index page…');
+  try {
+    const articlesForIndex = await supabaseFetch(SUPABASE_URL, SUPABASE_ANON_KEY, 'news_articles', {
+      status: 'eq.published',
+      select: 'slug,title,excerpt,published_at',
+      order: 'published_at.desc',
+    });
+    const newsListHtml = articlesForIndex.map(a => {
+      const date = a.published_at ? new Date(a.published_at).toLocaleDateString('en-GB', { year: 'numeric', month: 'long', day: 'numeric' }) : '';
+      return `<li><a href="/news/${a.slug}">${esc(a.title)}</a>${date ? ` — ${date}` : ''}${a.excerpt ? `<br/>${esc(a.excerpt)}` : ''}</li>`;
+    }).join('');
+    writeRoute('/news', buildHtml(template, {
+      title: 'Clinical Waste News & Industry Updates | MediWaste',
+      description: 'Latest news, guidance and regulatory updates on clinical waste management, sharps disposal and healthcare compliance from MediWaste.',
+      keywords: 'clinical waste news, medical waste updates, healthcare waste regulation',
+      canonical: `${BASE_URL}/news`,
+      h1: 'Clinical Waste News & Updates',
+      content: `<p>Stay up to date with the latest clinical waste management news, regulatory changes and best practice guidance from MediWaste.</p><ul>${newsListHtml}</ul>`,
+    }));
+    count++;
+  } catch (err) {
+    console.warn(`[prerender]   ⚠ News index page failed: ${err.message}`);
+  }
+
   // ── SPA-only routes (no SEO content, just the app shell) ───────────────────
   // These routes need client-side JavaScript to function (auth, dynamic tokens,
   // interactive forms). We write a copy of the bare SPA shell with noindex so
