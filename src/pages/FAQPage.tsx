@@ -111,7 +111,7 @@ export default function FAQPage() {
     <div className="min-h-screen bg-white">
       <SEO
         title="FAQ | Clinical Waste Disposal Questions | MediWaste"
-        description="Find answers to frequently asked questions about clinical waste disposal, collection schedules, compliance requirements and pricing from MediWaste."
+        description="Answers to common questions about clinical waste disposal, sharps collection, compliance and pricing. Get a free quote from MediWaste. Call 0800 046 9806."
         canonical="https://mediwaste.co.uk/faq"
         schema={faqSchema}
       />
