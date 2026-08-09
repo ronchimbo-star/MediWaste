@@ -52,7 +52,7 @@ export default function SEO({
 
   return (
     <Helmet>
-      <title>{resolvedTitle}</title>
+      <title data-rh="true">{resolvedTitle}</title>
       {safeDescription && <meta name="description" content={safeDescription} />}
       {resolvedKeywords && <meta name="keywords" content={resolvedKeywords} />}
       {noindex ? (

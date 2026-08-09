@@ -6,6 +6,12 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import SEO from '../components/SEO';
 
+interface NewsCategory {
+  id: string;
+  slug: string;
+  name: string;
+}
+
 interface NewsArticle {
   id: string;
   title: string;
@@ -43,6 +49,19 @@ function formatDate(dateString: string | null | undefined) {
 }
 
 export default function NewsPage() {
+  const { data: categories = [] } = useQuery<NewsCategory[]>({
+    queryKey: ['public-news-categories'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('news_categories')
+        .select('id, slug, name')
+        .order('name', { ascending: true });
+      if (error) throw error;
+      return data || [];
+    },
+    staleTime: 10 * 60 * 1000,
+  });
+
   const { data: articles = [], isLoading } = useQuery<NewsArticle[]>({
     queryKey: ['public-news-articles'],
     queryFn: async () => {
@@ -89,6 +108,15 @@ export default function NewsPage() {
       </div>
 
       <div className="container mx-auto px-4 py-16">
+        {categories.length > 0 && (
+          <nav aria-label="News categories" className="mb-10 flex flex-wrap gap-3">
+            {categories.map((category) => (
+              <Link key={category.id} to={`/news/category/${category.slug}/`} className="rounded-full border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 hover:border-red-300 hover:text-red-600 transition-colors">
+                {category.name}
+              </Link>
+            ))}
+          </nav>
+        )}
         {isLoading ? (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {Array.from({ length: 6 }).map((_, i) => <ArticleSkeleton key={i} />)}

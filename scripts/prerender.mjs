@@ -139,25 +139,25 @@ function buildHtml(template, meta) {
   const canon = withTrailingSlash(canonical);
 
   const metaLines = [
-    `<title>${esc(title)}</title>`,
-    desc       ? `    <meta name="description" content="${escAttr(desc)}" />`    : '',
-    keywords   ? `    <meta name="keywords" content="${escAttr(keywords)}" />`   : '',
-    `    <meta name="robots" content="${robots}" />`,
-    `    <link rel="canonical" href="${escAttr(canon)}" />`,
-    `    <meta property="og:site_name" content="MediWaste" />`,
-    `    <meta property="og:type" content="${type}" />`,
-    `    <meta property="og:url" content="${escAttr(canon)}" />`,
-    `    <meta property="og:title" content="${escAttr(title)}" />`,
-    desc       ? `    <meta property="og:description" content="${escAttr(desc)}" />` : '',
-    `    <meta property="og:image" content="${escAttr(ogImage)}" />`,
-    `    <meta property="og:image:width" content="1200" />`,
-    `    <meta property="og:image:height" content="630" />`,
-    `    <meta property="og:locale" content="en_GB" />`,
-    `    <meta name="twitter:card" content="summary_large_image" />`,
-    `    <meta name="twitter:site" content="@mediwaste" />`,
-    `    <meta name="twitter:title" content="${escAttr(title)}" />`,
-    desc       ? `    <meta name="twitter:description" content="${escAttr(desc)}" />` : '',
-    `    <meta name="twitter:image" content="${escAttr(ogImage)}" />`,
+    `<title data-rh="true">${esc(title)}</title>`,
+    desc       ? `    <meta data-rh="true" name="description" content="${escAttr(desc)}" />`    : '',
+    keywords   ? `    <meta data-rh="true" name="keywords" content="${escAttr(keywords)}" />`   : '',
+    `    <meta data-rh="true" name="robots" content="${robots}" />`,
+    `    <link data-rh="true" rel="canonical" href="${escAttr(canon)}" />`,
+    `    <meta data-rh="true" property="og:site_name" content="MediWaste" />`,
+    `    <meta data-rh="true" property="og:type" content="${type}" />`,
+    `    <meta data-rh="true" property="og:url" content="${escAttr(canon)}" />`,
+    `    <meta data-rh="true" property="og:title" content="${escAttr(title)}" />`,
+    desc       ? `    <meta data-rh="true" property="og:description" content="${escAttr(desc)}" />` : '',
+    `    <meta data-rh="true" property="og:image" content="${escAttr(ogImage)}" />`,
+    `    <meta data-rh="true" property="og:image:width" content="1200" />`,
+    `    <meta data-rh="true" property="og:image:height" content="630" />`,
+    `    <meta data-rh="true" property="og:locale" content="en_GB" />`,
+    `    <meta data-rh="true" name="twitter:card" content="summary_large_image" />`,
+    `    <meta data-rh="true" name="twitter:site" content="@mediwaste" />`,
+    `    <meta data-rh="true" name="twitter:title" content="${escAttr(title)}" />`,
+    desc       ? `    <meta data-rh="true" name="twitter:description" content="${escAttr(desc)}" />` : '',
+    `    <meta data-rh="true" name="twitter:image" content="${escAttr(ogImage)}" />`,
     ...schemas.map(s => `    <script type="application/ld+json">${JSON.stringify(s)}</script>`),
   ].filter(Boolean).join('\n');
 
@@ -165,11 +165,18 @@ function buildHtml(template, meta) {
   // social scrapers) see the H1 and article body as the page's real content.
   // React replaces this when it hydrates.
   // content is trusted HTML from Supabase (already sanitised by the app).
+  const crawlableContent = content
+    ? content
+      .replace(/<!doctype html>/gi, '')
+      .replace(/<html[^>]*>|<\/html>|<head[^>]*>[\s\S]*?<\/head>|<body[^>]*>|<\/body>/gi, '')
+      .replace(/<meta\b[^>]*>/gi, '')
+      .replace(/<title\b[^>]*>[\s\S]*?<\/title>/gi, '')
+    : '';
   const rootParts = [
     `<img src="/mediwaste-logo.png" alt="MediWaste clinical waste disposal logo" width="200" height="60" />`,
     h1      ? `<h1>${esc(h1)}</h1>` : '',
     desc    ? `<p>${esc(desc)}</p>` : '',
-    content ? content               : '',
+    crawlableContent,
   ].filter(Boolean);
   const rootInner = rootParts.length
     ? `<article>${rootParts.join('')}</article>`
@@ -188,13 +195,15 @@ function buildHtml(template, meta) {
     ? `<noscript>${rootInner}${FOOTER_NAV}</noscript>`
     : `<noscript>${FOOTER_NAV}</noscript>`;
 
-  return template
+  const html = template
     // Remove the generic title added by vite build
     .replace(/<title>[^<]*<\/title>/, '')
     // Inject all meta tags before closing </head>
     .replace('</head>', `    ${metaLines}\n  </head>`)
     // Inject crawlable content inside <div id="root">
     .replace('<div id="root"></div>', `<div id="root">${rootContent}</div>`);
+
+  return html.replace(/(href=["'])(\/(?!\/)[^"'#?]*)(["'])/g, (_, start, url, end) => `${start}${withTrailingSlash(url)}${end}`);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1666,6 +1675,14 @@ async function main() {
         ]),
       ],
       content: `<p>Stay up to date with the latest clinical waste management news, regulatory changes and best practice guidance from MediWaste.</p>
+<h2>Browse by Topic</h2>
+<ul>
+<li><a href="/news/category/industry-news">Industry News</a></li>
+<li><a href="/news/category/environmental">Environmental</a></li>
+<li><a href="/news/category/regulations">Regulations</a></li>
+<li><a href="/news/category/best-practices">Best Practices</a></li>
+<li><a href="/news/category/company-updates">Company Updates</a></li>
+</ul>
 <h2>Latest Articles</h2>
 <ul>${newsListHtml}</ul>
 <h2>Recent Regulations</h2>
@@ -1724,6 +1741,43 @@ async function main() {
   }
   // Wildcard SPA routes — write a shell for each known pattern prefix
   // so Netlify has a static file to serve (no catch-all rewrite needed).
+  // ── News category pages (/news/category/:slug) ────────────────────────────
+  console.log('[prerender] Writing news category pages…');
+  try {
+    const categories = await supabaseFetch(SUPABASE_URL, SUPABASE_ANON_KEY, 'news_categories', {
+      select: 'id,slug,name',
+      order: 'name.asc',
+    });
+    for (const category of categories) {
+      const junction = await supabaseFetch(SUPABASE_URL, SUPABASE_ANON_KEY, 'news_article_categories', {
+        category_id: `eq.${category.id}`,
+        select: 'article_id',
+      });
+      const articleIds = junction.map((item) => item.article_id).join(',');
+      const articles = articleIds
+        ? await supabaseFetch(SUPABASE_URL, SUPABASE_ANON_KEY, 'news_articles', {
+            id: `in.(${articleIds})`,
+            status: 'eq.published',
+            select: 'slug,title,excerpt,published_at',
+            order: 'published_at.desc',
+          })
+        : [];
+      const list = articles.map((article) => `<li><a href="/news/${article.slug}">${esc(article.title)}</a>${article.excerpt ? `<br>${esc(article.excerpt)}` : ''}</li>`).join('');
+      writeRoute(`/news/category/${category.slug}`, buildHtml(template, {
+        title: `${category.name} | MediWaste Clinical Waste News`,
+        description: `Clinical waste ${category.name.toLowerCase()} for UK healthcare providers from MediWaste.`,
+        keywords: `clinical waste ${category.name.toLowerCase()}, healthcare waste news`,
+        canonical: `${BASE_URL}/news/category/${category.slug}`,
+        h1: `${category.name} News`,
+        schema: { '@context': 'https://schema.org', '@type': 'CollectionPage', name: `${category.name} News`, url: `${BASE_URL}/news/category/${category.slug}/` },
+        content: `<p>Browse MediWaste articles about ${esc(category.name.toLowerCase())} in clinical waste management.</p><h2>Articles</h2><ul>${list || '<li>No articles are currently available in this category.</li>'}</ul><p><a href="/news">View all clinical waste news</a> or <a href="/contact">contact MediWaste</a>.</p>`,
+      }));
+      count++;
+    }
+  } catch (err) {
+    console.warn(`[prerender]   ⚠ News category pages failed: ${err.message}`);
+  }
+
   const SPA_WILDCARD_PREFIXES = [
     '/admin/quote-requests',
     '/admin/quotes',
