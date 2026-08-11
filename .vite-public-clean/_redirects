@@ -11,12 +11,19 @@ https://www.mediwaste.co.uk/* https://mediwaste.co.uk/:splat 301!
 
 # Old route redirects to current equivalents
 /healthcare-waste/sharps /waste-services/sharps-waste 301
+/healthcare-waste/sharps/ /waste-services/sharps-waste/ 301
 /sectors/dental-practices /waste-services/dental-waste 301
+/sectors/dental-practices/ /waste-services/dental-waste/ 301
 /sectors/nursing-care /waste-services 301
+/sectors/nursing-care/ /waste-services/ 301
 /sectors /waste-services 301
+/sectors/ /waste-services/ 301
 /waste-collection-service /waste-services 301
+/waste-collection-service/ /waste-services/ 301
 /register /quote 301
+/register/ /quote/ 301
 /service-area /service-coverage 301
+/service-area/ /service-coverage/ 301
 
 # Old listing / directory URLs
 /listing/* /directory-listings 301
@@ -27,6 +34,10 @@ https://www.mediwaste.co.uk/* https://mediwaste.co.uk/:splat 301!
 
 # Old individual business page URLs (WordPress)
 /fki-aesthetics-wellness /directory-listings 301
+/fki-aesthetics-wellness/ /directory-listings/ 301
+
+# Obsolete Cloudflare email-protection artefact
+/cdn-cgi/l/email-protection 410
 
 # NOTE: No SPA catch-all here. All public routes have prerendered HTML files
 # in dist/ that Netlify serves directly. Routes without prerendered files

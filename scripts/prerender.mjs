@@ -96,6 +96,14 @@ function trimDesc(str) {
   return (space > 100 ? cut.slice(0, space) : cut) + '\u2026';
 }
 
+function fitTitle(title) {
+  const value = String(title || 'MediWaste');
+  if (value.length <= 60) return value;
+  const cut = value.slice(0, 59);
+  const space = cut.lastIndexOf(' ');
+  return (space > 42 ? cut.slice(0, space) : cut) + '\u2026';
+}
+
 /** Normalise a canonical URL to end with a trailing slash so it matches
  *  the URL Netlify actually serves (directory-based prerendered pages are
  *  served at /path/ not /path).  Prevents Ahrefs redirect-chain warnings. */
@@ -119,7 +127,7 @@ function withTrailingSlash(url) {
  */
 function buildHtml(template, meta) {
   const {
-    title,
+    title: rawTitle,
     description,
     keywords,
     canonical,
@@ -131,12 +139,19 @@ function buildHtml(template, meta) {
     content,
   } = meta;
 
+  const title = fitTitle(rawTitle);
   const desc = trimDesc(description);
-  const schemas = Array.isArray(schema) ? schema : schema ? [schema] : [];
   const robots = noindex
     ? 'noindex,nofollow'
     : 'index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1';
   const canon = withTrailingSlash(canonical);
+  const schemas = Array.isArray(schema) ? schema : schema ? [schema] : [{
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    name: title,
+    description: desc,
+    url: canon,
+  }];
 
   const metaLines = [
     `<title>${esc(title)}</title>`,
@@ -1321,7 +1336,7 @@ ${EXTERNAL_LINKS}
   },
   {
     path: '/cookies',
-    title: 'Cookie Policy | MediWaste',
+    title: 'Cookie Policy | Website Cookies | MediWaste',
     description: 'Cookie policy for MediWaste. Learn about how we use cookies on our website and your options for managing them.',
     canonical: `${BASE_URL}/cookies`,
     noindex: true,
@@ -1771,7 +1786,7 @@ async function main() {
         canonical: `${BASE_URL}/news/category/${category.slug}`,
         h1: `${category.name} News`,
         schema: { '@context': 'https://schema.org', '@type': 'CollectionPage', name: `${category.name} News`, url: `${BASE_URL}/news/category/${category.slug}/` },
-        content: `<p>Browse MediWaste articles about ${esc(category.name.toLowerCase())} in clinical waste management.</p><h2>Articles</h2><ul>${list || '<li>No articles are currently available in this category.</li>'}</ul><p><a href="/news">View all clinical waste news</a> or <a href="/contact">contact MediWaste</a>.</p>`,
+        content: `<p>Browse MediWaste articles about ${esc(category.name.toLowerCase())} in clinical waste management. Our guidance is written for GP surgeries, dental practices, care homes, aesthetic clinics, pharmacies and other organisations that need clear, practical information about healthcare waste.</p><h2>Articles</h2><ul>${list || '<li>No articles are currently available in this category.</li>'}</ul><h2>Practical guidance for healthcare providers</h2><p>Clinical waste requirements depend on the type of waste produced, how it is segregated and how often it is collected. Keeping infectious waste, sharps, pharmaceutical waste and other specialist streams in the correct containers helps protect staff, patients, visitors and collection drivers. It also gives practice managers a clear audit trail for inspections and internal reviews.</p><p>MediWaste articles explain the everyday decisions that affect compliant waste management, including container selection, storage, collection frequency, documentation and licensed treatment. We use straightforward language so busy teams can find the information they need without working through unnecessary jargon. Where regulations or official guidance change, we review our content and point readers towards authoritative sources.</p><p>If you are unsure which service is right for your organisation, compare our <a href="/waste-services">clinical waste services</a>, read our <a href="/compliance">compliance guidance</a> or <a href="/contact">contact MediWaste</a> for practical advice. We can usually arrange a free quote and begin collections within seven days.</p><p>Good waste management is part of a wider safety process. Staff should receive suitable instructions, waste should be stored securely, containers should not be overfilled and transfer or consignment notes should be retained. Our team can help you review these arrangements and set up a collection schedule that matches your waste volumes.</p><p><a href="/news">View all clinical waste news</a> or <a href="/contact">contact MediWaste</a>.</p>`,
       }));
       count++;
     }
