@@ -1794,6 +1794,17 @@ async function main() {
     console.warn(`[prerender]   ⚠ News category pages failed: ${err.message}`);
   }
 
+  writeRoute('/news/category', buildHtml(template, {
+    title: 'Clinical Waste News Categories | MediWaste',
+    description: 'Browse MediWaste clinical waste news by topic, including regulations, environmental updates, industry news and practical guidance.',
+    keywords: 'clinical waste news categories, healthcare waste regulations, medical waste guidance',
+    canonical: `${BASE_URL}/news/category`,
+    h1: 'Clinical Waste News Categories',
+    schema: { '@context': 'https://schema.org', '@type': 'CollectionPage', name: 'Clinical Waste News Categories', url: `${BASE_URL}/news/category/` },
+    content: '<p>Browse clinical waste news and practical guidance by topic. Choose a category to find clear information about regulations, environmental responsibility, industry developments and day-to-day waste management.</p><h2>Browse by topic</h2><ul><li><a href="/news/category/industry-news">Industry News</a></li><li><a href="/news/category/environmental">Environmental</a></li><li><a href="/news/category/regulations">Regulations</a></li><li><a href="/news/category/best-practices">Best Practices</a></li><li><a href="/news/category/company-updates">Company Updates</a></li></ul><p>For service advice, visit our <a href="/waste-services">clinical waste services</a> page or <a href="/contact">contact MediWaste</a>.</p>',
+  }));
+  count++;
+
   const SPA_WILDCARD_PREFIXES = [
     '/admin/quote-requests',
     '/admin/quotes',
@@ -1821,7 +1832,6 @@ async function main() {
     '/admin/audits',
     '/staff/dashboard',
     '/customer/dashboard',
-    '/news/category',
   ];
   for (const prefix of SPA_WILDCARD_PREFIXES) {
     writeRoute(prefix, spaShell);

@@ -7,6 +7,7 @@ import {
   Save, Eye, Sparkles, RefreshCw, ArrowLeft, ExternalLink,
 } from 'lucide-react';
 import SeoValidationChecklist from '../../components/admin/SeoValidationChecklist';
+import PrePublishModal, { buildSeoPageChecks } from '../../components/admin/PrePublishModal';
 
 interface SeoCategory {
   id: string;
@@ -63,6 +64,7 @@ export default function SeoPageEditPage() {
   const [saveMsg, setSaveMsg] = useState('');
   const [showPreview, setShowPreview] = useState(false);
   const [customInstructions, setCustomInstructions] = useState('');
+  const [showPrePublish, setShowPrePublish] = useState(false);
 
   const { data: categories = [] } = useQuery({
     queryKey: ['seo-categories'],
@@ -114,12 +116,21 @@ export default function SeoPageEditPage() {
     setSaveMsg('');
   };
 
-  const handleSave = async () => {
+  const handleSave = () => {
     if (!form.url_slug || !form.target_keyword) {
       setSaveMsg('URL slug and target keyword are required');
       return;
     }
 
+    if (form.status === 'published') {
+      setShowPrePublish(true);
+      return;
+    }
+
+    void performSave();
+  };
+
+  const performSave = async () => {
     setSaving(true);
     setSaveMsg('');
 
@@ -264,7 +275,7 @@ export default function SeoPageEditPage() {
               className="flex items-center gap-2 px-4 py-2 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50"
             >
               {saving ? <RefreshCw size={14} className="animate-spin" /> : <Save size={14} />}
-              {saving ? 'Saving...' : 'Save'}
+              {saving ? 'Saving...' : (form.status === 'published' ? 'Publish' : 'Save')}
             </button>
           </div>
         </div>
@@ -531,6 +542,24 @@ export default function SeoPageEditPage() {
           </div>
         )}
       </div>
+
+      <PrePublishModal
+        open={showPrePublish}
+        checks={buildSeoPageChecks({
+          ...form,
+          meta_title: form.meta_title || '',
+          meta_description: form.meta_description || '',
+          og_title: form.meta_title || '',
+          og_description: form.meta_description || '',
+        })}
+        pageTitle={form.h1 || form.target_keyword || form.url_slug}
+        confirming={saving}
+        onClose={() => setShowPrePublish(false)}
+        onConfirm={() => {
+          setShowPrePublish(false);
+          void performSave();
+        }}
+      />
     </AdminLayout>
   );
 }

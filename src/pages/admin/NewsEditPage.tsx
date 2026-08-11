@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { Save, Eye, Code, Trash2, Plus } from 'lucide-react';
 import { useToastContext } from '../../contexts/ToastContext';
+import PrePublishModal, { buildNewsArticleChecks } from '../../components/admin/PrePublishModal';
 import AdminLayout from '../../components/admin/AdminLayout';
 
 interface Category {
@@ -21,6 +22,7 @@ export default function NewsEditPage() {
   const [previewMode, setPreviewMode] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [showPrePublish, setShowPrePublish] = useState(false);
 
   const [existingPublishedAt, setExistingPublishedAt] = useState<string | null>(null);
 
@@ -112,12 +114,21 @@ export default function NewsEditPage() {
     }));
   };
 
-  const handleSave = async (publishNow = false) => {
+  const handleSave = (publishNow = false) => {
     if (!formData.title || !formData.slug) {
       toast.error('Title and slug are required');
       return;
     }
 
+    if (publishNow) {
+      setShowPrePublish(true);
+      return;
+    }
+
+    void performSave(false);
+  };
+
+  const performSave = async (publishNow = false) => {
     setSaving(true);
 
     try {
@@ -536,6 +547,18 @@ export default function NewsEditPage() {
           </div>
         </div>
       </div>
+
+      <PrePublishModal
+        open={showPrePublish}
+        checks={buildNewsArticleChecks(formData)}
+        pageTitle={formData.title || 'New article'}
+        confirming={saving}
+        onClose={() => setShowPrePublish(false)}
+        onConfirm={() => {
+          setShowPrePublish(false);
+          void performSave(true);
+        }}
+      />
     </AdminLayout>
   );
 }
