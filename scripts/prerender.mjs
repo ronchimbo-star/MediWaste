@@ -139,25 +139,25 @@ function buildHtml(template, meta) {
   const canon = withTrailingSlash(canonical);
 
   const metaLines = [
-    `<title data-rh="true">${esc(title)}</title>`,
-    desc       ? `    <meta data-rh="true" name="description" content="${escAttr(desc)}" />`    : '',
-    keywords   ? `    <meta data-rh="true" name="keywords" content="${escAttr(keywords)}" />`   : '',
-    `    <meta data-rh="true" name="robots" content="${robots}" />`,
-    `    <link data-rh="true" rel="canonical" href="${escAttr(canon)}" />`,
-    `    <meta data-rh="true" property="og:site_name" content="MediWaste" />`,
-    `    <meta data-rh="true" property="og:type" content="${type}" />`,
-    `    <meta data-rh="true" property="og:url" content="${escAttr(canon)}" />`,
-    `    <meta data-rh="true" property="og:title" content="${escAttr(title)}" />`,
-    desc       ? `    <meta data-rh="true" property="og:description" content="${escAttr(desc)}" />` : '',
-    `    <meta data-rh="true" property="og:image" content="${escAttr(ogImage)}" />`,
-    `    <meta data-rh="true" property="og:image:width" content="1200" />`,
-    `    <meta data-rh="true" property="og:image:height" content="630" />`,
-    `    <meta data-rh="true" property="og:locale" content="en_GB" />`,
-    `    <meta data-rh="true" name="twitter:card" content="summary_large_image" />`,
-    `    <meta data-rh="true" name="twitter:site" content="@mediwaste" />`,
-    `    <meta data-rh="true" name="twitter:title" content="${escAttr(title)}" />`,
-    desc       ? `    <meta data-rh="true" name="twitter:description" content="${escAttr(desc)}" />` : '',
-    `    <meta data-rh="true" name="twitter:image" content="${escAttr(ogImage)}" />`,
+    `<title>${esc(title)}</title>`,
+    desc       ? `    <meta name="description" content="${escAttr(desc)}" />`    : '',
+    keywords   ? `    <meta name="keywords" content="${escAttr(keywords)}" />`   : '',
+    `    <meta name="robots" content="${robots}" />`,
+    `    <link rel="canonical" href="${escAttr(canon)}" />`,
+    `    <meta property="og:site_name" content="MediWaste" />`,
+    `    <meta property="og:type" content="${type}" />`,
+    `    <meta property="og:url" content="${escAttr(canon)}" />`,
+    `    <meta property="og:title" content="${escAttr(title)}" />`,
+    desc       ? `    <meta property="og:description" content="${escAttr(desc)}" />` : '',
+    `    <meta property="og:image" content="${escAttr(ogImage)}" />`,
+    `    <meta property="og:image:width" content="1200" />`,
+    `    <meta property="og:image:height" content="630" />`,
+    `    <meta property="og:locale" content="en_GB" />`,
+    `    <meta name="twitter:card" content="summary_large_image" />`,
+    `    <meta name="twitter:site" content="@mediwaste" />`,
+    `    <meta name="twitter:title" content="${escAttr(title)}" />`,
+    desc       ? `    <meta name="twitter:description" content="${escAttr(desc)}" />` : '',
+    `    <meta name="twitter:image" content="${escAttr(ogImage)}" />`,
     ...schemas.map(s => `    <script type="application/ld+json">${JSON.stringify(s)}</script>`),
   ].filter(Boolean).join('\n');
 
@@ -171,6 +171,7 @@ function buildHtml(template, meta) {
       .replace(/<html[^>]*>|<\/html>|<head[^>]*>[\s\S]*?<\/head>|<body[^>]*>|<\/body>/gi, '')
       .replace(/<meta\b[^>]*>/gi, '')
       .replace(/<title\b[^>]*>[\s\S]*?<\/title>/gi, '')
+      .replace(/<h1\b[^>]*>[\s\S]*?<\/h1>/gi, '')
     : '';
   const rootParts = [
     `<img src="/mediwaste-logo.png" alt="MediWaste clinical waste disposal logo" width="200" height="60" />`,

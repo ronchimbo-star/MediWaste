@@ -23,7 +23,7 @@ interface Town {
 }
 
 interface SeoLocationLink {
-  slug: string;
+  url_slug: string;
   meta_title: string;
 }
 
@@ -64,7 +64,7 @@ export default function ServiceAreaPage() {
       // Fetch SEO location pages for internal linking
       const { data: seoData } = await supabase
         .from('seo_pages')
-        .select('slug, meta_title')
+        .select('url_slug, meta_title')
         .eq('status', 'published')
         .order('created_at', { ascending: false })
         .limit(40);
@@ -230,11 +230,11 @@ export default function ServiceAreaPage() {
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                   {seoLocations.map((loc) => (
                     <a
-                      key={loc.slug}
-                      href={`/c/${loc.slug}`}
+                      key={loc.url_slug}
+                      href={`/c/${loc.url_slug}`}
                       className="block px-4 py-3 rounded-lg border border-gray-200 hover:border-red-600 hover:bg-red-50 transition-colors text-sm font-medium text-gray-700 hover:text-red-600"
                     >
-                      {loc.meta_title?.replace(/\s*\|\s*MediWaste.*$/i, '') || loc.slug.replace(/-/g, ' ')}
+                      {loc.meta_title?.replace(/\s*\|\s*MediWaste.*$/i, '') || loc.url_slug.replace(/-/g, ' ')}
                     </a>
                   ))}
                 </div>

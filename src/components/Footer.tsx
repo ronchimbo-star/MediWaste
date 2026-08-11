@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 
 interface SeoLocationLink {
-  slug: string;
+  url_slug: string;
   meta_title: string;
 }
 
@@ -16,7 +16,7 @@ export default function Footer() {
   useEffect(() => {
     supabase
       .from('seo_pages')
-      .select('slug, meta_title')
+      .select('url_slug, meta_title')
       .eq('status', 'published')
       .order('created_at', { ascending: false })
       .limit(12)
@@ -143,11 +143,11 @@ export default function Footer() {
               <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-400">
                 {locationLinks.map((loc) => (
                   <Link
-                    key={loc.slug}
-                    to={`/c/${loc.slug}`}
+                    key={loc.url_slug}
+                    to={`/c/${loc.url_slug}`}
                     className="hover:text-white transition-colors"
                   >
-                    {loc.meta_title?.replace(/\s*\|\s*MediWaste.*$/i, '') || loc.slug.replace(/-/g, ' ')}
+                    {loc.meta_title?.replace(/\s*\|\s*MediWaste.*$/i, '') || loc.url_slug.replace(/-/g, ' ')}
                   </Link>
                 ))}
               </div>
