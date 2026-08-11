@@ -254,8 +254,8 @@ export function buildSeoPageChecks(form: {
 
   // Meta description
   checks.push({
-    label: 'Meta description set (120-170 chars)',
-    passed: form.meta_description.length >= 120 && form.meta_description.length <= 170,
+    label: 'Meta description set (150-160 chars)',
+    passed: form.meta_description.length >= 150 && form.meta_description.length <= 160,
     severity: 'critical',
     detail: form.meta_description ? `${form.meta_description.length} characters` : 'Not set',
   });
@@ -426,6 +426,14 @@ export function buildSeoPageChecks(form: {
     detail: brokenLinks.length > 0 ? `Check: ${brokenLinks.slice(0, 3).join(', ')}${brokenLinks.length > 3 ? '...' : ''}` : 'All links valid',
   });
 
+  const absoluteInternalLinks = links.filter(l => l.startsWith('https://mediwaste.co.uk') || l.startsWith('https://www.mediwaste.co.uk'));
+  checks.push({
+    label: 'Internal links use crawlable relative paths',
+    passed: absoluteInternalLinks.length === 0,
+    severity: 'critical',
+    detail: absoluteInternalLinks.length > 0 ? `${absoluteInternalLinks.length} absolute internal link${absoluteInternalLinks.length > 1 ? 's' : ''} found` : 'Passed',
+  });
+
   // No CTA in content
   const hasCTAInContent = lowerContent.includes('request a quote') || lowerContent.includes('call us now') || form.content.includes('cta-box');
   checks.push({
@@ -514,8 +522,8 @@ export function buildNewsArticleChecks(form: {
   // Meta description
   const effectiveDesc = form.meta_description || form.excerpt;
   checks.push({
-    label: 'Meta description or excerpt set (min 120 chars)',
-    passed: effectiveDesc.length >= 120,
+    label: 'Meta description or excerpt set (150-160 chars)',
+    passed: effectiveDesc.length >= 150 && effectiveDesc.length <= 160,
     severity: 'critical',
     detail: effectiveDesc ? `${effectiveDesc.length} characters` : 'Not set',
   });
@@ -567,6 +575,14 @@ export function buildNewsArticleChecks(form: {
     passed: brokenLinks.length === 0,
     severity: 'critical',
     detail: brokenLinks.length > 0 ? `Check: ${brokenLinks.slice(0, 3).join(', ')}${brokenLinks.length > 3 ? '...' : ''}` : 'All links valid',
+  });
+
+  const absoluteInternalLinks = links.filter(l => l.startsWith('https://mediwaste.co.uk') || l.startsWith('https://www.mediwaste.co.uk'));
+  checks.push({
+    label: 'Internal links use crawlable relative paths',
+    passed: absoluteInternalLinks.length === 0,
+    severity: 'critical',
+    detail: absoluteInternalLinks.length > 0 ? `${absoluteInternalLinks.length} absolute internal link${absoluteInternalLinks.length > 1 ? 's' : ''} found` : 'Passed',
   });
 
   // Featured image
