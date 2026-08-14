@@ -135,7 +135,7 @@ Deno.serve(async (req: Request) => {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${resendKey}` },
         body: JSON.stringify({
-          from: "MediWaste Audits <onboarding@resend.dev>",
+          from: "MediWaste Audits <hello@mediwaste.co.uk>",
           to: [session.email],
           subject: `Your Clinical Waste Audit Report — ${session.business_name}`,
           html: userHtml,
@@ -151,7 +151,7 @@ Deno.serve(async (req: Request) => {
       method: "POST",
       headers: { "Content-Type": "application/json", "Authorization": `Bearer ${resendKey}` },
       body: JSON.stringify({
-        from: "MediWaste Audits <onboarding@resend.dev>",
+        from: "MediWaste Audits <hello@mediwaste.co.uk>",
         to: ["ronchimbo@gmail.com"],
         subject: `New Audit: ${session.business_name} (${session.sector}) — Risk: ${report.risk_rating?.toUpperCase()}`,
         html: adminHtml,

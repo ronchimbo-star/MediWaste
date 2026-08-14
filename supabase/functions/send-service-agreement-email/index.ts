@@ -81,11 +81,11 @@ Deno.serve(async (req: Request) => {
         "Authorization": `Bearer ${resendApiKey}`,
       },
       body: JSON.stringify({
-        from: "MediWaste <onboarding@resend.dev>",
+        from: "MediWaste <hello@mediwaste.co.uk>",
         to: [payload.to],
         subject: `Service Agreement ${payload.agreement_number} — Action Required`,
         html: emailHtml,
-        reply_to: "sarah.benson@mediwaste.co.uk",
+        reply_to: "hello@mediwaste.co.uk",
       }),
     });
 
