@@ -56,7 +56,7 @@ export default function ContactPage() {
         phone: formData.phone || null,
         subject: formData.subject,
         message: formData.message,
-        status: 'new'
+        status: 'pending'
       };
 
       const { error: insertError } = await supabase
