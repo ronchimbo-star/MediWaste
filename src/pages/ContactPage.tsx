@@ -51,15 +51,16 @@ export default function ContactPage() {
 
     try {
       const submissionData = {
-        name: formData.name,
+        contact_name: formData.name,
         email: formData.email,
         phone: formData.phone || null,
-        message: `${formData.subject}\n\n${formData.message}`,
+        subject: formData.subject,
+        message: formData.message,
         status: 'new'
       };
 
       const { error: insertError } = await supabase
-        .from('contact_submissions')
+        .from('contact_enquiries')
         .insert(submissionData);
 
       if (insertError) throw insertError;
