@@ -74,16 +74,17 @@ export default function CompliancePage() {
     },
   });
 
-  const { data: wasteNotes = [] } = useQuery({
+  const { data: wasteNotes = [], error: wasteNotesError } = useQuery({
     queryKey: ['compliance-wtns', cert?.customer_id],
     enabled: !!cert?.customer_id,
     queryFn: async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('mw_waste_transfer_notes')
         .select('*')
         .eq('customer_id', cert!.customer_id)
         .order('issue_date', { ascending: false })
         .limit(50);
+      if (error) throw error;
       return (data || []) as WasteTransferNote[];
     },
   });
@@ -284,7 +285,14 @@ export default function CompliancePage() {
               </div>
             </div>
 
-            {wasteNotes.length > 0 && (
+            {wasteNotesError && (
+              <div className="bg-red-50 border border-red-200 rounded-xl p-5">
+                <p className="font-semibold text-red-800">Waste transfer notes could not be loaded</p>
+                <p className="text-sm text-red-700 mt-1">Please refresh this page or contact MediWaste if the problem continues.</p>
+              </div>
+            )}
+
+            {!wasteNotesError && wasteNotes.length > 0 && (
               <div className="bg-white rounded-xl border border-gray-200">
                 <div className="p-5 border-b border-gray-100 flex items-center gap-2">
                   <FileText size={16} className="text-gray-500" />
@@ -326,7 +334,7 @@ export default function CompliancePage() {
               </div>
             )}
 
-            {wasteNotes.length === 0 && (
+            {!wasteNotesError && wasteNotes.length === 0 && (
               <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
                 <FileText size={28} className="mx-auto text-gray-300 mb-2" />
                 <p className="text-gray-400 text-sm">No waste transfer notes on record</p>
