@@ -359,7 +359,7 @@ export default function WasteTransferNotesPage() {
     setCreateLoading(true);
     try {
       const today = new Date().toISOString().split('T')[0].replace(/-/g, '');
-      const wtnNumber = `WTN${today}-${Date.now().toString().slice(-4)}`;
+      const wtnNumber = `WTN${today}-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
       const selectedCarrier = carriers.find(c => c.id === createForm.carrier_id);
       const { data: wtn, error: wtnErr } = await supabase.from('mw_waste_transfer_notes').insert([{
         wtn_number: wtnNumber,
@@ -392,8 +392,9 @@ export default function WasteTransferNotesPage() {
       toast.success(`WTN ${wtnNumber} created successfully`);
       setShowCreateModal(false);
       fetchWTNs();
-    } catch {
-      toast.error('Failed to create WTN');
+    } catch (error) {
+      console.error('Error creating WTN:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to create WTN');
     } finally {
       setCreateLoading(false);
     }
