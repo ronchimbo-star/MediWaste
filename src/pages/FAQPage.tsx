@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import SEO from '../components/SEO';
@@ -11,86 +11,244 @@ interface FAQItem {
   category: string;
 }
 
+function renderInlineLinks(text: string): React.ReactNode {
+  const combined = new RegExp(
+    `([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,})|(https?://[^\\s]+)|(\\b(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z]{2,}(?:\\/[^\\s.,)]*)?\\b)`,
+    'gi'
+  );
+
+  const parts: React.ReactNode[] = [];
+  let lastIndex = 0;
+  let matchIndex = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = combined.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push(text.slice(lastIndex, match.index));
+    }
+    const matched = match[0];
+    const isEmail = match[1];
+
+    if (isEmail) {
+      parts.push(
+        <a key={`link-${matchIndex++}`} href={`mailto:${matched}`} className="text-red-600 hover:text-red-700 underline font-medium">
+          {matched}
+        </a>
+      );
+    } else if (match[2]) {
+      parts.push(
+        <a key={`link-${matchIndex++}`} href={matched} target="_blank" rel="noopener noreferrer" className="text-red-600 hover:text-red-700 underline font-medium">
+          {matched}
+        </a>
+      );
+    } else {
+      const href = matched.startsWith('http') ? matched : `https://${matched}`;
+      parts.push(
+        <a key={`link-${matchIndex++}`} href={href} target="_blank" rel="noopener noreferrer" className="text-red-600 hover:text-red-700 underline font-medium">
+          {matched}
+        </a>
+      );
+    }
+    lastIndex = match.index + matched.length;
+  }
+  if (lastIndex < text.length) {
+    parts.push(text.slice(lastIndex));
+  }
+  return parts.length > 0 ? parts : text;
+}
+
+function renderRichAnswer(answer: string) {
+  const lines = answer.split('\n');
+  const blocks: React.ReactNode[] = [];
+  let listItems: string[] = [];
+  let key = 0;
+
+  const flushList = () => {
+    if (listItems.length === 0) return;
+    blocks.push(
+      <ul key={`ul-${key++}`} className="my-3 space-y-2 pl-1">
+        {listItems.map((item, i) => (
+          <li key={i} className="flex gap-2.5 text-gray-600 leading-relaxed">
+            <span className="text-red-500 font-bold mt-0.5 flex-shrink-0">•</span>
+            <span>{renderInlineLinks(item)}</span>
+          </li>
+        ))}
+      </ul>
+    );
+    listItems = [];
+  };
+
+  lines.forEach((line) => {
+    const trimmed = line.trim();
+    if (trimmed === '') {
+      flushList();
+      return;
+    }
+    if (trimmed.startsWith('• ')) {
+      listItems.push(trimmed.slice(2));
+    } else {
+      flushList();
+      blocks.push(
+        <p key={`p-${key++}`} className="text-gray-600 leading-relaxed mb-3 last:mb-0">
+          {renderInlineLinks(trimmed)}
+        </p>
+      );
+    }
+  });
+  flushList();
+  return blocks;
+}
+
+const faqs: FAQItem[] = [
+  {
+    category: 'General',
+    question: 'What is clinical waste?',
+    answer: 'Clinical waste is any waste produced by healthcare activities that may pose a risk of infection, contain harmful substances, or requires special disposal. This includes infectious materials contaminated with bodily fluids, sharps (needles and syringes), pharmaceutical waste, and anatomical waste. All clinical waste must be disposed of according to strict UK regulations to protect public health and the environment.',
+  },
+  {
+    category: 'General',
+    question: 'What areas do you cover?',
+    answer: 'We cover London, Kent, Surrey, Sussex, Hampshire, and Essex – with occasional collections further afield. If you\'re outside our core area, drop us an email at hello@mediwaste.co.uk – we may still be able to help, or we can point you in the right direction.',
+  },
+  {
+    category: 'General',
+    question: 'How do I find a licensed waste carrier near me?',
+    answer: 'MediWaste is a licensed Upper Tier Waste Carrier (Registration: CBDU542939) covering London, Kent, Surrey, Sussex, Hampshire, and Essex. We provide clinical waste collection across the South East. If you\'re outside our area, we can still offer advice or point you in the right direction.',
+  },
+  {
+    category: 'General',
+    question: 'Are your services CQC compliant?',
+    answer: 'Yes. We provide all the documentation you need for CQC compliance: Waste Transfer Notes, Hazardous Waste Consignment Notes, Waste Management Certificates, and a full audit trail for inspections. Our service meets the requirements of the Hazardous Waste Regulations 2005, Environmental Protection Act 1990, and Health and Safety at Work Act.',
+  },
+  {
+    category: 'Waste Types & Segregation',
+    question: 'What\'s the difference between orange, yellow, purple, and blue bins?',
+    answer: 'Colour codes:\n• Orange – infectious sharps & clinical waste (needles, blood-contaminated items).\n• Yellow – cytotoxic/cytostatic waste (chemotherapy drugs, some Botox).\n• Purple – cytotoxic waste (same as yellow, some providers use different conventions).\n• Blue – pharmaceutical waste (expired medicines, vaccination vials).\n• Tiger stripe (yellow/black) – offensive/hygiene waste (non-infectious PPE, sanitary waste).\n\nAlways check with your provider to confirm the correct colour for your specific waste stream.',
+  },
+  {
+    category: 'Waste Types & Segregation',
+    question: 'Do I need a purple bin or a blue bin for Botox / filler vials?',
+    answer: 'It depends. Botox and filler vials are usually classified as pharmaceutical waste (EWC 18 01 09) and should go in a blue-lidded pharmaceutical bin. However, if the waste contains or is contaminated with cytotoxic or cytostatic substances, it would need a purple-lidded bin (EWC 18 01 08*). We can help you confirm the correct classification for your practice.',
+  },
+  {
+    category: 'Waste Types & Segregation',
+    question: 'Can I use tiger stripe bags instead of orange bags?',
+    answer: 'Only for non-infectious waste. Tiger stripe bags (yellow/black) are for offensive/hygiene waste – non-infectious items like uncontaminated PPE, sanitary waste, and hygiene products. If your waste is infectious (e.g., blood-contaminated), you must use orange bags (or yellow bags for incineration-only waste). Mixing them up can lead to compliance issues.',
+  },
+  {
+    category: 'Waste Types & Segregation',
+    question: 'What\'s the difference between hazardous, non-hazardous, and offensive waste?',
+    answer: 'Hazardous (18 01 03*) – infectious sharps, contaminated clinical waste, blood-soaked items.\nNon-hazardous / offensive (18 01 04) – PPE, sanitary waste, uncontaminated gloves, hygiene waste.\nPharmaceutical (18 01 09) – expired medicines, vaccination vials, glass vials.\n\nCorrect classification is important for compliance and disposal costs.',
+  },
+  {
+    category: 'Waste Types & Segregation',
+    question: 'How do I know if my waste is classified as hazardous?',
+    answer: 'Hazardous waste includes items that are infectious, contain dangerous substances, or are classified under EWC codes with an asterisk (*). Examples:\n• 18 01 03* – Sharps and clinical waste contaminated with infectious agents.\n• 18 01 08* – Cytotoxic/cytostatic waste (e.g., chemotherapy drugs).\n• 18 01 06* – Chemical waste from healthcare.\n\nIf you\'re unsure, we can help you classify your waste correctly.',
+  },
+  {
+    category: 'Waste Types & Segregation',
+    question: 'Do I need to separate my waste into different bags/bins?',
+    answer: 'Yes. Correct segregation is a legal requirement. Waste must be sorted at the point of generation into the appropriate colour-coded containers. This ensures compliance, reduces disposal costs, and protects public health. We provide training materials and segregation guidance to all our clients.',
+  },
+  {
+    category: 'Waste Types & Segregation',
+    question: 'I\'m a tattoo studio – do I need orange or yellow bags?',
+    answer: 'Orange bags are for infectious clinical waste (blood-contaminated items, used gloves, ink cups, paper towels). Yellow bags are for infectious waste that must be incinerated. For most tattoo studios, orange bags are the correct choice. Tiger stripe (yellow/black) bags can be used for non-infectious hygiene waste if you segregate it.',
+  },
+  {
+    category: 'Containers & Supplies',
+    question: 'What are the container sizes you supply?',
+    answer: 'Sharps bins: 0.2L, 1L, 2L, 2.5L, 5L, 7L, 11L, 13L, 24L.\nClinical waste bags: 25L, 30L, 50L, 80L, 120L (rolls of 5 or 10 bags).\nPharmaceutical bins: 2L, 5L, 7L, 13L (blue or purple lids).\nOffensive waste bags: 25L, 30L, 50L (tiger stripe – yellow/black).\nWheelie bins: 120L, 240L, 360L, 660L (lockable, for secure storage).\n\nJust let us know your volume and we\'ll recommend the right sizes.',
+  },
+  {
+    category: 'Containers & Supplies',
+    question: 'Do you supply bins and bags, or do I need to buy my own?',
+    answer: 'We supply them as part of the service. We deliver new empty bins and bags at each collection and take away the full ones. There are no separate rental fees. If you prefer to use your own bins (e.g., purchased from Amazon), that\'s fine too – we\'ll still collect them.',
+  },
+  {
+    category: 'Containers & Supplies',
+    question: 'What happens if I run out of bags or sharps bins between collections?',
+    answer: 'Just let us know. We can send out additional supplies in advance of your next collection – at no extra charge if you\'re on a scheduled plan, or for a small fee if you\'re on a pay-as-you-go plan. Many clients order extra bags and sharps bins when they book their collection.',
+  },
+  {
+    category: 'Containers & Supplies',
+    question: 'How long can I keep a sharps bin before it needs to be collected?',
+    answer: 'There\'s no fixed time limit – you can keep a sharps bin until it reaches the fill line, as long as it\'s stored securely (e.g., in a locked cupboard) away from public access. Bins should never be overfilled. Some clients keep a bin for 6–12 months if they generate very low volumes.',
+  },
+  {
+    category: 'Service & Collections',
+    question: 'What are the collection time windows? How much notice do you give?',
+    answer: 'We give 24-hour advance notice with a 2-hour time window (e.g., "we\'ll be there between 10am and 12pm"). On the day, you\'ll receive a text alert when the driver is about an hour away. If you\'re not available, you can leave the waste in a designated safe area and the driver will collect without you being present.',
+  },
+  {
+    category: 'Service & Collections',
+    question: 'What happens if I need a collection urgently?',
+    answer: 'Call or email us. If we have capacity, we can arrange an emergency collection within 24-48 hours. Emergency collections are charged at our standard ad-hoc rate plus a small priority fee. We\'ll always do our best to accommodate urgent requests.',
+  },
+  {
+    category: 'Service & Collections',
+    question: 'Can I deliver my waste to you instead of having it collected?',
+    answer: 'Yes. If it\'s more convenient, you can deliver your waste to our Dartford processing facility. This is often cheaper than a collection visit – we can quote accordingly. Just let us know and we\'ll arrange a drop-off time.',
+  },
+  {
+    category: 'Service & Collections',
+    question: 'Do you collect from home-based clinics?',
+    answer: 'Yes. We collect from many home-based practitioners – aestheticians, acupuncturists, podiatrists, tattoo artists, and phlebotomists. We just ask that waste is stored securely (e.g., in a locked cupboard or small lockable bin) and that you\'re available for collection during the agreed time window.',
+  },
+  {
+    category: 'Service & Collections',
+    question: 'Do you collect from dental practices? Do you handle amalgam and gypsum?',
+    answer: 'Yes. We provide full dental waste collection including: amalgam waste (600ml, 1.8L, 6L), gypsum waste (25L sani boxes), sludge drums (10L), sharps (yellow lid), cytotoxic sharps (purple lid), pharmaceutical waste (blue lid), offensive waste (tiger stripe), and orange clinical waste bags. We also provide amalgam recovery certificates in compliance with dental waste regulations.',
+  },
+  {
+    category: 'Pricing & Contracts',
+    question: 'Do you offer a pay-as-you-go or no-contract service?',
+    answer: 'Yes. We offer Pay-As-You-Go (Ad-Hoc) collections – you call us when you\'re ready, and we collect. No contract, no minimum commitment. We also offer Flexi plans (pre-paid blocks of 4 or 6 collections) which give you the same flexibility but at a cheaper rate per visit.',
+  },
+  {
+    category: 'Pricing & Contracts',
+    question: 'What\'s the cheapest option for a small clinic / low volume?',
+    answer: 'Our Flexi 4 plan is usually the best value for small clinics – you pay for 4 collections in advance, call us when you\'re ready, and unused collections are refunded. For very low volume (1-2 collections per year), our Pay-As-You-Go option is simpler and still cost-effective.',
+  },
+  {
+    category: 'Pricing & Contracts',
+    question: 'What\'s the minimum contract term?',
+    answer: 'Pay-As-You-Go (Ad-Hoc): No contract, no minimum term.\nFlexi plans: No long-term contract – pre-paid collections valid for 12 months.\nScheduled plans (Quarterly, Bi-Monthly, Monthly): 12-month rolling contract with 30 days\' notice.\n\nWe don\'t tie you into long, inflexible contracts – flexibility is what we\'re known for.',
+  },
+  {
+    category: 'Pricing & Contracts',
+    question: 'What are the disposal costs for pharmaceutical waste?',
+    answer: 'Pharmaceutical waste (blue-lidded bins) is collected and disposed of via high-temperature incineration. The cost is included in our per-collection pricing – there are no hidden per-kilogram charges for standard volumes. For larger quantities (e.g., expired stock from pharmacies), we provide bespoke quotes based on volume.',
+  },
+  {
+    category: 'Pricing & Contracts',
+    question: 'Do you offer discounts for referrals or members of professional bodies?',
+    answer: 'Yes. We offer:\n• 5% discount for referrals (both parties)\n• 5% discount for members of professional bodies (e.g., ATCM, BABTAC)\n• 10% discount for education sector clients\n• Multi-site discounts for clinics with multiple locations\n\nDiscounts are usually applied to the first year of service.',
+  },
+  {
+    category: 'Compliance & Documentation',
+    question: 'What paperwork do I need to keep?',
+    answer: 'You need to keep:\n• Hazardous Waste Consignment Notes (HazNotes) – your legal proof of transfer, valid for 3 years.\n• Waste Management Certificate – proof that you\'re using a licensed waste carrier.\n• Waste Transfer Notes (WTNs) – for non-hazardous waste.\n\nAll documents are available online via your compliance dashboard, so you can view, download, and print them whenever you need.',
+  },
+  {
+    category: 'Compliance & Documentation',
+    question: 'What\'s the difference between a Waste Transfer Note (WTN) and a Consignment Note?',
+    answer: 'Waste Transfer Note (WTN) – used for non-hazardous waste transfers. Must be kept for 2 years.\nHazardous Waste Consignment Note (HazNote) – used for hazardous waste. Must be kept for 3 years.\n\nWe provide both as part of our service, depending on the type of waste being collected. They are your legal proof of transfer and compliance.',
+  },
+  {
+    category: 'Training & Support',
+    question: 'Do you offer training for my staff?',
+    answer: 'Yes. Through our partnership with WasteInstitute, we offer:\n• Free resources – guides, posters, and downloadable materials.\n• Discounted training – CPD-accredited clinical waste management modules.\n• Bespoke guidance – we can work with you to develop training tailored to your practice.\n\nJust ask when you sign up.',
+  },
+  {
+    category: 'Getting Started',
+    question: 'How do I get a quote?',
+    answer: 'It\'s easy. Visit our website at mediwaste.co.uk and complete the quick quote form, or email us at hello@mediwaste.co.uk. We\'ll get back to you within a few hours with a tailored quote based on your waste types, volumes, and location.',
+  },
+];
+
 export default function FAQPage() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
-
-  const faqs: FAQItem[] = [
-    {
-      category: 'General',
-      question: 'What types of medical waste do you collect?',
-      answer: 'We collect all types of clinical and medical waste including infectious waste, sharps, pharmaceutical waste, anatomical waste, cytotoxic waste, and dental waste. We provide specialized containers and collection services for each waste stream.'
-    },
-    {
-      category: 'General',
-      question: 'Which areas do you service?',
-      answer: 'We provide medical waste disposal services across London, Kent, Sussex, Essex, and Surrey. Contact us to check if we cover your specific location.'
-    },
-    {
-      category: 'General',
-      question: 'Are you fully licensed and compliant?',
-      answer: 'Yes, we hold all necessary licenses and permits required for medical waste collection and disposal. We are fully compliant with UK waste regulations and healthcare standards, and carry comprehensive insurance coverage.'
-    },
-    {
-      category: 'Service',
-      question: 'How often do you collect medical waste?',
-      answer: 'We offer flexible collection schedules to suit your needs - weekly, bi-weekly, monthly, or on-demand collection services. We can adjust the frequency based on your waste volume and requirements.'
-    },
-    {
-      category: 'Service',
-      question: 'Do you offer emergency collection services?',
-      answer: 'Yes, we provide 24/7 emergency medical waste collection services for urgent situations. Contact us anytime if you need immediate waste removal.'
-    },
-    {
-      category: 'Service',
-      question: 'What containers do you provide?',
-      answer: 'We provide colour-coded containers and sharps bins that comply with UK regulations. Containers are available in various sizes (1L to 60L) and colors (yellow, orange, purple, yellow/black) depending on your waste type.'
-    },
-    {
-      category: 'Pricing',
-      question: 'How much does medical waste disposal cost?',
-      answer: 'Pricing depends on several factors including waste volume, collection frequency, container types, and your location. Request a free quote through our website or call us for a personalized pricing plan.'
-    },
-    {
-      category: 'Pricing',
-      question: 'Do you have long-term contract requirements?',
-      answer: 'No, we offer flexible contracts with no long-term lock-ins. Choose from monthly rolling contracts or fixed-term agreements (6 months or annual) with discounted rates.'
-    },
-    {
-      category: 'Pricing',
-      question: 'Are there any hidden fees?',
-      answer: 'No, we believe in transparent pricing with no hidden fees. All costs are clearly outlined in your quote, including containers, collection, transportation, and disposal.'
-    },
-    {
-      category: 'Compliance',
-      question: 'Will I receive documentation for waste disposal?',
-      answer: 'Yes, we provide complete documentation for every collection including consignment notes and disposal certificates. This creates a full audit trail for regulatory compliance and your records.'
-    },
-    {
-      category: 'Compliance',
-      question: 'How is the waste disposed of?',
-      answer: 'All clinical waste is disposed of via incineration at licensed facilities in compliance with UK regulations. We follow strict protocols to ensure safe and environmentally responsible disposal.'
-    },
-    {
-      category: 'Compliance',
-      question: 'Do you provide staff training?',
-      answer: 'Yes, we can provide guidance and training for your staff on proper waste segregation, container usage, and compliance requirements. Contact us to arrange training sessions.'
-    },
-    {
-      category: 'Getting Started',
-      question: 'How do I get started?',
-      answer: 'Simply request a quote through our website or call us at +44 7757 664788. We\'ll assess your needs, provide a custom quote, and can typically start service within a few days.'
-    },
-    {
-      category: 'Getting Started',
-      question: 'What information do I need to provide for a quote?',
-      answer: 'We\'ll need to know your business type, location, estimated waste volume, types of waste generated, and preferred collection frequency. Our quote form makes it easy to provide all necessary information.'
-    },
-    {
-      category: 'Getting Started',
-      question: 'How quickly can you start service?',
-      answer: 'We can typically begin service within 2-5 business days after agreeing on terms. For urgent needs, we can expedite the setup process.'
-    }
-  ];
 
   const categories = Array.from(new Set(faqs.map(faq => faq.category)));
 
@@ -130,7 +288,9 @@ export default function FAQPage() {
         <div className="max-w-4xl mx-auto">
           {categories.map((category) => (
             <div key={category} className="mb-12">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">{category}</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-6 pb-2 border-b-2 border-red-600">
+                {category}
+              </h2>
               <div className="space-y-4">
                 {faqs
                   .filter((faq) => faq.category === category)
@@ -140,22 +300,22 @@ export default function FAQPage() {
                     return (
                       <div
                         key={globalIndex}
-                        className="bg-white border border-gray-200 rounded-lg overflow-hidden"
+                        className="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow"
                       >
                         <button
                           onClick={() => setOpenIndex(isOpen ? null : globalIndex)}
-                          className="w-full px-6 py-4 text-left flex items-center justify-between hover:bg-gray-50 transition-colors"
+                          className="w-full px-6 py-4 text-left flex items-center justify-between gap-4 hover:bg-gray-50 transition-colors"
                         >
-                          <span className="font-semibold text-gray-900 pr-4">{faq.question}</span>
-                          {isOpen ? (
-                            <ChevronUp className="w-5 h-5 text-orange-600 flex-shrink-0" />
-                          ) : (
-                            <ChevronDown className="w-5 h-5 text-orange-600 flex-shrink-0" />
-                          )}
+                          <span className="font-semibold text-gray-900 pr-4 text-sm md:text-base">{faq.question}</span>
+                          <ChevronDown
+                            className={`w-5 h-5 text-red-600 flex-shrink-0 transition-transform duration-200 ${
+                              isOpen ? 'rotate-180' : ''
+                            }`}
+                          />
                         </button>
                         {isOpen && (
                           <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
-                            <p className="text-gray-600 leading-relaxed">{faq.answer}</p>
+                            {renderRichAnswer(faq.answer)}
                           </div>
                         )}
                       </div>
@@ -173,15 +333,15 @@ export default function FAQPage() {
             <div className="flex flex-wrap gap-4 justify-center">
               <Link
                 to="/contact"
-                className="bg-white text-orange-600 px-8 py-3 rounded-full font-semibold hover:bg-gray-50 transition-colors"
+                className="bg-white text-red-600 px-8 py-3 rounded-full font-semibold hover:bg-gray-50 transition-colors"
               >
                 Contact Us
               </Link>
               <a
-                href="tel:+441322879713"
-                className="border-2 border-white text-white px-8 py-3 rounded-full font-semibold hover:bg-white hover:text-orange-600 transition-colors"
+                href="tel:08000469806"
+                className="border-2 border-white text-white px-8 py-3 rounded-full font-semibold hover:bg-white hover:text-red-600 transition-colors"
               >
-                Call Us Now
+                Call 0800 046 9806
               </a>
             </div>
           </div>
