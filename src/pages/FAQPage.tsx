@@ -4,99 +4,12 @@ import { ChevronDown } from 'lucide-react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import SEO from '../components/SEO';
+import { renderRichAnswer } from '../utils/faqRenderer';
 
 interface FAQItem {
   question: string;
   answer: string;
   category: string;
-}
-
-function renderInlineLinks(text: string): React.ReactNode {
-  const combined = new RegExp(
-    `([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,})|(https?://[^\\s]+)|(\\b(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z]{2,}(?:\\/[^\\s.,)]*)?\\b)`,
-    'gi'
-  );
-
-  const parts: React.ReactNode[] = [];
-  let lastIndex = 0;
-  let matchIndex = 0;
-  let match: RegExpExecArray | null;
-
-  while ((match = combined.exec(text)) !== null) {
-    if (match.index > lastIndex) {
-      parts.push(text.slice(lastIndex, match.index));
-    }
-    const matched = match[0];
-    const isEmail = match[1];
-
-    if (isEmail) {
-      parts.push(
-        <a key={`link-${matchIndex++}`} href={`mailto:${matched}`} className="text-red-600 hover:text-red-700 underline font-medium">
-          {matched}
-        </a>
-      );
-    } else if (match[2]) {
-      parts.push(
-        <a key={`link-${matchIndex++}`} href={matched} target="_blank" rel="noopener noreferrer" className="text-red-600 hover:text-red-700 underline font-medium">
-          {matched}
-        </a>
-      );
-    } else {
-      const href = matched.startsWith('http') ? matched : `https://${matched}`;
-      parts.push(
-        <a key={`link-${matchIndex++}`} href={href} target="_blank" rel="noopener noreferrer" className="text-red-600 hover:text-red-700 underline font-medium">
-          {matched}
-        </a>
-      );
-    }
-    lastIndex = match.index + matched.length;
-  }
-  if (lastIndex < text.length) {
-    parts.push(text.slice(lastIndex));
-  }
-  return parts.length > 0 ? parts : text;
-}
-
-function renderRichAnswer(answer: string) {
-  const lines = answer.split('\n');
-  const blocks: React.ReactNode[] = [];
-  let listItems: string[] = [];
-  let key = 0;
-
-  const flushList = () => {
-    if (listItems.length === 0) return;
-    blocks.push(
-      <ul key={`ul-${key++}`} className="my-3 space-y-2 pl-1">
-        {listItems.map((item, i) => (
-          <li key={i} className="flex gap-2.5 text-gray-600 leading-relaxed">
-            <span className="text-red-500 font-bold mt-0.5 flex-shrink-0">•</span>
-            <span>{renderInlineLinks(item)}</span>
-          </li>
-        ))}
-      </ul>
-    );
-    listItems = [];
-  };
-
-  lines.forEach((line) => {
-    const trimmed = line.trim();
-    if (trimmed === '') {
-      flushList();
-      return;
-    }
-    if (trimmed.startsWith('• ')) {
-      listItems.push(trimmed.slice(2));
-    } else {
-      flushList();
-      blocks.push(
-        <p key={`p-${key++}`} className="text-gray-600 leading-relaxed mb-3 last:mb-0">
-          {renderInlineLinks(trimmed)}
-        </p>
-      );
-    }
-  });
-  flushList();
-  return blocks;
 }
 
 const faqs: FAQItem[] = [
@@ -315,7 +228,7 @@ export default function FAQPage() {
                         </button>
                         {isOpen && (
                           <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
-                            {renderRichAnswer(faq.answer)}
+                            {renderRichAnswer(faq.answer, false)}
                           </div>
                         )}
                       </div>
