@@ -94,7 +94,7 @@ export default function HomePage() {
           <div className="max-w-2xl">
             <p className="text-sm uppercase tracking-wider mb-4 text-red-400 font-semibold">London &amp; South East Specialist</p>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight text-white drop-shadow-lg">
-              Clinical Waste Compliance for London &amp; South East Practices – Switch Without Disruption
+              Clinical Waste Compliance for London &amp; South East Practices
             </h1>
             <p className="text-lg md:text-xl mb-6 text-gray-100 leading-relaxed drop-shadow">
               We help dental practices, GP surgeries, and veterinary clinics stay compliant with current clinical waste regulations. Registered waste carrier. Full documentation provided.
