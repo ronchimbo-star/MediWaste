@@ -76,66 +76,51 @@ export default function HomePage() {
       <Header />
 
       {/* ── HERO ── */}
-      <section className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white overflow-hidden min-h-[620px] flex items-center">
-        <div className="absolute inset-0 bg-gradient-to-r from-red-600/20 to-red-700/20"></div>
-        <div className="absolute inset-0 right-0 w-full md:w-1/2 md:ml-auto">
-          <div className="relative w-full h-full">
-            <img
-              src="/Medical-Waste-Hero.jpg"
-              alt="Clinical waste disposal containers and medical waste management services"
-              className="w-full h-full object-cover"
-              fetchPriority="high"
-              decoding="async"
-            />
-            <div className="absolute inset-0 bg-gradient-to-r from-gray-900 via-gray-900/60 to-transparent"></div>
-          </div>
+      <section className="relative text-white overflow-hidden min-h-[640px] flex items-center">
+        {/* Background image */}
+        <div className="absolute inset-0">
+          <img
+            src="/pexels-maksgelatin-5994628.jpg"
+            alt="Clinical waste disposal containers and medical waste management services"
+            className="w-full h-full object-cover"
+            fetchPriority="high"
+            decoding="async"
+          />
         </div>
+        {/* Dark overlay for legibility */}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/70 to-black/45"></div>
+        <div className="absolute inset-0 bg-black/20"></div>
 
-        <div className="container mx-auto px-4 py-14 md:py-20 relative z-10">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            <div>
-              <p className="text-sm uppercase tracking-wider mb-4 text-red-400 font-semibold">London &amp; South East Specialist</p>
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight text-white">
-                Clinical Waste Compliance for London &amp; South East Practices – Switch Without Disruption
-              </h1>
-              <p className="text-lg md:text-xl mb-6 text-gray-200 leading-relaxed">
-                We help dental practices, GP surgeries, and veterinary clinics stay compliant with current clinical waste regulations. Registered waste carrier. Full documentation provided.
-              </p>
-              <ul className="space-y-2 mb-8">
-                {[
-                  'Full waste segregation and documentation support',
-                  'Waste transfer notes issued within 48 hours of collection',
-                  'Collections typically start within 7 days',
-                ].map((item) => (
-                  <li key={item} className="flex items-center gap-2 text-gray-200 text-sm">
-                    <Check size={16} className="text-green-400 flex-shrink-0" />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-              <div className="flex flex-wrap gap-4">
-                <a
-                  href="#audit"
-                  className="bg-red-600 text-white px-8 py-3 rounded-full font-semibold hover:bg-red-700 hover:scale-105 transition-all inline-flex items-center gap-2 shadow-lg"
-                >
-                  Book Free Compliance Audit
-                </a>
-                <Link
-                  to="/quote"
-                  className="bg-white text-gray-900 px-8 py-3 rounded-full font-semibold hover:bg-gray-100 hover:scale-105 transition-all inline-flex items-center gap-2"
-                >
-                  Get a Quote
-                </Link>
-                <Link
-                  to="/audit"
-                  className="border-2 border-white text-white px-8 py-3 rounded-full font-semibold hover:bg-white hover:text-gray-900 hover:scale-105 transition-all inline-flex items-center gap-2"
-                >
-                  <ClipboardList size={16} />
-                  Waste Audit Tool
-                </Link>
-              </div>
+        <div className="container mx-auto px-4 py-16 md:py-24 relative z-10">
+          <div className="max-w-2xl">
+            <p className="text-sm uppercase tracking-wider mb-4 text-red-400 font-semibold">London &amp; South East Specialist</p>
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight text-white drop-shadow-lg">
+              Clinical Waste Compliance for London &amp; South East Practices – Switch Without Disruption
+            </h1>
+            <p className="text-lg md:text-xl mb-6 text-gray-100 leading-relaxed drop-shadow">
+              We help dental practices, GP surgeries, and veterinary clinics stay compliant with current clinical waste regulations. Registered waste carrier. Full documentation provided.
+            </p>
+            <ul className="space-y-2 mb-8">
+              {[
+                'Full waste segregation and documentation support',
+                'Waste transfer notes issued within 48 hours of collection',
+                'Collections typically start within 7 days',
+              ].map((item) => (
+                <li key={item} className="flex items-center gap-2 text-gray-100 text-sm md:text-base drop-shadow">
+                  <Check size={16} className="text-green-400 flex-shrink-0" />
+                  {item}
+                </li>
+              ))}
+            </ul>
+            <div className="flex flex-wrap gap-4">
+              <Link
+                to="/quote"
+                className="bg-red-600 text-white px-8 py-3 rounded-full font-semibold hover:bg-red-700 hover:scale-105 transition-all inline-flex items-center gap-2 shadow-lg"
+              >
+                Get a Quote
+                <ArrowRight size={18} />
+              </Link>
             </div>
-            <div className="hidden md:block"></div>
           </div>
         </div>
       </section>
