@@ -87,9 +87,8 @@ export default function HomePage() {
             decoding="async"
           />
         </div>
-        {/* Dark overlay for legibility */}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/70 to-black/45"></div>
-        <div className="absolute inset-0 bg-black/20"></div>
+        {/* Dark overlay for legibility — lighter so image is visible */}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-black/20"></div>
 
         <div className="container mx-auto px-4 py-16 md:py-24 relative z-10">
           <div className="max-w-2xl">
