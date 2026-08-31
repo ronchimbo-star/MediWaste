@@ -97,7 +97,7 @@ export default function HomePage() {
               Clinical Waste Compliance for London &amp; South East Practices
             </h1>
             <p className="text-lg md:text-xl mb-6 text-gray-100 leading-relaxed drop-shadow">
-              We help dental practices, GP surgeries, and veterinary clinics stay compliant with current clinical waste regulations. Registered waste carrier. Full documentation provided.
+              We help dental practices, GP surgeries, veterinary clinics, tattoo artists, beauty and aesthetics clinics stay compliant with current clinical waste regulations. Registered waste carrier. Full documentation provided.
             </p>
             <ul className="space-y-2 mb-8">
               {[
