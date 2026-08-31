@@ -238,7 +238,7 @@ export default function SeoPagesPage() {
                 ))}
               </select>
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <button
                 onClick={() => navigate('/admin/seo-pages/broken-links')}
                 className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-sm font-medium transition-colors"

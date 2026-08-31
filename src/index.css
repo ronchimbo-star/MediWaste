@@ -215,9 +215,17 @@ body {
 }
 
 /* ===== Admin Responsive Table System ===== */
-/* On mobile, transform wide admin tables into stacked card layouts */
+/* admin-table-wrap provides horizontal scrolling for wide tables on mobile */
+.admin-table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
 
-/* Target all overflow-x-auto wrappers in admin pages (existing pattern) */
+.admin-table {
+  min-width: 100%;
+}
+
+/* On mobile, ensure all admin tables can scroll horizontally */
 @media (max-width: 767px) {
   .overflow-x-auto {
     -webkit-overflow-scrolling: touch;
@@ -235,10 +243,21 @@ body {
   /* Reduce table cell padding on mobile for all admin tables */
   table thead th {
     @apply px-3 py-2 text-xs;
+    white-space: nowrap;
   }
 
   table tbody td {
     @apply px-3 py-2 text-sm;
+    white-space: nowrap;
+  }
+
+  /* Allow action button columns to wrap */
+  table tbody td:last-child {
+    white-space: normal;
+  }
+
+  table tbody td:last-child > div {
+    @apply flex-wrap;
   }
 
   /* Hide less critical columns on mobile (add 'col-hide-mobile' class to th and td) */

@@ -109,7 +109,7 @@ export default function NewsManagementPage() {
 
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h2 className="text-3xl font-bold text-gray-900">News Management</h2>
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900">News Management</h2>
             <p className="text-gray-600 mt-2">Create, edit, and publish news articles</p>
           </div>
           <Link
@@ -166,7 +166,7 @@ export default function NewsManagementPage() {
 
         <div className="bg-white rounded-lg shadow-sm border border-gray-200">
           <div className="p-6 border-b border-gray-200">
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <button
                 onClick={() => setFilter('all')}
                 className={`px-4 py-2 rounded-lg font-medium transition-colors ${

@@ -76,7 +76,7 @@ export default function HomePage() {
       <Header />
 
       {/* ── HERO ── */}
-      <section className="relative text-white overflow-hidden min-h-[640px] flex items-center">
+      <section className="relative text-white overflow-hidden min-h-[560px] md:min-h-[640px] flex items-center">
         {/* Background image */}
         <div className="absolute inset-0">
           <img

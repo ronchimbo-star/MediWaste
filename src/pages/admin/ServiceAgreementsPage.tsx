@@ -179,7 +179,7 @@ export default function ServiceAgreementsPage() {
         <div className="mb-8">
           <div className="flex justify-between items-start mb-6">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Service Agreements</h1>
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Service Agreements</h1>
               <p className="text-gray-600">Manage and track service agreements</p>
             </div>
             <Link
@@ -388,7 +388,7 @@ export default function ServiceAgreementsPage() {
             <p className="text-gray-600 mb-6">
               Are you sure you want to delete this service agreement? This action cannot be undone.
             </p>
-            <div className="flex gap-3">
+            <div className="flex flex-wrap gap-3">
               <button
                 onClick={() => {
                   setShowDeleteModal(false);

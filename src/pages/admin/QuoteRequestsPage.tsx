@@ -125,16 +125,16 @@ export default function QuoteRequestsPage() {
   return (
     <AdminLayout pageTitle="Quote Requests" breadcrumbs={[{ label: 'Dashboard', path: '/admin' }, { label: 'Quote Requests' }]}>
       <div className="container mx-auto px-4 py-8">
-        <div className="flex justify-between items-center mb-8">
-          <h2 className="text-3xl font-bold text-gray-900">Quote Requests</h2>
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-900">Quote Requests</h2>
         </div>
 
-        <div className="flex gap-2 mb-6">
+        <div className="flex flex-wrap gap-2 mb-6">
           {(['all', 'pending', 'read', 'draft_created', 'actioned', 'archived'] as const).map((status) => (
             <button
               key={status}
               onClick={() => setFilterStatus(status)}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
                 filterStatus === status
                   ? 'bg-orange-500 text-white'
                   : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'

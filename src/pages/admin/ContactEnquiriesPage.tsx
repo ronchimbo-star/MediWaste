@@ -76,10 +76,10 @@ export default function ContactEnquiriesPage() {
     <AdminLayout pageTitle="Contact Enquiries" breadcrumbs={[{ label: 'Dashboard', path: '/admin' }, { label: 'Contact Enquiries' }]}>
       <div className="container mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-8">
-          <h2 className="text-3xl font-bold text-gray-900">Contact Enquiries</h2>
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-900">Contact Enquiries</h2>
         </div>
 
-        <div className="flex gap-2 mb-6">
+        <div className="flex flex-wrap gap-2 mb-6">
           {(['all', 'pending', 'read', 'actioned', 'archived'] as const).map((status) => (
             <button
               key={status}
@@ -279,7 +279,7 @@ export default function ContactEnquiriesPage() {
                 )}
               </div>
 
-              <div className="flex gap-3 justify-end">
+              <div className="flex flex-wrap gap-3 justify-end">
                 {selectedEnquiry.status === 'pending' && (
                   <button
                     onClick={() => {

@@ -224,7 +224,7 @@ export default function MailingListsPage() {
           </button>
         </div>
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Mailing Lists</h1>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Mailing Lists</h1>
           <p className="text-gray-500 mt-1">Manage and export targeted customer lists for communications</p>
         </div>
 
