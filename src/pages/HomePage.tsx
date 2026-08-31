@@ -80,7 +80,7 @@ export default function HomePage() {
         {/* Background image */}
         <div className="absolute inset-0">
           <img
-            src="/mediwaste-clinical-waste-disposal.jpg"
+            src="/mediwaste-clinical-waste.jpg"
             alt="Clinical waste disposal containers and medical waste management services"
             className="w-full h-full object-cover"
             fetchPriority="high"
