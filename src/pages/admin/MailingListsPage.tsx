@@ -277,8 +277,10 @@ export default function MailingListsPage() {
             <div className="p-12 text-center">
               <p className="text-gray-500">No records found for this list.</p>
             </div>
-          ) : activeList === 'payment_due' ? (
-            <table className="w-full">
+          ) : (
+          <div className="admin-table-wrap">
+          {activeList === 'payment_due' ? (
+            <table className="w-full admin-table">
               <thead className="bg-gray-50 border-b border-gray-100">
                 <tr>
                   {['Company', 'Contact', 'Email', 'Invoice', 'Amount Due', 'Due Date', 'Status'].map(h => (
@@ -305,7 +307,7 @@ export default function MailingListsPage() {
               </tbody>
             </table>
           ) : activeList === 'service_due' ? (
-            <table className="w-full">
+            <table className="w-full admin-table">
               <thead className="bg-gray-50 border-b border-gray-100">
                 <tr>
                   {['Company', 'Contact', 'Email', 'Service', 'Frequency', 'Next Service'].map(h => (
@@ -327,7 +329,7 @@ export default function MailingListsPage() {
               </tbody>
             </table>
           ) : (
-            <table className="w-full">
+            <table className="w-full admin-table">
               <thead className="bg-gray-50 border-b border-gray-100">
                 <tr>
                   {['Customer No.', 'Company / Contact', 'Email', 'Phone', 'Status', 'Since'].map(h => (
@@ -355,6 +357,8 @@ export default function MailingListsPage() {
                 ))}
               </tbody>
             </table>
+          )}
+          </div>
           )}
         </div>
       </div>

@@ -111,7 +111,8 @@ export default function StaffManagementPage() {
         <div className="text-center py-12"><div className="inline-block w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin" /></div>
       ) : (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-          <table className="w-full">
+          <div className="admin-table-wrap">
+          <table className="w-full admin-table">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
                 {['Staff #', 'Name', 'Email', 'Phone', 'Role', 'Status', 'Actions'].map(h => (
@@ -142,6 +143,7 @@ export default function StaffManagementPage() {
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       )}
       </div>

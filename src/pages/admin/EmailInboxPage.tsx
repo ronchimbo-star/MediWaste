@@ -287,8 +287,9 @@ export default function EmailInboxPage() {
           />
         )}
 
-        <div className="flex gap-6 h-[calc(100vh-200px)]">
-          <div className="w-96 flex flex-col bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 h-auto lg:h-[calc(100vh-200px)]">
+          {/* Email list panel - full width on mobile, fixed width on desktop */}
+          <div className={`flex flex-col bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden ${selectedEmail ? 'hidden lg:flex' : 'flex'} lg:w-96 w-full max-h-[50vh] lg:max-h-none`}>
             <div className="p-3 border-b border-gray-100">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -391,7 +392,7 @@ export default function EmailInboxPage() {
             </div>
           </div>
 
-          <div className="flex-1 bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex flex-col">
+          <div className={`flex-1 bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex flex-col ${selectedEmail ? 'flex' : 'hidden lg:flex'}`}>
             {selectedEmail ? (
               <EmailDetail
                 email={selectedEmail}

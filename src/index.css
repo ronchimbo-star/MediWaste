@@ -213,3 +213,105 @@ body {
 .article-content figcaption {
   @apply text-sm text-gray-600 mt-2 text-center italic;
 }
+
+/* ===== Admin Responsive Table System ===== */
+/* On mobile, transform wide admin tables into stacked card layouts */
+
+/* Target all overflow-x-auto wrappers in admin pages (existing pattern) */
+@media (max-width: 767px) {
+  .overflow-x-auto {
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+
+  .overflow-x-auto::-webkit-scrollbar {
+    height: 4px;
+  }
+
+  .overflow-x-auto::-webkit-scrollbar-thumb {
+    @apply bg-gray-300 rounded-full;
+  }
+
+  /* Reduce table cell padding on mobile for all admin tables */
+  table thead th {
+    @apply px-3 py-2 text-xs;
+  }
+
+  table tbody td {
+    @apply px-3 py-2 text-sm;
+  }
+
+  /* Hide less critical columns on mobile (add 'col-hide-mobile' class to th and td) */
+  .col-hide-mobile {
+    display: none;
+  }
+}
+
+/* Admin page responsive padding */
+@media (max-width: 767px) {
+  .admin-page {
+    @apply p-3;
+  }
+
+  .admin-page h1 {
+    @apply text-lg;
+  }
+
+  .admin-page .admin-subtitle {
+    @apply text-sm;
+  }
+
+  /* Stack filter bars vertically on mobile */
+  .admin-filters {
+    @apply flex-col gap-3;
+  }
+
+  /* Make stat cards 2-column on mobile */
+  .admin-stats {
+    @apply grid-cols-2 gap-2;
+  }
+
+  .admin-stats > div {
+    @apply p-3;
+  }
+
+  .admin-stats .stat-value {
+    @apply text-xl;
+  }
+
+  .admin-stats .stat-label {
+    @apply text-xs;
+  }
+
+  /* Full-width buttons on mobile */
+  .admin-btn-row {
+    @apply flex-col gap-2;
+  }
+
+  .admin-btn-row > button,
+  .admin-btn-row > a {
+    @apply w-full justify-center;
+  }
+}
+
+/* Modal responsive */
+@media (max-width: 767px) {
+  .admin-modal-content {
+    @apply m-0 w-full h-full max-h-full rounded-none;
+  }
+
+  .admin-modal-body {
+    @apply p-4 max-h-[calc(100vh-120px)];
+  }
+
+  .admin-modal-form-grid {
+    @apply grid-cols-1;
+  }
+}
+
+/* Form responsive */
+@media (max-width: 767px) {
+  .admin-form-grid {
+    @apply grid-cols-1;
+  }
+}

@@ -155,7 +155,8 @@ export default function WasteCarriersPage() {
           </div>
         ) : (
           <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-            <table className="w-full">
+            <div className="admin-table-wrap">
+            <table className="w-full admin-table">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Name</th>
@@ -201,6 +202,7 @@ export default function WasteCarriersPage() {
                 ))}
               </tbody>
             </table>
+            </div>
           </div>
         )}
       </div>

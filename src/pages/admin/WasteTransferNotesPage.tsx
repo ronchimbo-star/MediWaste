@@ -507,7 +507,8 @@ export default function WasteTransferNotesPage() {
           </div>
         ) : (
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-            <table className="w-full">
+            <div className="admin-table-wrap">
+            <table className="w-full admin-table">
               <thead className="bg-gray-50 border-b">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">WTN #</th>
@@ -564,6 +565,7 @@ export default function WasteTransferNotesPage() {
                 ))}
               </tbody>
             </table>
+            </div>
           </div>
         )}
       </div>

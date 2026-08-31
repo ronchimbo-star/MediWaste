@@ -269,7 +269,7 @@ export default function AdminLayout({ children, pageTitle, breadcrumbs }: AdminL
       )}
 
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <header className="flex items-center gap-3 px-4 py-3 bg-white border-b border-gray-200 flex-shrink-0">
+        <header className="flex items-center gap-3 px-3 sm:px-4 py-3 bg-white border-b border-gray-200 flex-shrink-0 sticky top-0 z-30">
           <button
             onClick={() => setMobileOpen(true)}
             className="lg:hidden text-gray-500 hover:text-gray-700 p-1"
@@ -299,7 +299,7 @@ export default function AdminLayout({ children, pageTitle, breadcrumbs }: AdminL
           </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto">
+        <main className="flex-1 overflow-y-auto overscroll-contain">
           {children}
         </main>
       </div>
