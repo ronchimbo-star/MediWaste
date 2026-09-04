@@ -1,0 +1,47 @@
+[functions.sync-gmail]
+verify_jwt = false
+
+[functions.send-contact-email]
+verify_jwt = false
+
+[functions.send-quote-email]
+verify_jwt = false
+
+[functions.send-collection-email]
+verify_jwt = false
+
+[functions.send-service-agreement-email]
+verify_jwt = false
+
+[functions.trigger-quote-agent]
+verify_jwt = false
+
+[functions.update-quote-status]
+verify_jwt = false
+
+[functions.upload-article-content]
+verify_jwt = false
+
+[functions.generate-seo-content]
+verify_jwt = true
+
+[functions.import-seo-csv]
+verify_jwt = true
+
+[functions.seo-sitemap]
+verify_jwt = false
+
+[functions.check-broken-links]
+verify_jwt = true
+
+[functions.fix-seo-issues]
+verify_jwt = true
+
+[functions.generate-audit-report]
+verify_jwt = false
+
+[functions.send-audit-email]
+verify_jwt = false
+
+[functions.daily-email-briefing]
+verify_jwt = false

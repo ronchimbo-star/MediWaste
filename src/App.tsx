@@ -56,6 +56,7 @@ const CustomerDashboard = lazy(() => import('./pages/customer/CustomerDashboard'
 const ServiceAgreementsPage = lazy(() => import('./pages/admin/ServiceAgreementsPage'));
 const ServiceAgreementEditPage = lazy(() => import('./pages/admin/ServiceAgreementEditPage'));
 const EmailInboxPage = lazy(() => import('./pages/admin/EmailInboxPage'));
+const AiBriefingPage = lazy(() => import('./pages/admin/AiBriefingPage'));
 const CertificatesPage = lazy(() => import('./pages/admin/CertificatesPage'));
 const CertificateEditPage = lazy(() => import('./pages/admin/CertificateEditPage'));
 const CertificatePreviewPage = lazy(() => import('./pages/admin/CertificatePreviewPage'));
@@ -206,6 +207,7 @@ function App() {
           <Route path="/admin/service-agreements/create" element={<ProtectedRoute><ServiceAgreementEditPage /></ProtectedRoute>} />
           <Route path="/admin/service-agreements/edit/:id" element={<ProtectedRoute><ServiceAgreementEditPage /></ProtectedRoute>} />
           <Route path="/admin/email-inbox" element={<ProtectedRoute><EmailInboxPage /></ProtectedRoute>} />
+          <Route path="/admin/ai-briefing" element={<ProtectedRoute><AiBriefingPage /></ProtectedRoute>} />
           <Route path="/admin/certificates" element={<ProtectedRoute><CertificatesPage /></ProtectedRoute>} />
           <Route path="/admin/certificates/create" element={<ProtectedRoute><CertificateEditPage /></ProtectedRoute>} />
           <Route path="/admin/certificates/:id/edit" element={<ProtectedRoute><CertificateEditPage /></ProtectedRoute>} />
