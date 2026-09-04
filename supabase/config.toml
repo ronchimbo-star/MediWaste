@@ -45,3 +45,9 @@ verify_jwt = false
 
 [functions.daily-email-briefing]
 verify_jwt = false
+
+[functions.draft-quote-reply]
+verify_jwt = false
+
+[functions.draft-customer-setup]
+verify_jwt = false

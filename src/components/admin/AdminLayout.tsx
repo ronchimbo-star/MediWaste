@@ -6,6 +6,7 @@ import FloatingActionWidget from './FloatingActionWidget';
 import {
   LayoutDashboard,
   Users,
+  UserPlus,
   FileText,
   Briefcase,
   Receipt,
@@ -149,6 +150,8 @@ export default function AdminLayout({ children, pageTitle, breadcrumbs }: AdminL
       items: [
         { label: 'Email Inbox', path: '/admin/email-inbox', icon: <Mail size={18} />, badge: unreadEmails },
         { label: 'AI Daily Briefing', path: '/admin/ai-briefing', icon: <Sparkles size={18} /> },
+        { label: 'AI Quote Drafts', path: '/admin/ai-quote-drafts', icon: <FileText size={18} /> },
+        { label: 'AI Customer Setup', path: '/admin/ai-customer-setup', icon: <UserPlus size={18} /> },
         { label: 'Contact Enquiries', path: '/admin/contact-enquiries', icon: <Bell size={18} />, badge: pendingEnquiries },
         { label: 'Mailing Lists', path: '/admin/mailing-lists', icon: <UserCheck size={18} /> },
         { label: 'Subscriptions', path: '/admin/subscriptions', icon: <Newspaper size={18} /> },
