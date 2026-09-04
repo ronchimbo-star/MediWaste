@@ -26,17 +26,17 @@ Deno.serve(async (req: Request) => {
     if (emailId) {
       const { data, error } = await supabase
         .from("mw_emails")
-        .select("id, from_email, from_name, subject, body_plain, customer_id, customer:mw_customers(company_name, contact_name)")
+        .select("id, from_email, from_name, subject, body_plain, customer_id, customer:mw_customers(id, company_name, contact_name, email, postcode)")
         .eq("id", emailId)
         .maybeSingle();
       if (error) throw new Error(`Failed to fetch email: ${error.message}`);
       emailData = data;
     } else {
       const fortyEightHoursAgo = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
-      const CONFIRM_KEYWORDS = ["confirm", "confirmed", "accept", "accepted", "go ahead", "proceed", "sign up", "happy to", "sounds good", "let's do it", "agreed"];
+      const CONFIRM_KEYWORDS = ["confirm", "confirmed", "accept", "accepted", "go ahead", "proceed", "sign up", "happy to", "sounds good", "let's do it", "agreed", "onboard", "onboarding"];
       const { data: recentEmails, error } = await supabase
         .from("mw_emails")
-        .select("id, from_email, from_name, subject, body_plain, customer_id, customer:mw_customers(company_name, contact_name)")
+        .select("id, from_email, from_name, subject, body_plain, customer_id, customer:mw_customers(id, company_name, contact_name, email, postcode)")
         .eq("direction", "inbound")
         .gte("received_at", fortyEightHoursAgo)
         .order("received_at", { ascending: false })
@@ -68,12 +68,18 @@ Deno.serve(async (req: Request) => {
     const openaiKey = Deno.env.get("OPENAI_API_KEY");
     if (!openaiKey) throw new Error("OPENAI_API_KEY is not configured");
 
-    const prompt = `You are my MediWaste admin assistant. A client has confirmed they want to proceed with our services. Extract their details from this email and draft a Waste Management Certificate and an invoice request email.
+    const linkedCustomer = emailData.customer;
+    const linkedCustomerId = emailData.customer_id;
+    const linkedCustomerInfo = linkedCustomer
+      ? `Already linked to customer: ${linkedCustomer.company_name || linkedCustomer.contact_name} (ID: ${linkedCustomer.id}, Email: ${linkedCustomer.email || 'N/A'}, Postcode: ${linkedCustomer.postcode || 'N/A'})`
+      : "Not linked to any existing customer.";
+
+    const prompt = `You are my MediWaste admin assistant. A client has confirmed they want to proceed with our services. Extract their details from this email and draft a Waste Management Certificate and an itemised invoice for ANNA Bank.
 
 Email from: ${emailData.from_name || emailData.from_email}
 Subject: ${emailData.subject}
 Body: ${emailData.body_plain?.slice(0, 2000) || "No body"}
-Linked customer: ${emailData.customer?.company_name || emailData.customer?.contact_name || "Not linked"}
+${linkedCustomerInfo}
 
 Extract:
 - Client name
@@ -81,7 +87,7 @@ Extract:
 - Address (if available)
 - Postcode (if available)
 - Plan type (e.g., Monthly, Pay-as-you-go, Flexi)
-- Start date (if mentioned, otherwise leave blank)
+- Start date (if mentioned, otherwise leave null)
 - Waste streams covered (e.g., Sharps, Clinical, Pharmaceutical)
 
 Then draft:
@@ -92,9 +98,24 @@ Then draft:
    - QR code link placeholder: [QR CODE PLACEHOLDER]
    - Format as plain text
 
-2. An invoice request email to Accounts:
-   - Subject: "Invoice Request — [Business Name]"
-   - Body: Client details and plan summary for the accounts team to raise an invoice
+2. An itemised invoice for ANNA Bank (this will be copy-pasted into ANNA's invoice form). Format as plain text with:
+   - Customer name and business
+   - Billing address
+   - Itemised list of services with:
+     * Description (e.g., "Sharps bin collection — monthly", "Clinical waste bin rental", "Pharmaceutical waste disposal")
+     * Quantity
+     * Unit price (excl VAT)
+     * Line total (excl VAT)
+   - Subtotal (excl VAT)
+   - VAT at 20%
+   - Total (incl VAT)
+   Use realistic MediWaste pricing:
+   - Sharps bin collection (per visit): £15-25 depending on volume
+   - Clinical waste bin collection (per visit): £18-30
+   - Bin rental (annual): £45-85 per bin
+   - Pharmaceutical waste disposal (per visit): £20-35
+   - Documentation & compliance fee (annual): £50
+   Adjust based on frequency and volume mentioned in the email.
 
 Return your response as JSON:
 {
@@ -106,7 +127,7 @@ Return your response as JSON:
   "start_date": "YYYY-MM-DD or null",
   "waste_streams": ["Sharps", "Clinical"],
   "certificate_draft": "full certificate text",
-  "invoice_email_draft": "full invoice email text"
+  "invoice_draft": "full itemised invoice text for ANNA Bank"
 }`;
 
     const openaiResp = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -122,7 +143,7 @@ Return your response as JSON:
           { role: "user", content: prompt },
         ],
         temperature: 0.4,
-        max_tokens: 2500,
+        max_tokens: 3000,
         response_format: { type: "json_object" },
       }),
     });
@@ -140,14 +161,14 @@ Return your response as JSON:
     } catch {
       parsed = {
         client_name: emailData.from_name || "",
-        business_name: emailData.customer?.company_name || "",
+        business_name: linkedCustomer?.company_name || "",
         address: "",
-        postcode: "",
+        postcode: linkedCustomer?.postcode || "",
         plan_type: "",
         start_date: null,
         waste_streams: [],
         certificate_draft: content,
-        invoice_email_draft: "",
+        invoice_draft: "",
       };
     }
 
@@ -163,7 +184,7 @@ Return your response as JSON:
         start_date: parsed.start_date || null,
         waste_streams: parsed.waste_streams || [],
         certificate_draft: parsed.certificate_draft || "",
-        invoice_email_draft: parsed.invoice_email_draft || "",
+        invoice_email_draft: parsed.invoice_draft || "",
         status: "pending",
       }])
       .select()
@@ -172,7 +193,11 @@ Return your response as JSON:
     if (insertError) throw new Error(`Failed to save draft: ${insertError.message}`);
 
     return new Response(
-      JSON.stringify({ success: true, draft }),
+      JSON.stringify({
+        success: true,
+        draft,
+        linkedCustomerId: linkedCustomerId || null,
+      }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (err: any) {
