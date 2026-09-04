@@ -113,6 +113,19 @@ Include:
 - What's included (bins, documentation, compliance)
 - A clear call to action
 
+Use actual MediWaste pricing (all excl VAT):
+- Sharps bin (1L): £7.00 each
+- Sharps bin (5L): £12.00 each
+- Sharps bin (7L): £15.00 each
+- Clinical waste bin (per bin): £10.00-£15.00 depending on size
+- Collection per visit (1 bin): £76.00
+- Collection per visit (2 bins same day): £148.15
+- 12-month bin rental: £102.00-£432.00 depending on bin type and quantity
+- Pharmaceutical waste disposal (per visit): £43.00
+- Documentation & compliance fee (annual): £43.00
+- Additional line items typically range £20-£100
+Adjust quantities and totals based on frequency and volume mentioned in the email.
+
 Do not send the email – just draft it and return it to me for review.
 
 Return your response as JSON with this structure:
