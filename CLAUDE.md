@@ -114,3 +114,52 @@ The `article-content` class supports these styled boxes:
 - `.note-box` — yellow background, for notes
 - `.highlight-box` — purple background, for highlights
 - `.cta-box` — red gradient, for in-content CTAs (avoid using — template CTA is preferred)
+
+## SEO Audit Fix Process
+
+When an SEO or AI content audit reveals issues, follow this process:
+
+### 1. Identify the Issue Type
+
+- **Duplicate title / meta description / content / canonical mismatch on news pages**: The prerender script (`scripts/prerender.mjs`) failed to fetch articles from Supabase, so Netlify served the homepage `index.html` as a fallback. Check if `dist/news/` and `dist/c/` directories exist after a build.
+- **Missing or truncated meta descriptions on news articles**: The `seo_title` and `seo_description` columns in `news_articles` are NULL. The prerender script falls back to `title` and `excerpt`, which may be too long.
+- **Static page meta descriptions too long/short**: The hardcoded descriptions in `STATIC_ROUTES` within `scripts/prerender.mjs` exceed or fall short of the 150-160 character ideal.
+
+### 2. Fix News Article SEO Fields
+
+Run a migration to populate `seo_title` (max 60 chars) and `seo_description` (max 160 chars) for all published articles where these fields are NULL:
+
+```sql
+UPDATE news_articles SET
+  seo_title = CASE WHEN slug = 'example-slug' THEN 'Concise Title | MediWaste' ... END,
+  seo_description = CASE WHEN slug = 'example-slug' THEN 'Short description under 160 chars.' ... END
+WHERE status = 'published'
+  AND (seo_title IS NULL OR seo_title = '')
+  AND (seo_description IS NULL OR seo_description = '');
+```
+
+### 3. Fix Static Page Meta Descriptions
+
+Edit the `description` field in the `STATIC_ROUTES` array in `scripts/prerender.mjs`. Keep descriptions between 150-160 characters. Include a call to action and relevant keywords.
+
+### 4. Verify Prerender Script Fails Loudly
+
+The prerender script's Supabase fetch blocks use `try/catch`. Previously these caught errors silently with `console.warn`, allowing the build to succeed without generating dynamic pages. Now they use `console.error` and `process.exit(1)` to fail the build if Supabase is unreachable. Do NOT revert these to silent warnings.
+
+### 5. Build and Verify
+
+Run `npm run build` and check:
+- `dist/news/` directory contains subdirectories for each published article
+- `dist/c/` directory contains subdirectories for each published SEO page
+- Open a prerendered HTML file and confirm `<title>`, `<meta name="description">`, and `<link rel="canonical">` contain article-specific values, not the homepage's
+
+### 6. Common Audit Issues and Fixes
+
+| Issue | Cause | Fix |
+|-------|-------|-----|
+| Duplicate title on news pages | Prerender failed, Netlify served homepage | Check Supabase connectivity, verify `dist/news/` exists |
+| Canonical mismatch on news pages | Same as above — homepage canonical served | Same as above |
+| Truncated meta description | `seo_description` NULL, falls back to long excerpt | Populate `seo_description` in database |
+| Meta description too long/short | Hardcoded description in `STATIC_ROUTES` | Edit `scripts/prerender.mjs` |
+| Duplicate content hash | All news pages served homepage HTML | Fix prerender Supabase fetch |
+| Lack of keyword diversity in headings | Content quality issue in article body | Update article content in database |

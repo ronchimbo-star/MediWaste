@@ -35,9 +35,9 @@ export default function NewsEditPage() {
     featured_image: '',
     featured_image_alt: '',
     featured_image_caption: '',
-    meta_title: '',
-    meta_description: '',
-    meta_keywords: '',
+    seo_title: '',
+    seo_description: '',
+    seo_keywords: '',
     keywords: [] as string[],
     tags: [] as string[],
   });
@@ -84,9 +84,9 @@ export default function NewsEditPage() {
         featured_image: article.featured_image || '',
         featured_image_alt: article.featured_image_alt || '',
         featured_image_caption: article.featured_image_caption || '',
-        meta_title: article.meta_title || '',
-        meta_description: article.meta_description || '',
-        meta_keywords: article.meta_keywords || '',
+        seo_title: article.seo_title || article.meta_title || '',
+        seo_description: article.seo_description || article.meta_description || '',
+        seo_keywords: Array.isArray(article.seo_keywords) ? article.seo_keywords.join(', ') : (article.seo_keywords || article.meta_keywords || ''),
         keywords: article.keywords || [],
         tags: article.tags || [],
       });
@@ -132,8 +132,14 @@ export default function NewsEditPage() {
     setSaving(true);
 
     try {
+      const seoKeywordsArray = formData.seo_keywords
+        .split(',')
+        .map(k => k.trim())
+        .filter(k => k.length > 0);
+
       const articleData: Record<string, any> = {
         ...formData,
+        seo_keywords: seoKeywordsArray,
         status: publishNow ? 'published' : formData.status,
         updated_at: new Date().toISOString(),
       };
@@ -514,30 +520,36 @@ export default function NewsEditPage() {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">Meta Title</label>
+                  <p className="text-xs text-gray-500 mb-2">Maximum 60 characters. This appears as the clickable title in search results.</p>
                   <input
                     type="text"
-                    value={formData.meta_title}
-                    onChange={(e) => setFormData(prev => ({ ...prev, meta_title: e.target.value }))}
+                    value={formData.seo_title}
+                    maxLength={60}
+                    onChange={(e) => setFormData(prev => ({ ...prev, seo_title: e.target.value }))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
                     placeholder="SEO title"
                   />
+                  <p className="text-xs text-gray-400 mt-1">{formData.seo_title.length}/60 characters</p>
                 </div>
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">Meta Description</label>
+                  <p className="text-xs text-gray-500 mb-2">Maximum 160 characters. This appears as the summary text under your title in search results.</p>
                   <textarea
-                    value={formData.meta_description}
-                    onChange={(e) => setFormData(prev => ({ ...prev, meta_description: e.target.value }))}
+                    value={formData.seo_description}
+                    maxLength={160}
+                    onChange={(e) => setFormData(prev => ({ ...prev, seo_description: e.target.value }))}
                     rows={3}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
                     placeholder="SEO description"
                   />
+                  <p className="text-xs text-gray-400 mt-1">{formData.seo_description.length}/160 characters</p>
                 </div>
                 <div>
                   <label className="block text-sm text-gray-700 mb-1">Meta Keywords</label>
                   <input
                     type="text"
-                    value={formData.meta_keywords}
-                    onChange={(e) => setFormData(prev => ({ ...prev, meta_keywords: e.target.value }))}
+                    value={formData.seo_keywords}
+                    onChange={(e) => setFormData(prev => ({ ...prev, seo_keywords: e.target.value }))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
                     placeholder="keyword1, keyword2, keyword3"
                   />

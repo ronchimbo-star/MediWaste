@@ -321,7 +321,7 @@ ${EXTERNAL_LINKS}
   {
     path: '/about',
     title: 'About MediWaste | Professional Medical Waste Services',
-    description: "MediWaste provides licensed clinical waste disposal for GP surgeries, dental practices, care homes and aesthetic clinics. Environment Agency registered. Free quote.",
+    description: 'Licensed clinical waste disposal for GP surgeries, dental practices, care homes and aesthetic clinics. Environment Agency registered. Get a free quote.',
     keywords: 'about mediwaste, clinical waste company, medical waste services UK, licensed waste carrier',
     canonical: `${BASE_URL}/about`,
     h1: 'About MediWaste',
@@ -995,7 +995,7 @@ ${EXTERNAL_LINKS}
   {
     path: '/compliance',
     title: 'Clinical Waste Compliance & Regulations | MediWaste',
-    description: 'Clinical waste compliance and Duty of Care guidance for UK healthcare providers. Waste transfer notes, consignment notes and certificates provided within 48 hours. Free quote — call 0800 046 9806.',
+    description: 'Clinical waste compliance and Duty of Care guidance for UK healthcare providers. Waste transfer notes and consignment notes within 48 hours. Call 0800 046 9806.',
     keywords: 'clinical waste compliance, duty of care waste, hazardous waste regulations, waste transfer notes',
     canonical: `${BASE_URL}/compliance`,
     h1: 'Clinical Waste Compliance',
@@ -1102,7 +1102,7 @@ ${EXTERNAL_LINKS}
   {
     path: '/audit',
     title: 'Free Clinical Waste Audit Tool | Compliance | MediWaste',
-    description: 'Free clinical waste audit tool for UK healthcare providers. Answer 15 questions and get an AI-generated compliance report with risk scores and a prioritised action plan. No obligation — call 0800 046 9806.',
+    description: 'Free clinical waste audit tool for UK healthcare providers. Answer 15 questions, get an AI compliance report with risk scores and action plan. Call 0800 046 9806.',
     keywords: 'clinical waste audit, waste compliance audit, healthcare waste assessment, CQC inspection preparation',
     canonical: `${BASE_URL}/audit`,
     h1: 'Free Clinical Waste Audit Tool',
@@ -1173,7 +1173,7 @@ ${EXTERNAL_LINKS}
   {
     path: '/directory-listings',
     title: 'Clinical Waste Business Directory & Listings | MediWaste',
-    description: 'Directory of healthcare businesses and clinical waste service providers across the UK. Find GP surgeries, dental practices, care homes and aesthetic clinics. Free to list for MediWaste clients.',
+    description: 'Directory of healthcare businesses and clinical waste service providers across the UK. Find GP surgeries, dental practices and care homes. Free to list.',
     keywords: 'clinical waste directory, healthcare waste providers, medical waste business listings UK',
     canonical: `${BASE_URL}/directory-listings`,
     h1: 'Clinical Waste Business Directory',
@@ -1239,7 +1239,7 @@ ${EXTERNAL_LINKS}
   {
     path: '/terms',
     title: 'Terms of Service | Clinical Waste Disposal | MediWaste',
-    description: 'Terms and conditions for MediWaste clinical waste disposal services. Service agreements, client responsibilities, cancellation, pricing and payment terms for healthcare waste management.',
+    description: 'Terms and conditions for MediWaste clinical waste disposal. Service agreements, client responsibilities, cancellation, pricing and payment terms.',
     canonical: `${BASE_URL}/terms`,
     h1: 'Terms of Service',
     schema: LOCAL_BUSINESS_SCHEMA,
@@ -1290,7 +1290,7 @@ ${EXTERNAL_LINKS}
   {
     path: '/privacy',
     title: 'Privacy Policy | UK GDPR Data Protection | MediWaste',
-    description: 'Privacy policy for MediWaste clinical waste services. How we collect, use and protect your personal data under UK GDPR and the Data Protection Act 2018. Your rights and data retention periods.',
+    description: 'Privacy policy for MediWaste. How we collect, use and protect your personal data under UK GDPR and the Data Protection Act 2018. Your rights and retention.',
     keywords: 'mediwaste privacy policy, UK GDPR, data protection clinical waste',
     canonical: `${BASE_URL}/privacy`,
     h1: 'Privacy Policy',
@@ -1347,7 +1347,7 @@ ${EXTERNAL_LINKS}
   {
     path: '/cookies',
     title: 'Cookie Policy | Website Cookies | MediWaste',
-    description: 'Cookie policy for MediWaste clinical waste website. Learn about the types of cookies we use, how to manage cookie consent and your privacy options under UK GDPR.',
+    description: 'Cookie policy for MediWaste. Types of cookies used, how to manage consent and your privacy options under UK GDPR.',
     canonical: `${BASE_URL}/cookies`,
     h1: 'Cookie Policy',
     content: `
@@ -1617,7 +1617,9 @@ async function main() {
       }));
     }
   } catch (err) {
-    console.warn(`[prerender]   ⚠ SEO pages fetch failed: ${err.message}`);
+    console.error(`[prerender]   ✖ SEO pages fetch failed: ${err.message}`);
+    console.error('[prerender]   Dynamic SEO pages will NOT be generated. Fix Supabase connectivity before deploying.');
+    process.exit(1);
   }
 
   // ── News articles (/news/:slug) ────────────────────────────────────────────
@@ -1674,7 +1676,9 @@ async function main() {
       count++;
     }
   } catch (err) {
-    console.warn(`[prerender]   ⚠ News articles fetch failed: ${err.message}`);
+    console.error(`[prerender]   ✖ News articles fetch failed: ${err.message}`);
+    console.error('[prerender]   Dynamic news pages will NOT be generated. Fix Supabase connectivity before deploying.');
+    process.exit(1);
   }
 
   // ── News index page (/news) ────────────────────────────────────────────────
@@ -1755,7 +1759,9 @@ async function main() {
     }));
     count++;
   } catch (err) {
-    console.warn(`[prerender]   ⚠ News index page failed: ${err.message}`);
+    console.error(`[prerender]   ✖ News index page failed: ${err.message}`);
+    console.error('[prerender]   News index page will NOT be generated. Fix Supabase connectivity before deploying.');
+    process.exit(1);
   }
 
   // ── SPA-only routes (no SEO content, just the app shell) ───────────────────
@@ -1813,7 +1819,9 @@ async function main() {
       count++;
     }
   } catch (err) {
-    console.warn(`[prerender]   ⚠ News category pages failed: ${err.message}`);
+    console.error(`[prerender]   ✖ News category pages failed: ${err.message}`);
+    console.error('[prerender]   News category pages will NOT be generated. Fix Supabase connectivity before deploying.');
+    process.exit(1);
   }
 
   writeRoute('/news/category', buildHtml(template, {

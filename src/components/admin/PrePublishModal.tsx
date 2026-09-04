@@ -486,8 +486,8 @@ export function buildNewsArticleChecks(form: {
   slug: string;
   excerpt: string;
   content: string;
-  meta_title: string;
-  meta_description: string;
+  seo_title: string;
+  seo_description: string;
   featured_image: string;
   featured_image_alt: string;
 }): PrePublishCheck[] {
@@ -511,7 +511,7 @@ export function buildNewsArticleChecks(form: {
   });
 
   // Meta title
-  const effectiveMetaTitle = form.meta_title || form.title;
+  const effectiveMetaTitle = form.seo_title || form.title;
   checks.push({
     label: 'Meta title set (45-65 chars)',
     passed: effectiveMetaTitle.length >= 50 && effectiveMetaTitle.length <= 60,
@@ -520,7 +520,7 @@ export function buildNewsArticleChecks(form: {
   });
 
   // Meta description
-  const effectiveDesc = form.meta_description || form.excerpt;
+  const effectiveDesc = form.seo_description || form.excerpt;
   checks.push({
     label: 'Meta description or excerpt set (150-160 chars)',
     passed: effectiveDesc.length >= 150 && effectiveDesc.length <= 160,
