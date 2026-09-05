@@ -59,6 +59,9 @@ const EmailInboxPage = lazy(() => import('./pages/admin/EmailInboxPage'));
 const AiBriefingPage = lazy(() => import('./pages/admin/AiBriefingPage'));
 const AiQuoteDraftsPage = lazy(() => import('./pages/admin/AiQuoteDraftsPage'));
 const AiCustomerDraftsPage = lazy(() => import('./pages/admin/AiCustomerDraftsPage'));
+const WasteAuditsPage = lazy(() => import('./pages/admin/WasteAuditsPage'));
+const WasteAuditEditPage = lazy(() => import('./pages/admin/WasteAuditEditPage'));
+const PublicAuditView = lazy(() => import('./pages/PublicAuditView'));
 const CertificatesPage = lazy(() => import('./pages/admin/CertificatesPage'));
 const CertificateEditPage = lazy(() => import('./pages/admin/CertificateEditPage'));
 const CertificatePreviewPage = lazy(() => import('./pages/admin/CertificatePreviewPage'));
@@ -176,6 +179,7 @@ function App() {
           <Route path="/compliance/:token" element={<CompliancePage />} />
           <Route path="/directory-listings" element={<DirectoryListingsPage />} />
           <Route path="/audit" element={<AuditPage />} />
+          <Route path="/audit/:token" element={<PublicAuditView />} />
           <Route path="/driver-upload" element={<DriverUploadPage />} />
           <Route path="/terms" element={<TermsPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
@@ -212,6 +216,8 @@ function App() {
           <Route path="/admin/ai-briefing" element={<ProtectedRoute><AiBriefingPage /></ProtectedRoute>} />
           <Route path="/admin/ai-quote-drafts" element={<ProtectedRoute><AiQuoteDraftsPage /></ProtectedRoute>} />
           <Route path="/admin/ai-customer-setup" element={<ProtectedRoute><AiCustomerDraftsPage /></ProtectedRoute>} />
+          <Route path="/admin/waste-audits" element={<ProtectedRoute><WasteAuditsPage /></ProtectedRoute>} />
+          <Route path="/admin/waste-audits/:id/edit" element={<ProtectedRoute><WasteAuditEditPage /></ProtectedRoute>} />
           <Route path="/admin/certificates" element={<ProtectedRoute><CertificatesPage /></ProtectedRoute>} />
           <Route path="/admin/certificates/create" element={<ProtectedRoute><CertificateEditPage /></ProtectedRoute>} />
           <Route path="/admin/certificates/:id/edit" element={<ProtectedRoute><CertificateEditPage /></ProtectedRoute>} />

@@ -51,3 +51,9 @@ verify_jwt = false
 
 [functions.draft-customer-setup]
 verify_jwt = false
+
+[functions.generate-audit-draft]
+verify_jwt = false
+
+[functions.audit-notification]
+verify_jwt = false

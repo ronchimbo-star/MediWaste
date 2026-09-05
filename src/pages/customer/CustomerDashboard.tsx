@@ -249,6 +249,8 @@ export default function CustomerDashboard() {
                 <p className="text-sm opacity-90">Access waste transfer notes & receipts</p>
               </button>
             </div>
+
+            {customerInfo && <CustomerAuditsSection customerId={customerInfo.id} />}
           </div>
 
           <div className="space-y-4">
@@ -289,6 +291,61 @@ export default function CustomerDashboard() {
           onClose={() => setShowCollectionModal(false)}
         />
       )}
+    </div>
+  );
+}
+
+function CustomerAuditsSection({ customerId }: { customerId: string }) {
+  const [audits, setAudits] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchAudits = async () => {
+      const { data } = await supabase
+        .from('waste_audits')
+        .select('id, audit_number, practice_name, status, share_token, created_at, client_signed_at, admin_signed_at')
+        .eq('customer_id', customerId)
+        .in('status', ['sent_to_client', 'finalised', 'signed'])
+        .order('created_at', { ascending: false });
+      setAudits(data || []);
+      setLoading(false);
+    };
+    fetchAudits();
+  }, [customerId]);
+
+  if (loading || audits.length === 0) return null;
+
+  return (
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mt-4">
+      <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+        <ShieldCheck className="w-5 h-5 text-blue-600" />
+        Waste Audits
+      </h2>
+      <div className="space-y-3">
+        {audits.map((audit) => (
+          <a
+            key={audit.id}
+            href={`/audit/${audit.share_token}`}
+            className="flex items-center justify-between border border-gray-200 rounded-lg p-3 hover:bg-blue-50 hover:border-blue-200 transition-colors"
+          >
+            <div>
+              <p className="font-medium text-gray-900 text-sm">{audit.audit_number}</p>
+              <p className="text-xs text-gray-500">
+                {new Date(audit.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              {audit.status === 'signed' ? (
+                <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">Signed</span>
+              ) : audit.status === 'finalised' ? (
+                <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700">Ready to Sign</span>
+              ) : (
+                <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700">Review</span>
+              )}
+            </div>
+          </a>
+        ))}
+      </div>
     </div>
   );
 }
