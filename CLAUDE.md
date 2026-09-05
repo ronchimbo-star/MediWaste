@@ -163,3 +163,162 @@ Run `npm run build` and check:
 | Meta description too long/short | Hardcoded description in `STATIC_ROUTES` | Edit `scripts/prerender.mjs` |
 | Duplicate content hash | All news pages served homepage HTML | Fix prerender Supabase fetch |
 | Lack of keyword diversity in headings | Content quality issue in article body | Update article content in database |
+
+## Pre-Acceptance Waste Audit Module
+
+### Overview
+
+The Pre-Acceptance Waste Audit module allows MediWaste admin to generate AI-powered waste audit documents for healthcare practices, send them to clients for review and editing, finalise, sign digitally (both parties), and download as PDF. Audits are linked to the customer portal alongside certificates.
+
+### Database Tables
+
+All tables are in the `public` schema with RLS enabled.
+
+1. **`waste_streams`** — Reference data of 11 pre-seeded UK healthcare waste types (clinical, sharps, pharmaceutical, offensive, anatomical, cytotoxic, dental amalgam, chemical, gypsum, etc.). Each has EWC code, container type, colour code, hazardous properties, and disposal route. Public read access (anon + authenticated).
+
+2. **`waste_audits`** — Main audit records. Fields:
+   - `customer_id` (FK to `mw_customers`)
+   - `audit_number` (auto-generated, format `WA-00001`)
+   - Practice details (name, legal entity, address, type, services, surgeries, staff, amalgam use)
+   - `selected_waste_streams` (JSONB array of selected stream IDs + estimated volumes)
+   - `ai_generated_content` / `admin_edited_content` / `client_edits` / `final_content` (JSONB — structured audit content)
+   - `status` — lifecycle: `draft` → `sent_to_client` → `client_editing` → `ready_for_review` → `finalised` → `signed`
+   - `share_token` — unique token for public access at `/audit/{token}`
+   - Signature fields: `admin_signed_at`, `admin_signed_by`, `client_signed_at`, `client_signed_by`, `client_representative_name`, `client_representative_title`
+   - Timestamps: `sent_to_client_at`, `client_edited_at`, `finalised_at`
+   - Admin-only access (authenticated)
+
+3. **`waste_audit_logs`** — Audit trail of all actions (created, draft_generated, sent_to_client, client_edited, finalised, admin_signed, client_signed, notifications). Admin-only access.
+
+### Audit Content Structure (JSONB)
+
+The `ai_generated_content` / `admin_edited_content` / `final_content` fields store structured JSON:
+
+```json
+{
+  "practice_details": {
+    "info_table": [["Item","Detail"], ["Practice Name","..."], ...],
+    "functional_areas_table": [["Area","Description","Waste Types"], ...]
+  },
+  "waste_streams_summary": [["Waste Stream","EWC Code","Container","Colour","Volume"], ...],
+  "detailed_assessment": [
+    { "name": "stream name", "table": [["Attribute","Detail"], ...], "findings": "✅ ..." }
+  ],
+  "segregation_storage": {
+    "segregation_table": [...], "storage_table": [...], "training_table": [...]
+  },
+  "classification": [["EWC Code","Description","Applicable?"], ...],
+  "compliance": {
+    "summary_table": [...], "recommendations_table": [...]
+  },
+  "auditor_declaration": { "name":"", "title":"", "signature":"", "date":"" },
+  "practice_declaration": { "name":"", "title":"", "signature":"", "date":"" }
+}
+```
+
+Each table is an array of arrays (rows). First row is always the header row.
+
+### Edge Functions
+
+1. **`generate-audit-draft`** (`supabase/functions/generate-audit-draft/index.ts`)
+   - POST with `{ auditId }`
+   - Fetches audit + selected waste streams from database
+   - Sends structured prompt to OpenAI (gpt-4o-mini, temperature 0.3, JSON response format)
+   - AI generates full audit content matching the template (practice details, waste stream assessments, segregation observations, classification, compliance, declarations)
+   - Saves to `ai_generated_content` and `admin_edited_content` fields
+   - Logs action to `waste_audit_logs`
+
+2. **`audit-notification`** (`supabase/functions/audit-notification/index.ts`)
+   - POST with `{ type, auditId, recipientEmail, recipientName, auditNumber, shareToken }`
+   - Types: `sent_to_client`, `client_edited`, `ready_for_signature`, `fully_signed`
+   - Sends branded HTML emails via Resend (from `MediWaste <hello@mediwaste.co.uk>`)
+   - `sent_to_client` and `ready_for_signature` emails go to the client with a link to `/audit/{shareToken}`
+   - `client_edited` and `fully_signed` emails go to admin (`ronchimbo@gmail.com`)
+   - Logs notification to `waste_audit_logs`
+
+### Frontend Pages
+
+1. **Admin List** — `src/pages/admin/WasteAuditsPage.tsx`
+   - Route: `/admin/waste-audits` (under Finance in sidebar nav)
+   - Lists all audits with status badges, search, and status filters
+   - "New Audit" button opens a 3-step create wizard modal:
+     - Step 1: Search and select existing customer from database (typeahead)
+     - Step 2: Enter practice details (name, legal entity, address, type, services, surgeries, staff, amalgam use)
+     - Step 3: Select waste streams (checkboxes, searchable) with estimated volume per stream
+   - On "Generate Audit": creates audit record, calls `generate-audit-draft` edge function, navigates to edit page
+
+2. **Admin Edit** — `src/pages/admin/WasteAuditEditPage.tsx`
+   - Route: `/admin/waste-audits/:id/edit`
+   - Shows full audit document via `AuditRenderer` component with inline editable tables
+   - Toolbar actions based on status:
+     - Draft: Save, AI Proofread, Send to Client
+     - Ready for Review: Review & Finalise (with amber banner showing client has edited)
+     - Finalised/Signed: Sign as MediWaste, Download PDF (browser print)
+   - Always: Public View link (opens `/audit/{token}` in new tab)
+   - Shows audit history log at bottom
+
+3. **Public/Client View** — `src/pages/PublicAuditView.tsx`
+   - Route: `/audit/:token` (public, no auth required)
+   - Shows the audit document in read-only or editable mode
+   - Status `sent_to_client`: Client can click "Start Editing" to edit all table cells inline, enter their name/title, then "Submit Edits to MediWaste"
+   - Status `finalised`: Client sees "Ready for your signature" banner, enters name/title, clicks "Sign Document"
+   - Status `signed`: Shows "Document fully signed" banner with Download PDF button
+   - Branded with MediWaste logo, colours (#0056b3 blue, #fd7e14 orange, #28a745 green)
+
+4. **Customer Portal Integration** — `src/pages/customer/CustomerDashboard.tsx`
+   - `CustomerAuditsSection` component shows audits linked to the logged-in customer
+   - Only shows audits with status `sent_to_client`, `finalised`, or `signed`
+   - Each audit links to `/audit/{shareToken}` for review/signing
+
+### Shared Component
+
+**`AuditRenderer`** — `src/components/audit/AuditRenderer.tsx`
+- Renders the structured JSON content as a formatted document
+- MediWaste branded: blue gradient header, numbered sections with blue circle badges, bordered tables with blue headers and alternating row colours
+- Compliance emojis (✅ ⚠️ ❌) rendered with coloured spans
+- Declaration blocks with signature status (signed date or placeholder line)
+- Supports `editable` prop — when true, all table cells become inline inputs
+- Supports `onContentChange` callback for live editing
+
+### Workflow Summary
+
+```
+Admin creates audit (select customer → select waste streams → AI generates draft)
+  ↓
+Admin reviews/edits draft → clicks "Send to Client"
+  ↓
+Client receives email → opens public link → reviews → edits → submits edits
+  ↓
+Admin receives "client edited" notification → reviews client edits → clicks "Review & Finalise"
+  ↓
+Client receives "ready for signature" email → opens link → signs document
+  ↓
+Admin signs document → both parties signed → status = "signed"
+  ↓
+Both parties can download PDF (browser print-to-PDF)
+Audit appears in customer portal alongside certificates
+```
+
+### Configuration
+
+- Edge functions registered in `supabase/config.toml` with `verify_jwt = false`
+- `OPENAI_API_KEY` and `RESEND_API_KEY` must be configured as edge function secrets
+- Auto-generate audit number via `generate_audit_number()` PostgreSQL function (SECURITY DEFINER, search_path = public)
+
+### What's Left to Implement
+
+1. **AI Proofread** — The "AI Proofread" button currently shows a placeholder message. To fully implement: create an edge function that sends the current content to OpenAI for review (clarity, compliance, grammar) and returns suggested edits the admin can accept/reject.
+
+2. **Rich Text Editor** — Currently editing is done via inline text inputs on table cells. A richer editing experience (TipTap/Quill) could be added for more complex edits, but the current approach is functional and matches the tabular structure of the audit.
+
+3. **Side-by-Side Diff View** — When reviewing client edits, the admin sees the client's version directly. A diff view showing original vs client-edited content would improve the review experience.
+
+4. **PDF Generation via Library** — PDF download currently uses browser print-to-PDF (`window.print()`). A library like `@react-pdf/renderer` or `jspdf` could generate a more controlled PDF with exact MediWaste branding, page numbers, and footer.
+
+5. **Custom Waste Streams** — Admin can add custom waste streams during audit creation, but the UI for this is not yet built (only pre-seeded streams are selectable).
+
+6. **Audit Templates by Practice Type** — Different practice types (dental, aesthetic, tattoo, veterinary) could have different default sections and questions. The AI prompt is currently generic.
+
+7. **Resend Email to Client** — If the client loses the email, there's no "Resend" button on the admin edit page yet.
+
+8. **Admin Dashboard Widget** — The admin dashboard doesn't yet show a count of pending waste audits or audits needing attention.
