@@ -241,6 +241,7 @@ export default function PublicAuditView() {
           content={displayContent}
           practiceName={audit.practice_name}
           legalEntity={audit.legal_entity}
+          companyNumber={audit.company_number}
           address={audit.address}
           auditNumber={audit.audit_number}
           auditorName={audit.auditor_name}

@@ -39,6 +39,7 @@ export default function WasteAuditsPage() {
   const [selectedCustomer, setSelectedCustomer] = useState<any | null>(null);
   const [practiceName, setPracticeName] = useState('');
   const [legalEntity, setLegalEntity] = useState('');
+  const [companyNumber, setCompanyNumber] = useState('');
   const [address, setAddress] = useState('');
   const [practiceType, setPracticeType] = useState('');
   const [servicesProvided, setServicesProvided] = useState('');
@@ -92,6 +93,7 @@ export default function WasteAuditsPage() {
   const selectCustomer = (c: any) => {
     setSelectedCustomer(c);
     setPracticeName(c.company_name || c.contact_name || '');
+    setCompanyNumber(c.customer_number || '');
     setAddress(c.billing_address || '');
     setCustomerSearch('');
     setCustomerResults([]);
@@ -156,6 +158,7 @@ export default function WasteAuditsPage() {
           audit_number: auditNumber,
           practice_name: practiceName,
           legal_entity: legalEntity,
+          company_number: companyNumber,
           address: address,
           practice_type: practiceType,
           services_provided: servicesProvided,
@@ -217,6 +220,7 @@ export default function WasteAuditsPage() {
     setSelectedCustomer(null);
     setPracticeName('');
     setLegalEntity('');
+    setCompanyNumber('');
     setAddress('');
     setPracticeType('');
     setServicesProvided('');
@@ -407,7 +411,8 @@ export default function WasteAuditsPage() {
                     <div className="grid grid-cols-2 gap-3">
                       <Field label="Practice Name" value={practiceName} onChange={setPracticeName} />
                       <Field label="Legal Entity" value={legalEntity} onChange={setLegalEntity} />
-                      <div className="col-span-2">
+                      <Field label="Company Number" value={companyNumber} onChange={setCompanyNumber} placeholder="e.g. 12345678" />
+                      <div className="col-span-1">
                         <Field label="Address" value={address} onChange={setAddress} />
                       </div>
                       <Field label="Practice Type" value={practiceType} onChange={setPracticeType} placeholder="e.g. Private Dental Practice" />

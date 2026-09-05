@@ -121,6 +121,7 @@ ${JSON.stringify(contentToProof, null, 2)}`;
 CLIENT DETAILS:
 - Practice Name: ${audit.practice_name || "Not specified"}
 - Legal Entity: ${audit.legal_entity || "Not specified"}
+- Company Number: ${audit.company_number || "Not specified"}
 - Address: ${audit.address || "Not specified"}
 - Practice Type: ${audit.practice_type || "Not specified"}
 - Services Provided: ${audit.services_provided || "Not specified"}
@@ -134,7 +135,7 @@ ${streamsInfo}
 Generate a detailed audit report following this exact structure:
 
 1. PRACTICE & SITE DETAILS
-   - Practice Information table (Practice Name, Legal Entity, Address, Practice Type, Services, Number of Surgeries, Number of Staff, Amalgam Use)
+   - Practice Information table (Practice Name, Legal Entity, Company Number, Address, Practice Type, Services, Number of Surgeries, Number of Staff, Amalgam Use)
    - Functional Areas & Waste Generation Points table (Area, Description, Waste Types Generated) — describe typical areas for this type of practice
 
 2. WASTE STREAMS IDENTIFIED

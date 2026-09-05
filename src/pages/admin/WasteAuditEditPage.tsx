@@ -26,6 +26,7 @@ interface WasteAudit {
   customer_id: string;
   practice_name: string;
   legal_entity: string;
+  company_number: string;
   address: string;
   practice_type: string;
   services_provided: string;
@@ -483,6 +484,7 @@ export default function WasteAuditEditPage() {
           content={displayContent as AuditContent}
           practiceName={audit.practice_name}
           legalEntity={audit.legal_entity}
+          companyNumber={audit.company_number}
           address={audit.address}
           auditNumber={audit.audit_number}
           auditorName={audit.auditor_name}
