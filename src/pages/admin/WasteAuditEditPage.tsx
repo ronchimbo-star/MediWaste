@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../lib/supabase';
 import { useToastContext } from '../../contexts/ToastContext';
 import { useAuth } from '../../hooks/useAuth';
-import { ChevronLeft, Send, Check, PenLine, Sparkles, Download, Eye, FileText, AlertTriangle, Loader2 } from 'lucide-react';
+import { ChevronLeft, Send, Check, PenLine, Sparkles, Download, Eye, FileText, AlertTriangle, Loader2, X } from 'lucide-react';
 import AdminLayout from '../../components/admin/AdminLayout';
 import AuditRenderer, { AuditContent } from '../../components/audit/AuditRenderer';
 import { downloadAuditAsPDF } from '../../utils/auditDownload';
@@ -64,6 +64,9 @@ export default function WasteAuditEditPage() {
   const [proofreadResult, setProofreadResult] = useState<ProofreadResult | null>(null);
   const [proofreading, setProofreading] = useState(false);
   const [downloadingPDF, setDownloadingPDF] = useState(false);
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [emailSubject, setEmailSubject] = useState('');
+  const [emailMessage, setEmailMessage] = useState('');
   const [customerEmail, setCustomerEmail] = useState<string>('');
 
   const { data: audit, isLoading } = useQuery<WasteAudit>({
@@ -163,6 +166,8 @@ export default function WasteAuditEditPage() {
           recipientName: audit?.practice_name,
           auditNumber: audit?.audit_number,
           shareToken: audit?.share_token,
+          customSubject: emailSubject || undefined,
+          customMessage: emailMessage || undefined,
         }),
       });
     },
@@ -170,6 +175,7 @@ export default function WasteAuditEditPage() {
       queryClient.invalidateQueries({ queryKey: ['waste-audit', auditId] });
       queryClient.invalidateQueries({ queryKey: ['waste-audits'] });
       toast.success('Audit sent to client — they will receive an email with a link to review');
+      setShowEmailModal(false);
     },
     onError: (err: any) => toast.error(err.message || 'Failed to send'),
   });
@@ -375,7 +381,11 @@ export default function WasteAuditEditPage() {
             )}
             {audit.status === 'draft' && (
               <button
-                onClick={() => sendToClient.mutate()}
+                onClick={() => {
+                  setEmailSubject(`MediWaste Pre-Acceptance Waste Audit — ${audit.audit_number}`);
+                  setEmailMessage('Your Pre-Acceptance Waste Audit has been prepared by MediWaste and is ready for your review. Please click the link below to view, review, and sign the audit document. You can make edits or add comments before submitting it back to us.');
+                  setShowEmailModal(true);
+                }}
                 disabled={sendToClient.isPending}
                 className="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-60"
               >
@@ -500,6 +510,68 @@ export default function WasteAuditEditPage() {
         {/* Audit log */}
         <AuditLogPanel auditId={auditId} />
       </div>
+
+      {/* Email customization modal */}
+      {showEmailModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => !sendToClient.isPending && setShowEmailModal(false)}>
+          <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full" onClick={(e) => e.stopPropagation()}>
+            <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+              <h2 className="text-base font-bold text-gray-900">Send Audit to Client</h2>
+              {!sendToClient.isPending && (
+                <button onClick={() => setShowEmailModal(false)} className="text-gray-400 hover:text-gray-600"><X className="w-5 h-5" /></button>
+              )}
+            </div>
+            <div className="p-5 space-y-4">
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Recipient</label>
+                <input
+                  type="email"
+                  placeholder="client@example.com"
+                  value={customerEmail || customer?.email || ''}
+                  onChange={(e) => setCustomerEmail(e.target.value)}
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-400"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Email Subject</label>
+                <input
+                  type="text"
+                  value={emailSubject}
+                  onChange={(e) => setEmailSubject(e.target.value)}
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-400"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Message</label>
+                <textarea
+                  value={emailMessage}
+                  onChange={(e) => setEmailMessage(e.target.value)}
+                  rows={5}
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-400 resize-none"
+                />
+                <p className="text-xs text-gray-400 mt-1">The email will also include a link to review and sign the audit.</p>
+              </div>
+            </div>
+            <div className="px-5 py-4 border-t border-gray-100 flex justify-end gap-2">
+              <button
+                onClick={() => setShowEmailModal(false)}
+                disabled={sendToClient.isPending}
+                className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => sendToClient.mutate()}
+                disabled={sendToClient.isPending || !customerEmail && !customer?.email}
+                className="flex items-center gap-1.5 px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 disabled:opacity-60"
+              >
+                {sendToClient.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                {sendToClient.isPending ? 'Sending...' : 'Send Email'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </AdminLayout>
   );
 }

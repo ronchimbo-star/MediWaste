@@ -19,7 +19,7 @@ Deno.serve(async (req: Request) => {
 
   try {
     const data = await req.json();
-    const { type, auditId, recipientEmail, recipientName, auditNumber, shareToken } = data;
+    const { type, auditId, recipientEmail, recipientName, auditNumber, shareToken, customSubject, customMessage } = data;
 
     const resendApiKey = Deno.env.get("RESEND_API_KEY");
     if (!resendApiKey) throw new Error("RESEND_API_KEY is not configured");
@@ -33,41 +33,45 @@ Deno.serve(async (req: Request) => {
 
     switch (type) {
       case "sent_to_client":
-        subject = `MediWaste Pre-Acceptance Waste Audit — ${auditNumber}`;
-        emailHtml = `
+        subject = customSubject || `MediWaste Pre-Acceptance Waste Audit — ${auditNumber}`;
+        {
+          const customBody = customMessage
+            ? `<p style="color:#333;font-size:15px;line-height:1.6;">${customMessage.replace(/\n/g, '<br/>')}</p>`
+            : `<p style="color:#333;font-size:15px;line-height:1.6;">Your Pre-Acceptance Waste Audit (<strong>${auditNumber}</strong>) has been prepared by MediWaste and is ready for your review.</p><p style="color:#333;font-size:15px;line-height:1.6;">Please click the button below to view, review, and sign the audit document. You can make edits or add comments before submitting it back to us.</p>`;
+          emailHtml = `
 <!DOCTYPE html><html><body style="font-family:Segoe UI,Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
-<div style="background:#0056b3;padding:24px;border-radius:8px 8px 0 0;text-align:center;">
+<div style="background:#1a1a1a;padding:24px;border-radius:8px 8px 0 0;text-align:center;">
 <h1 style="color:#fff;margin:0;font-size:22px;">MediWaste</h1>
-<p style="color:#aaccff;margin:4px 0 0;font-size:13px;">Clinical Waste Management Solutions</p>
+<p style="color:#dc2626;margin:4px 0 0;font-size:13px;">Clinical Waste Management Solutions</p>
 </div>
 <div style="border:1px solid #e0e0e0;border-top:none;padding:28px;border-radius:0 0 8px 8px;">
-<h2 style="color:#0056b3;margin:0 0 12px;">Pre-Acceptance Waste Audit Ready for Review</h2>
+<h2 style="color:#dc2626;margin:0 0 12px;">Pre-Acceptance Waste Audit Ready for Review</h2>
 <p style="color:#333;font-size:15px;line-height:1.6;">Hello ${recipientName || ""},</p>
-<p style="color:#333;font-size:15px;line-height:1.6;">Your Pre-Acceptance Waste Audit (<strong>${auditNumber}</strong>) has been prepared by MediWaste and is ready for your review.</p>
-<p style="color:#333;font-size:15px;line-height:1.6;">Please click the button below to view, review, and sign the audit document. You can make edits or add comments before submitting it back to us.</p>
+${customBody}
 <div style="text-align:center;margin:28px 0;">
-<a href="${auditLink}" style="background:#fd7e14;color:#fff;padding:14px 32px;border-radius:6px;text-decoration:none;font-size:16px;font-weight:600;display:inline-block;">Review &amp; Sign Audit</a>
+<a href="${auditLink}" style="background:#dc2626;color:#fff;padding:14px 32px;border-radius:6px;text-decoration:none;font-size:16px;font-weight:600;display:inline-block;">Review &amp; Sign Audit</a>
 </div>
-<p style="color:#666;font-size:13px;line-height:1.5;">If the button doesn't work, copy and paste this link into your browser:<br/><a href="${auditLink}" style="color:#0056b3;">${auditLink}</a></p>
+<p style="color:#666;font-size:13px;line-height:1.5;">If the button doesn't work, copy and paste this link into your browser:<br/><a href="${auditLink}" style="color:#dc2626;">${auditLink}</a></p>
 <p style="color:#333;font-size:15px;line-height:1.6;">If you have any questions, please don't hesitate to contact us.</p>
 <p style="color:#333;font-size:15px;line-height:1.6;">Kind regards,<br/><strong>MediWaste Team</strong></p>
 </div>
 <div style="text-align:center;padding:16px;color:#999;font-size:12px;">© MediWaste — Clinical Waste Management Solutions</div>
 </body></html>`;
+        }
         break;
 
       case "client_edited":
         subject = `Client has reviewed audit ${auditNumber}`;
         emailHtml = `
 <!DOCTYPE html><html><body style="font-family:Segoe UI,Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
-<div style="background:#0056b3;padding:24px;border-radius:8px 8px 0 0;text-align:center;">
+<div style="background:#1a1a1a;padding:24px;border-radius:8px 8px 0 0;text-align:center;">
 <h1 style="color:#fff;margin:0;font-size:22px;">MediWaste</h1>
 </div>
 <div style="border:1px solid #e0e0e0;border-top:none;padding:28px;border-radius:0 0 8px 8px;">
-<h2 style="color:#0056b3;">Client Has Reviewed Audit ${auditNumber}</h2>
+<h2 style="color:#dc2626;">Client Has Reviewed Audit ${auditNumber}</h2>
 <p style="color:#333;font-size:15px;line-height:1.6;">The client has submitted their edits for audit <strong>${auditNumber}</strong>. Please log in to your admin dashboard to review the changes and finalise the document.</p>
 <div style="text-align:center;margin:24px 0;">
-<a href="${siteUrl}/admin/waste-audits" style="background:#0056b3;color:#fff;padding:12px 28px;border-radius:6px;text-decoration:none;font-size:15px;font-weight:600;display:inline-block;">Review in Dashboard</a>
+<a href="${siteUrl}/admin/waste-audits" style="background:#dc2626;color:#fff;padding:12px 28px;border-radius:6px;text-decoration:none;font-size:15px;font-weight:600;display:inline-block;">Review in Dashboard</a>
 </div>
 </div>
 </body></html>`;
@@ -77,15 +81,15 @@ Deno.serve(async (req: Request) => {
         subject = `Audit ${auditNumber} ready for your signature`;
         emailHtml = `
 <!DOCTYPE html><html><body style="font-family:Segoe UI,Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
-<div style="background:#0056b3;padding:24px;border-radius:8px 8px 0 0;text-align:center;">
+<div style="background:#1a1a1a;padding:24px;border-radius:8px 8px 0 0;text-align:center;">
 <h1 style="color:#fff;margin:0;font-size:22px;">MediWaste</h1>
 </div>
 <div style="border:1px solid #e0e0e0;border-top:none;padding:28px;border-radius:0 0 8px 8px;">
-<h2 style="color:#0056b3;">Audit Ready for Signature</h2>
+<h2 style="color:#dc2626;">Audit Ready for Signature</h2>
 <p style="color:#333;font-size:15px;line-height:1.6;">Your Pre-Acceptance Waste Audit (<strong>${auditNumber}</strong>) has been finalised and is ready for your signature.</p>
 <p style="color:#333;font-size:15px;line-height:1.6;">Please click below to review and sign the document.</p>
 <div style="text-align:center;margin:24px 0;">
-<a href="${auditLink}" style="background:#fd7e14;color:#fff;padding:14px 32px;border-radius:6px;text-decoration:none;font-size:16px;font-weight:600;display:inline-block;">Review &amp; Sign</a>
+<a href="${auditLink}" style="background:#dc2626;color:#fff;padding:14px 32px;border-radius:6px;text-decoration:none;font-size:16px;font-weight:600;display:inline-block;">Review &amp; Sign</a>
 </div>
 </div>
 </body></html>`;

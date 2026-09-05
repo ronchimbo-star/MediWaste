@@ -212,8 +212,9 @@ export default function AuditRenderer({ content, practiceName, legalEntity, comp
             <div className="bg-gray-50 rounded-lg p-4 border border-gray-200 mb-4">
               <p className="text-sm font-semibold text-gray-800 mb-1">MediWaste</p>
               <p className="text-xs text-gray-600 leading-relaxed">
-                MediWaste is a tradename of Circular Horizons International LTD. Co Reg. 15821509.
-                Environment Agency #CBDU542939 Upper Tier.
+                MediWaste is a tradename of Circular Horizons International LTD. Co Reg. 15821509.<br/>
+                Environment Agency #CBDU542939 Upper Tier.<br/>
+                MediWaste, Unit 2 Capital Industrial Estate, Crabtree Manorway South, Belvedere, Kent, England, DA17 6BJ.
               </p>
             </div>
             <p className="text-sm text-gray-600 mb-3">
@@ -311,13 +312,11 @@ function DataTable({ rows, editable, onCellChange }: { rows: string[][]; editabl
 }
 
 function formatCell(text: string): string {
-  return text
-    .replace(/✅/g, '<span style="color:#28a745;font-weight:600;">✅</span>')
-    .replace(/⚠️/g, '<span style="color:#fd7e14;font-weight:600;">⚠️</span>')
-    .replace(/❌/g, '<span style="color:#dc3545;font-weight:600;">❌</span>')
+  const escaped = text
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
+    .replace(/>/g, '&gt;');
+  return escaped
     .replace(/✅/g, '<span style="color:#28a745;font-weight:600;">✅</span>')
     .replace(/⚠️/g, '<span style="color:#fd7e14;font-weight:600;">⚠️</span>')
     .replace(/❌/g, '<span style="color:#dc3545;font-weight:600;">❌</span>');
