@@ -107,6 +107,15 @@ export default function WasteAuditEditPage() {
 
   const content = editContent || audit?.admin_edited_content || audit?.ai_generated_content;
 
+  const updateAuditorField = async (field: string, value: string) => {
+    const { error } = await supabase
+      .from('waste_audits')
+      .update({ [field]: value, updated_at: new Date().toISOString() })
+      .eq('id', auditId);
+    if (error) toast.error('Failed to update');
+    else queryClient.invalidateQueries({ queryKey: ['waste-audit', auditId] });
+  };
+
   const saveContent = useMutation({
     mutationFn: async () => {
       const { error } = await supabase
@@ -232,7 +241,7 @@ export default function WasteAuditEditPage() {
         .update({
           admin_signed_at: new Date().toISOString(),
           admin_signed_by: user?.id,
-          auditor_name: audit?.auditor_name || 'MediWaste',
+          auditor_name: audit?.auditor_name || 'Sarah Benson',
           updated_at: new Date().toISOString(),
           status: audit?.client_signed_at ? 'signed' : 'finalised',
         })
@@ -497,14 +506,16 @@ export default function WasteAuditEditPage() {
           companyNumber={audit.company_number}
           address={audit.address}
           auditNumber={audit.audit_number}
-          auditorName={audit.auditor_name}
-          auditorTitle={audit.auditor_title}
+          auditorName={audit.auditor_name || 'Sarah Benson'}
+          auditorTitle={audit.auditor_title || 'Compliance Auditor'}
           adminSignedAt={audit.admin_signed_at}
           clientSignedAt={audit.client_signed_at}
           clientRepresentativeName={audit.client_representative_name}
           clientRepresentativeTitle={audit.client_representative_title}
           editable={isEditable}
           onContentChange={setEditContent}
+          onAuditorNameChange={(v) => updateAuditorField('auditor_name', v)}
+          onAuditorTitleChange={(v) => updateAuditorField('auditor_title', v)}
         />
 
         {/* Audit log */}

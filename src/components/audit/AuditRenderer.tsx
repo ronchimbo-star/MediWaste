@@ -50,9 +50,19 @@ interface Props {
   clientRepresentativeTitle?: string | null;
   editable?: boolean;
   onContentChange?: (content: AuditContent) => void;
+  onAuditorNameChange?: (v: string) => void;
+  onAuditorTitleChange?: (v: string) => void;
+  onClientNameChange?: (v: string) => void;
+  onClientTitleChange?: (v: string) => void;
 }
 
-export default function AuditRenderer({ content, practiceName, legalEntity, companyNumber, address, auditNumber, auditorName, auditorTitle, adminSignedAt, clientSignedAt, clientRepresentativeName, clientRepresentativeTitle, editable, onContentChange }: Props) {
+export default function AuditRenderer({
+  content, practiceName, legalEntity, companyNumber, address, auditNumber,
+  auditorName, auditorTitle, adminSignedAt, clientSignedAt,
+  clientRepresentativeName, clientRepresentativeTitle,
+  editable, onContentChange,
+  onAuditorNameChange, onAuditorTitleChange, onClientNameChange, onClientTitleChange,
+}: Props) {
   if (!content) {
     return (
       <div className="flex items-center justify-center h-64 text-gray-400">
@@ -61,16 +71,6 @@ export default function AuditRenderer({ content, practiceName, legalEntity, comp
       </div>
     );
   }
-
-  const updateField = (path: string, value: string) => {
-    if (!onContentChange || !editable) return;
-    const updated = JSON.parse(JSON.stringify(content));
-    const keys = path.split('.');
-    let obj = updated;
-    for (let i = 0; i < keys.length - 1; i++) obj = obj[keys[i]];
-    obj[keys[keys.length - 1]] = value;
-    onContentChange(updated);
-  };
 
   const updateCell = (tablePath: string, rowIdx: number, colIdx: number, value: string) => {
     if (!onContentChange || !editable) return;
@@ -86,10 +86,11 @@ export default function AuditRenderer({ content, practiceName, legalEntity, comp
   return (
     <div id="audit-render" className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
       {/* Header */}
-      <div className="bg-gradient-to-r from-[#1a1a1a] to-[#0d0d0d] px-8 py-6 text-center">
+      <div className="bg-[#dc2626] px-8 py-8 text-center">
+        <img src="/mediwaste-logo-white.png" alt="MediWaste" className="mx-auto mb-3" style={{ height: '60px', maxWidth: '300px', objectFit: 'contain' }} />
         <h1 className="text-white text-xl font-bold tracking-wide">PRE-ACCEPTANCE WASTE AUDIT</h1>
-        {practiceName && <p className="text-red-300 text-sm mt-1">{practiceName}</p>}
-        {legalEntity && legalEntity !== practiceName && <p className="text-gray-300 text-xs mt-0.5">Trading as: {legalEntity}</p>}
+        {practiceName && <p className="text-red-100 text-sm mt-1">{practiceName}</p>}
+        {legalEntity && legalEntity !== practiceName && <p className="text-red-200 text-xs mt-0.5">Trading as: {legalEntity}</p>}
       </div>
 
       <div className="px-8 py-6 space-y-8">
@@ -209,25 +210,25 @@ export default function AuditRenderer({ content, practiceName, legalEntity, comp
         {/* Section 7: Auditor Declaration */}
         {content.auditor_declaration && (
           <Section number="7" title="Auditor Declaration" icon={<Award className="w-4 h-4" />}>
-            <div className="bg-gray-50 rounded-lg p-4 border border-gray-200 mb-4">
-              <p className="text-sm font-semibold text-gray-800 mb-1">MediWaste</p>
-              <p className="text-xs text-gray-600 leading-relaxed">
+            <div className="bg-red-50 rounded-lg p-4 border border-red-200 mb-4">
+              <p className="text-sm font-bold text-[#dc2626] mb-1">MediWaste</p>
+              <p className="text-xs text-gray-700 leading-relaxed">
                 MediWaste is a tradename of Circular Horizons International LTD. Co Reg. 15821509.<br/>
                 Environment Agency #CBDU542939 Upper Tier.<br/>
                 MediWaste, Unit 2 Capital Industrial Estate, Crabtree Manorway South, Belvedere, Kent, England, DA17 6BJ.
               </p>
             </div>
             <p className="text-sm text-gray-600 mb-3">
-              I, {auditorName || content.auditor_declaration.name || '[Name]'}, confirm that the waste streams identified in this audit have been assessed in accordance with the requirements of the Hazardous Waste Regulations 2005, HTM 07-01, and the Environmental Protection Act 1990.
+              I, <span className="font-semibold text-gray-800">{auditorName || content.auditor_declaration.name || '[Name]'}</span>, confirm that the waste streams identified in this audit have been assessed in accordance with the requirements of the Hazardous Waste Regulations 2005, HTM 07-01, and the Environmental Protection Act 1990.
             </p>
             <DeclarationBlock
               label="Auditor"
               name={auditorName || content.auditor_declaration.name || ''}
               title={auditorTitle || content.auditor_declaration.title || ''}
               signedAt={adminSignedAt ?? null}
-              editable={editable}
-              onNameChange={(v) => updateField('auditor_declaration.name', v)}
-              onTitleChange={(v) => updateField('auditor_declaration.title', v)}
+              canEditName={!!onAuditorNameChange}
+              onNameChange={onAuditorNameChange}
+              onTitleChange={onAuditorTitleChange}
             />
           </Section>
         )}
@@ -236,16 +237,16 @@ export default function AuditRenderer({ content, practiceName, legalEntity, comp
         {content.practice_declaration && (
           <Section number="8" title="Practice Declaration" icon={<Award className="w-4 h-4" />}>
             <p className="text-sm text-gray-600 mb-3">
-              I, {clientRepresentativeName || content.practice_declaration.name || '[Name]'}, confirm that I have reviewed the waste streams identified in this audit and agree to maintain the segregation and storage practices outlined in this report.
+              I, <span className="font-semibold text-gray-800">{clientRepresentativeName || content.practice_declaration.name || '[Name]'}</span>, confirm that I have reviewed the waste streams identified in this audit and agree to maintain the segregation and storage practices outlined in this report.
             </p>
             <DeclarationBlock
               label="Practice Representative"
               name={clientRepresentativeName || content.practice_declaration.name || ''}
               title={clientRepresentativeTitle || content.practice_declaration.title || ''}
               signedAt={clientSignedAt ?? null}
-              editable={editable}
-              onNameChange={(v) => updateField('practice_declaration.name', v)}
-              onTitleChange={(v) => updateField('practice_declaration.title', v)}
+              canEditName={!!onClientNameChange}
+              onNameChange={onClientNameChange}
+              onTitleChange={onClientTitleChange}
             />
           </Section>
         )}
@@ -280,15 +281,15 @@ function DataTable({ rows, editable, onCellChange }: { rows: string[][]; editabl
     <div className="overflow-x-auto">
       <table className="w-full text-sm border-collapse">
         <thead>
-          <tr className="bg-[#1a1a1a] text-white">
+          <tr className="bg-[#dc2626] text-white">
             {rows[0].map((cell, i) => (
-              <th key={i} className="px-3 py-2 text-left font-medium border border-gray-800">{cell}</th>
+              <th key={i} className="px-3 py-2 text-left font-medium border border-red-700">{cell}</th>
             ))}
           </tr>
         </thead>
         <tbody>
           {rows.slice(1).map((row, ri) => (
-            <tr key={ri} className={ri % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+            <tr key={ri} className={ri % 2 === 0 ? 'bg-white' : 'bg-red-50'}>
               {row.map((cell, ci) => (
                 <td key={ci} className="px-3 py-2 border border-gray-200 text-gray-700">
                   {editable && onCellChange ? (
@@ -322,12 +323,12 @@ function formatCell(text: string): string {
     .replace(/❌/g, '<span style="color:#dc3545;font-weight:600;">❌</span>');
 }
 
-function DeclarationBlock({ label, name, title, signedAt, editable, onNameChange, onTitleChange }: {
+function DeclarationBlock({ label, name, title, signedAt, canEditName, onNameChange, onTitleChange }: {
   label: string;
   name: string;
   title: string;
   signedAt: string | null;
-  editable?: boolean;
+  canEditName?: boolean;
   onNameChange?: (v: string) => void;
   onTitleChange?: (v: string) => void;
 }) {
@@ -336,16 +337,16 @@ function DeclarationBlock({ label, name, title, signedAt, editable, onNameChange
       <div className="grid grid-cols-2 gap-4 text-sm">
         <div>
           <span className="text-gray-500 font-medium">{label} Name:</span>{' '}
-          {editable && onNameChange ? (
-            <input type="text" value={name} onChange={(e) => onNameChange(e.target.value)} className="bg-white px-2 py-1 border border-gray-300 rounded text-sm" />
+          {canEditName && onNameChange ? (
+            <input type="text" value={name} onChange={(e) => onNameChange(e.target.value)} placeholder="Enter name" className="bg-white px-2 py-1 border border-gray-300 rounded text-sm mt-1 w-full" />
           ) : (
             <span className="text-gray-800">{name || '—'}</span>
           )}
         </div>
         <div>
           <span className="text-gray-500 font-medium">Job Title:</span>{' '}
-          {editable && onTitleChange ? (
-            <input type="text" value={title} onChange={(e) => onTitleChange(e.target.value)} className="bg-white px-2 py-1 border border-gray-300 rounded text-sm" />
+          {canEditName && onTitleChange ? (
+            <input type="text" value={title} onChange={(e) => onTitleChange(e.target.value)} placeholder="Enter job title" className="bg-white px-2 py-1 border border-gray-300 rounded text-sm mt-1 w-full" />
           ) : (
             <span className="text-gray-800">{title || '—'}</span>
           )}
@@ -353,17 +354,17 @@ function DeclarationBlock({ label, name, title, signedAt, editable, onNameChange
         <div>
           <span className="text-gray-500 font-medium">Signature:</span>{' '}
           {signedAt ? (
-            <span className="text-[#dc2626] font-medium flex items-center gap-1">
+            <span className="text-[#dc2626] font-medium flex items-center gap-1 mt-1">
               <CheckCircle className="w-4 h-4" />
               Signed on {new Date(signedAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })}
             </span>
           ) : (
-            <span className="text-gray-400 italic">_________________________</span>
+            <span className="text-gray-400 italic block mt-1">_________________________</span>
           )}
         </div>
         <div>
           <span className="text-gray-500 font-medium">Date:</span>{' '}
-          <span className="text-gray-800">{signedAt ? new Date(signedAt).toLocaleDateString('en-GB') : '—'}</span>
+          <span className="text-gray-800 block mt-1">{signedAt ? new Date(signedAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' }) : '—'}</span>
         </div>
       </div>
     </div>

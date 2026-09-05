@@ -244,14 +244,16 @@ export default function PublicAuditView() {
           companyNumber={audit.company_number}
           address={audit.address}
           auditNumber={audit.audit_number}
-          auditorName={audit.auditor_name}
-          auditorTitle={audit.auditor_title}
+          auditorName={audit.auditor_name || 'Sarah Benson'}
+          auditorTitle={audit.auditor_title || 'Compliance Auditor'}
           adminSignedAt={audit.admin_signed_at}
           clientSignedAt={audit.client_signed_at}
           clientRepresentativeName={audit.client_representative_name}
           clientRepresentativeTitle={audit.client_representative_title}
           editable={isEditing}
           onContentChange={setEditContent}
+          onClientNameChange={setRepName}
+          onClientTitleChange={setRepTitle}
         />
 
         {/* Action panel */}
