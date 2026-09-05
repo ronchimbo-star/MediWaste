@@ -83,7 +83,7 @@ export default function AuditRenderer({ content, practiceName, legalEntity, addr
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+    <div id="audit-render" className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
       {/* Header */}
       <div className="bg-gradient-to-r from-[#0056b3] to-[#004494] px-8 py-6 text-center">
         <h1 className="text-white text-xl font-bold tracking-wide">PRE-ACCEPTANCE WASTE AUDIT</h1>

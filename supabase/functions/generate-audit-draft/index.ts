@@ -20,6 +20,7 @@ Deno.serve(async (req: Request) => {
   try {
     const body = await req.json();
     const auditId = body.auditId;
+    const mode = body.mode || "generate";
 
     if (!auditId) throw new Error("auditId is required");
 
@@ -31,14 +32,84 @@ Deno.serve(async (req: Request) => {
     if (auditError) throw new Error(`Failed to fetch audit: ${auditError.message}`);
     if (!audit) throw new Error("Audit not found");
 
+    const openaiKey = Deno.env.get("OPENAI_API_KEY");
+    if (!openaiKey) throw new Error("OPENAI_API_KEY is not configured");
+
+    // ===== PROOFREAD MODE =====
+    if (mode === "proofread") {
+      const contentToProof = body.content || audit.admin_edited_content || audit.ai_generated_content;
+      if (!contentToProof) throw new Error("No content to proofread");
+
+      const proofreadPrompt = `You are a clinical waste compliance expert reviewing a pre-acceptance waste audit document for MediWaste. Review the following audit content for:
+1. Clarity and readability
+2. Compliance with UK regulations (HTM 07-01, Hazardous Waste Regulations 2005, Environmental Protection Act 1990)
+3. Grammatical errors or typos
+4. Missing information or inconsistencies
+5. Factual accuracy of EWC codes and waste classifications
+6. Professional tone
+
+Return your findings as a JSON object with this structure:
+{
+  "suggestions": [
+    { "section": "section name", "issue": "description of the issue", "suggestion": "recommended fix", "severity": "high|medium|low" }
+  ],
+  "overall_quality": "excellent|good|needs_improvement",
+  "summary": "brief overall assessment"
+}
+
+Here is the audit content to review:
+${JSON.stringify(contentToProof, null, 2)}`;
+
+      const openaiResp = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${openaiKey}`,
+        },
+        body: JSON.stringify({
+          model: "gpt-4o-mini",
+          messages: [
+            { role: "system", content: "You are a clinical waste compliance expert and proofreader for MediWaste. Always respond with valid JSON only." },
+            { role: "user", content: proofreadPrompt },
+          ],
+          temperature: 0.3,
+          max_tokens: 2000,
+          response_format: { type: "json_object" },
+        }),
+      });
+
+      if (!openaiResp.ok) {
+        const errText = await openaiResp.text();
+        throw new Error(`OpenAI API error: ${openaiResp.status} - ${errText}`);
+      }
+
+      const openaiData = await openaiResp.json();
+      const proofContent = openaiData.choices?.[0]?.message?.content || "{}";
+      let proofResult: any;
+      try {
+        proofResult = JSON.parse(proofContent);
+      } catch {
+        throw new Error("Failed to parse proofread response as JSON");
+      }
+
+      await supabase.from("waste_audit_logs").insert({
+        audit_id: auditId,
+        action: "ai_proofread",
+        details: `AI proofread completed: ${proofResult.suggestions?.length || 0} suggestions`,
+      });
+
+      return new Response(
+        JSON.stringify({ success: true, proofread: proofResult }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // ===== GENERATE MODE (default) =====
     const { data: streams, error: streamsError } = await supabase
       .from("waste_streams")
       .select("*")
       .in("id", audit.selected_waste_streams.map((s: any) => s.id));
     if (streamsError) throw new Error(`Failed to fetch waste streams: ${streamsError.message}`);
-
-    const openaiKey = Deno.env.get("OPENAI_API_KEY");
-    if (!openaiKey) throw new Error("OPENAI_API_KEY is not configured");
 
     const streamsInfo = streams.map((s: any) => {
       const custom = audit.selected_waste_streams.find((cs: any) => cs.id === s.id);

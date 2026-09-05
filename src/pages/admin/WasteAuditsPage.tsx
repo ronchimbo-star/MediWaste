@@ -48,6 +48,8 @@ export default function WasteAuditsPage() {
   const [selectedStreams, setSelectedStreams] = useState<any[]>([]);
   const [streamSearch, setStreamSearch] = useState('');
   const [generating, setGenerating] = useState(false);
+  const [showCustomStream, setShowCustomStream] = useState(false);
+  const [customStream, setCustomStream] = useState({ name: '', ewc_code: '', container_type: '', colour_code: '', hazardous_properties: 'None', disposal_route: '', is_hazardous: false, description: '' });
 
   const { data: audits = [], isLoading } = useQuery<WasteAudit[]>({
     queryKey: ['waste-audits', statusFilter],
@@ -107,6 +109,38 @@ export default function WasteAuditsPage() {
 
   const updateVolume = (streamId: string, volume: string) => {
     setSelectedStreams(selectedStreams.map((s) => (s.id === streamId ? { ...s, estimated_volume: volume } : s)));
+  };
+
+  const addCustomStream = async () => {
+    if (!customStream.name || !customStream.ewc_code) {
+      toast.error('Stream name and EWC code are required');
+      return;
+    }
+    const { data, error } = await supabase
+      .from('waste_streams')
+      .insert([{
+        name: customStream.name,
+        ewc_code: customStream.ewc_code,
+        description: customStream.description || `Custom waste stream: ${customStream.name}`,
+        container_type: customStream.container_type || 'As required',
+        colour_code: customStream.colour_code || 'Various',
+        hazardous_properties: customStream.hazardous_properties || 'None',
+        disposal_route: customStream.disposal_route || 'Specialist disposal',
+        is_hazardous: customStream.is_hazardous,
+        category: 'custom',
+        display_order: 100,
+      }])
+      .select('*')
+      .single();
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    queryClient.invalidateQueries({ queryKey: ['waste-streams'] });
+    setSelectedStreams([...selectedStreams, { id: data.id, name: data.name, ewc_code: data.ewc_code, estimated_volume: '' }]);
+    setCustomStream({ name: '', ewc_code: '', container_type: '', colour_code: '', hazardous_properties: 'None', disposal_route: '', is_hazardous: false, description: '' });
+    setShowCustomStream(false);
+    toast.success('Custom waste stream added');
   };
 
   const createAudit = useMutation({
@@ -191,6 +225,8 @@ export default function WasteAuditsPage() {
     setAmalgamUse('');
     setSelectedStreams([]);
     setStreamSearch('');
+    setShowCustomStream(false);
+    setCustomStream({ name: '', ewc_code: '', container_type: '', colour_code: '', hazardous_properties: 'None', disposal_route: '', is_hazardous: false, description: '' });
   };
 
   const filteredAudits = audits.filter((a) => {
@@ -442,6 +478,53 @@ export default function WasteAuditsPage() {
                     </div>
                     {selectedStreams.length === 0 && (
                       <p className="text-xs text-amber-600">Select at least one waste stream to generate the audit.</p>
+                    )}
+
+                    {/* Selected streams summary */}
+                    {selectedStreams.length > 0 && (
+                      <div className="bg-blue-50 rounded-lg p-3 border border-blue-100">
+                        <p className="text-xs font-medium text-blue-700 mb-1">Selected: {selectedStreams.length} stream{selectedStreams.length !== 1 ? 's' : ''}</p>
+                        <div className="flex flex-wrap gap-1">
+                          {selectedStreams.map((s) => (
+                            <span key={s.id} className="px-2 py-0.5 bg-white rounded-full text-xs text-blue-700 border border-blue-200">
+                              {s.name}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Custom stream form */}
+                    {showCustomStream && (
+                      <div className="bg-gray-50 rounded-lg p-4 border border-gray-200 space-y-2">
+                        <h4 className="text-sm font-semibold text-gray-700">Add Custom Waste Stream</h4>
+                        <div className="grid grid-cols-2 gap-2">
+                          <input type="text" placeholder="Stream name *" value={customStream.name} onChange={(e) => setCustomStream({ ...customStream, name: e.target.value })} className="px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-400" />
+                          <input type="text" placeholder="EWC code *" value={customStream.ewc_code} onChange={(e) => setCustomStream({ ...customStream, ewc_code: e.target.value })} className="px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-400" />
+                          <input type="text" placeholder="Container type" value={customStream.container_type} onChange={(e) => setCustomStream({ ...customStream, container_type: e.target.value })} className="px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-400" />
+                          <input type="text" placeholder="Colour code" value={customStream.colour_code} onChange={(e) => setCustomStream({ ...customStream, colour_code: e.target.value })} className="px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-400" />
+                          <input type="text" placeholder="Hazardous properties" value={customStream.hazardous_properties} onChange={(e) => setCustomStream({ ...customStream, hazardous_properties: e.target.value })} className="px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-400" />
+                          <input type="text" placeholder="Disposal route" value={customStream.disposal_route} onChange={(e) => setCustomStream({ ...customStream, disposal_route: e.target.value })} className="px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-400" />
+                          <div className="col-span-2">
+                            <input type="text" placeholder="Description" value={customStream.description} onChange={(e) => setCustomStream({ ...customStream, description: e.target.value })} className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-400" />
+                          </div>
+                          <label className="col-span-2 flex items-center gap-2 text-xs text-gray-600">
+                            <input type="checkbox" checked={customStream.is_hazardous} onChange={(e) => setCustomStream({ ...customStream, is_hazardous: e.target.checked })} className="rounded" />
+                            This is a hazardous waste stream
+                          </label>
+                        </div>
+                        <div className="flex gap-2">
+                          <button onClick={addCustomStream} className="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-medium hover:bg-blue-700">Add Stream</button>
+                          <button onClick={() => setShowCustomStream(false)} className="px-3 py-1.5 text-xs text-gray-500 hover:text-gray-700">Cancel</button>
+                        </div>
+                      </div>
+                    )}
+
+                    {!showCustomStream && (
+                      <button onClick={() => setShowCustomStream(true)} className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700">
+                        <Plus className="w-3.5 h-3.5" />
+                        Add custom waste stream
+                      </button>
                     )}
                     <div className="flex justify-between">
                       <button onClick={() => setStep(2)} className="text-sm text-gray-500 hover:text-gray-700">Back</button>

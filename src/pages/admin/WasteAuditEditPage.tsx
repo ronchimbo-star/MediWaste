@@ -3,9 +3,22 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../lib/supabase';
 import { useToastContext } from '../../contexts/ToastContext';
 import { useAuth } from '../../hooks/useAuth';
-import { ChevronLeft, Send, Check, PenLine, Sparkles, Download, Eye, FileText, AlertTriangle } from 'lucide-react';
+import { ChevronLeft, Send, Check, PenLine, Sparkles, Download, Eye, FileText, AlertTriangle, Loader2 } from 'lucide-react';
 import AdminLayout from '../../components/admin/AdminLayout';
 import AuditRenderer, { AuditContent } from '../../components/audit/AuditRenderer';
+import { downloadAuditAsPDF } from '../../utils/auditDownload';
+
+interface ProofreadSuggestion {
+  section: string;
+  issue: string;
+  suggestion: string;
+  severity: 'high' | 'medium' | 'low';
+}
+interface ProofreadResult {
+  suggestions: ProofreadSuggestion[];
+  overall_quality: string;
+  summary: string;
+}
 
 interface WasteAudit {
   id: string;
@@ -47,8 +60,9 @@ export default function WasteAuditEditPage() {
   const auditId = window.location.pathname.split('/admin/waste-audits/')[1]?.split('/edit')[0];
   const [editContent, setEditContent] = useState<AuditContent | null>(null);
   const [showProofread, setShowProofread] = useState(false);
-  const [proofreadResult, setProofreadResult] = useState<string | null>(null);
+  const [proofreadResult, setProofreadResult] = useState<ProofreadResult | null>(null);
   const [proofreading, setProofreading] = useState(false);
+  const [downloadingPDF, setDownloadingPDF] = useState(false);
   const [customerEmail, setCustomerEmail] = useState<string>('');
 
   const { data: audit, isLoading } = useQuery<WasteAudit>({
@@ -256,17 +270,37 @@ export default function WasteAuditEditPage() {
     setShowProofread(true);
     setProofreadResult(null);
     try {
-      setProofreadResult('AI proofreading is available. The system will check the document for clarity, compliance, and grammatical issues. Review any suggested changes and apply them manually if needed.');
-    } catch {
-      setProofreadResult('Proofreading temporarily unavailable. You can review the document manually.');
+      const resp = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-audit-draft`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ auditId, mode: 'proofread', content: editContent || audit?.admin_edited_content }),
+        }
+      );
+      const result = await resp.json();
+      if (!resp.ok) throw new Error(result.error || 'Failed to proofread');
+      setProofreadResult(result.proofread);
+    } catch (err: any) {
+      setProofreadResult({ suggestions: [], overall_quality: 'error', summary: err.message || 'Proofreading failed. Please try again.' });
     } finally {
       setProofreading(false);
     }
   };
 
-  const downloadPDF = () => {
-    // Use browser print to PDF
-    window.print();
+  const downloadPDF = async () => {
+    if (!audit) return;
+    setDownloadingPDF(true);
+    try {
+      await downloadAuditAsPDF(audit.audit_number);
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to generate PDF');
+    } finally {
+      setDownloadingPDF(false);
+    }
   };
 
   if (isLoading || !audit) {
@@ -331,10 +365,11 @@ export default function WasteAuditEditPage() {
             {(audit.status === 'finalised' || audit.status === 'signed') && (
               <button
                 onClick={downloadPDF}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                disabled={downloadingPDF}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-60"
               >
-                <Download className="w-4 h-4" />
-                Download PDF
+                {downloadingPDF ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+                {downloadingPDF ? 'Generating...' : 'Download PDF'}
               </button>
             )}
             {audit.status === 'draft' && (
@@ -385,14 +420,45 @@ export default function WasteAuditEditPage() {
         )}
 
         {/* Proofread panel */}
-        {showProofread && proofreadResult && (
+        {showProofread && (
           <div className="mb-4 bg-purple-50 border border-purple-200 rounded-lg p-4">
             <div className="flex items-start gap-3">
               <Sparkles className="w-5 h-5 text-purple-600 flex-shrink-0 mt-0.5" />
               <div className="flex-1">
                 <h4 className="text-sm font-semibold text-purple-800 mb-1">AI Proofread Results</h4>
-                <p className="text-sm text-purple-700">{proofreadResult}</p>
-                <button onClick={() => setShowProofread(false)} className="mt-2 text-xs text-purple-600 underline">Dismiss</button>
+                {proofreading ? (
+                  <div className="flex items-center gap-2 text-sm text-purple-600">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Reviewing document for compliance, clarity, and grammar...
+                  </div>
+                ) : proofreadResult ? (
+                  <>
+                    <p className="text-sm text-purple-700 mb-2">{proofreadResult.summary}</p>
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${proofreadResult.overall_quality === 'excellent' ? 'bg-green-100 text-green-700' : proofreadResult.overall_quality === 'good' ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700'}`}>
+                        {proofreadResult.overall_quality?.replace('_', ' ')}
+                      </span>
+                      <span className="text-xs text-purple-600">{proofreadResult.suggestions?.length || 0} suggestions</span>
+                    </div>
+                    {proofreadResult.suggestions && proofreadResult.suggestions.length > 0 && (
+                      <div className="space-y-2">
+                        {proofreadResult.suggestions.map((s, i) => (
+                          <div key={i} className="bg-white rounded-lg p-3 border border-purple-100">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${s.severity === 'high' ? 'bg-red-100 text-red-700' : s.severity === 'medium' ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-600'}`}>
+                                {s.severity}
+                              </span>
+                              <span className="text-xs font-medium text-gray-700">{s.section}</span>
+                            </div>
+                            <p className="text-xs text-gray-600 mb-1"><strong>Issue:</strong> {s.issue}</p>
+                            <p className="text-xs text-purple-700"><strong>Suggestion:</strong> {s.suggestion}</p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    <button onClick={() => setShowProofread(false)} className="mt-3 text-xs text-purple-600 underline">Dismiss</button>
+                  </>
+                ) : null}
               </div>
             </div>
           </div>

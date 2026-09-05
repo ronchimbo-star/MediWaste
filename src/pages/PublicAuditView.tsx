@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { useToastContext } from '../contexts/ToastContext';
-import { Check, PenLine, Download, Eye, Edit3, AlertTriangle, ShieldCheck } from 'lucide-react';
+import { Check, PenLine, Download, Eye, Edit3, AlertTriangle, ShieldCheck, Loader2 } from 'lucide-react';
 import AuditRenderer, { AuditContent } from '../components/audit/AuditRenderer';
+import { downloadAuditAsPDF } from '../utils/auditDownload';
 
 export default function PublicAuditView() {
   const { toast } = useToastContext();
@@ -14,6 +15,7 @@ export default function PublicAuditView() {
   const [repName, setRepName] = useState('');
   const [repTitle, setRepTitle] = useState('');
   const [signing, setSigning] = useState(false);
+  const [downloadingPDF, setDownloadingPDF] = useState(false);
 
   const { data: audit, isLoading } = useQuery<any>({
     queryKey: ['public-audit', shareToken],
@@ -169,11 +171,17 @@ export default function PublicAuditView() {
             <StatusBadge status={audit.status} />
             {isFullySigned && (
               <button
-                onClick={() => window.print()}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                onClick={async () => {
+                  setDownloadingPDF(true);
+                  try { await downloadAuditAsPDF(audit.audit_number); }
+                  catch { toast.error('Failed to generate PDF'); }
+                  finally { setDownloadingPDF(false); }
+                }}
+                disabled={downloadingPDF}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-60"
               >
-                <Download className="w-4 h-4" />
-                Download PDF
+                {downloadingPDF ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+                {downloadingPDF ? 'Generating...' : 'Download PDF'}
               </button>
             )}
           </div>

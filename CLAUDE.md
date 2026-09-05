@@ -221,12 +221,10 @@ Each table is an array of arrays (rows). First row is always the header row.
 ### Edge Functions
 
 1. **`generate-audit-draft`** (`supabase/functions/generate-audit-draft/index.ts`)
-   - POST with `{ auditId }`
-   - Fetches audit + selected waste streams from database
-   - Sends structured prompt to OpenAI (gpt-4o-mini, temperature 0.3, JSON response format)
-   - AI generates full audit content matching the template (practice details, waste stream assessments, segregation observations, classification, compliance, declarations)
-   - Saves to `ai_generated_content` and `admin_edited_content` fields
-   - Logs action to `waste_audit_logs`
+   - POST with `{ auditId }` (default mode) or `{ auditId, mode: "proofread", content }` (proofread mode)
+   - **Generate mode**: Fetches audit + selected waste streams from database, sends structured prompt to OpenAI (gpt-4o-mini, temperature 0.3, JSON response format), saves full audit content to `ai_generated_content` and `admin_edited_content` fields
+   - **Proofread mode**: Sends current audit content to OpenAI for review (clarity, compliance, grammar, factual accuracy, EWC code verification), returns structured suggestions with severity levels (high/medium/low), overall quality rating, and summary
+   - Logs all actions to `waste_audit_logs`
 
 2. **`audit-notification`** (`supabase/functions/audit-notification/index.ts`)
    - POST with `{ type, auditId, recipientEmail, recipientName, auditNumber, shareToken }`
@@ -299,7 +297,9 @@ Both parties can download PDF (browser print-to-PDF)
 Audit appears in customer portal alongside certificates
 ```
 
-### Configuration
+### PDF Generation
+
+PDF download uses `html2canvas` + `jspdf` (both already in `package.json`). The utility is at `src/utils/auditDownload.ts` and follows the same pattern as `src/utils/certificateDownload.ts`. The `AuditRenderer` component has `id="audit-render"` on its root div for canvas capture. The PDF includes multi-page support (slicing tall content across A4 pages) with a footer on each page: "© MediWaste — Clinical Waste Management Solutions" and page numbers. Available on both the admin edit page (when finalised/signed) and the public view (when fully signed).
 
 - Edge functions registered in `supabase/config.toml` with `verify_jwt = false`
 - `OPENAI_API_KEY` and `RESEND_API_KEY` must be configured as edge function secrets
@@ -307,18 +307,10 @@ Audit appears in customer portal alongside certificates
 
 ### What's Left to Implement
 
-1. **AI Proofread** — The "AI Proofread" button currently shows a placeholder message. To fully implement: create an edge function that sends the current content to OpenAI for review (clarity, compliance, grammar) and returns suggested edits the admin can accept/reject.
+1. **Side-by-Side Diff View** — When reviewing client edits, the admin sees the client's version directly. A diff view showing original vs client-edited content would improve the review experience.
 
-2. **Rich Text Editor** — Currently editing is done via inline text inputs on table cells. A richer editing experience (TipTap/Quill) could be added for more complex edits, but the current approach is functional and matches the tabular structure of the audit.
+2. **Resend Email Button** — If the client loses the email, there's no "Resend" button on the admin edit page yet.
 
-3. **Side-by-Side Diff View** — When reviewing client edits, the admin sees the client's version directly. A diff view showing original vs client-edited content would improve the review experience.
+3. **Admin Dashboard Widget** — The admin dashboard doesn't yet show a count of pending waste audits or audits needing attention.
 
-4. **PDF Generation via Library** — PDF download currently uses browser print-to-PDF (`window.print()`). A library like `@react-pdf/renderer` or `jspdf` could generate a more controlled PDF with exact MediWaste branding, page numbers, and footer.
-
-5. **Custom Waste Streams** — Admin can add custom waste streams during audit creation, but the UI for this is not yet built (only pre-seeded streams are selectable).
-
-6. **Audit Templates by Practice Type** — Different practice types (dental, aesthetic, tattoo, veterinary) could have different default sections and questions. The AI prompt is currently generic.
-
-7. **Resend Email to Client** — If the client loses the email, there's no "Resend" button on the admin edit page yet.
-
-8. **Admin Dashboard Widget** — The admin dashboard doesn't yet show a count of pending waste audits or audits needing attention.
+4. **Practice-Type-Specific Templates** — Different practice types (dental, aesthetic, tattoo, veterinary) could have different default sections and questions. The AI prompt is currently generic but handles this through the practice type field.
