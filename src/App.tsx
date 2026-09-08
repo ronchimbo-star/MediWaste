@@ -80,6 +80,7 @@ const AuditPage = lazy(() => import('./pages/AuditPage'));
 const AdminAuditsPage = lazy(() => import('./pages/admin/AdminAuditsPage'));
 const AdminAuditDetailPage = lazy(() => import('./pages/admin/AdminAuditDetailPage'));
 const DriverUploadPage = lazy(() => import('./pages/DriverUploadPage'));
+const MarkdownForAgentsPage = lazy(() => import('./pages/admin/MarkdownForAgentsPage'));
 
 function PageLoader() {
   return (
@@ -237,6 +238,7 @@ function App() {
           <Route path="/staff/dashboard" element={<ProtectedRoute><StaffDashboard /></ProtectedRoute>} />
           <Route path="/customer/dashboard" element={<ProtectedRoute><CustomerDashboard /></ProtectedRoute>} />
           <Route path="/c/:slug" element={<SeoPage />} />
+          <Route path="/admin/markdown-for-agents" element={<ProtectedRoute><MarkdownForAgentsPage /></ProtectedRoute>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>

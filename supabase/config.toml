@@ -57,3 +57,6 @@ verify_jwt = false
 
 [functions.audit-notification]
 verify_jwt = false
+
+[functions.fetch-markdown]
+verify_jwt = true
