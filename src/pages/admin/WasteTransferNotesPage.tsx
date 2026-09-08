@@ -876,40 +876,72 @@ function WTNViewModal({ wtn, onClose }: WTNViewModalProps) {
       clone.style.position = 'absolute';
       clone.style.left = '-9999px';
       clone.style.top = '0';
-      clone.style.width = '900px';
+      clone.style.width = `${element.scrollWidth}px`;
+      clone.style.maxWidth = 'none';
+      clone.style.transform = 'none';
+      clone.style.boxSizing = 'border-box';
+      clone.querySelectorAll('img').forEach(img => {
+        img.style.maxWidth = '100%';
+        img.style.height = 'auto';
+        img.style.objectFit = 'contain';
+        img.style.display = 'block';
+      });
       document.body.appendChild(clone);
       const images = clone.querySelectorAll('img');
       await Promise.all(Array.from(images).map(img => new Promise<void>(res => { if (img.complete) res(); else { img.onload = () => res(); img.onerror = () => res(); } })));
       await new Promise(r => setTimeout(r, 300));
-      const canvas = await html2canvas(clone, { scale: 2, useCORS: true, allowTaint: true, backgroundColor: '#ffffff', logging: false });
+      const canvas = await html2canvas(clone, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: false,
+        backgroundColor: '#ffffff',
+        logging: false,
+        width: clone.scrollWidth,
+        height: clone.scrollHeight,
+      });
       document.body.removeChild(clone);
-      const imgData = canvas.toDataURL('image/png');
+
       const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
       const pageW = pdf.internal.pageSize.getWidth();
       const pageH = pdf.internal.pageSize.getHeight();
-      const imgAspect = canvas.height / canvas.width;
-      const imgH = pageW * imgAspect;
+      const marginX = 8;
+      const marginTop = 8;
+      const footerHeight = 12;
+      const contentW = pageW - marginX * 2;
+      const contentH = pageH - marginTop - footerHeight;
+      const pxPerMm = canvas.width / contentW;
+      const pageSliceHeightPx = Math.floor(contentH * pxPerMm);
+      let sourceY = 0;
+      let pageNumber = 0;
 
-      if (imgH <= pageH) {
-        const y = (pageH - imgH) / 2;
-        pdf.addImage(imgData, 'PNG', 0, y, pageW, imgH);
-      } else {
-        // Multi-page: slice image across pages
-        let renderedH = 0;
-        let page = 0;
-        while (renderedH < imgH) {
-          if (page > 0) pdf.addPage();
-          const sliceY = renderedH / imgH * canvas.height;
-          const sliceH = Math.min(pageH / imgH * canvas.height, canvas.height - sliceY);
-          const sliceCanvas = document.createElement('canvas');
-          sliceCanvas.width = canvas.width;
-          sliceCanvas.height = sliceH;
-          sliceCanvas.getContext('2d')!.drawImage(canvas, 0, sliceY, canvas.width, sliceH, 0, 0, canvas.width, sliceH);
-          pdf.addImage(sliceCanvas.toDataURL('image/png'), 'PNG', 0, 0, pageW, (sliceH / canvas.width) * pageW);
-          renderedH += pageH;
-          page++;
-        }
+      while (sourceY < canvas.height) {
+        if (pageNumber > 0) pdf.addPage();
+        const sliceHeightPx = Math.min(pageSliceHeightPx, canvas.height - sourceY);
+        const sliceCanvas = document.createElement('canvas');
+        sliceCanvas.width = canvas.width;
+        sliceCanvas.height = sliceHeightPx;
+        const context = sliceCanvas.getContext('2d');
+        if (!context) throw new Error('Unable to prepare PDF page');
+        context.fillStyle = '#ffffff';
+        context.fillRect(0, 0, sliceCanvas.width, sliceCanvas.height);
+        context.drawImage(canvas, 0, sourceY, canvas.width, sliceHeightPx, 0, 0, canvas.width, sliceHeightPx);
+        const renderedHeight = sliceHeightPx / pxPerMm;
+        pdf.addImage(sliceCanvas.toDataURL('image/png'), 'PNG', marginX, marginTop, contentW, renderedHeight);
+        pageNumber += 1;
+        sourceY += sliceHeightPx;
       }
+
+      const totalPages = pdf.getNumberOfPages();
+      for (let page = 1; page <= totalPages; page += 1) {
+        pdf.setPage(page);
+        pdf.setDrawColor(220, 220, 220);
+        pdf.line(marginX, pageH - footerHeight + 1, pageW - marginX, pageH - footerHeight + 1);
+        pdf.setFontSize(7);
+        pdf.setTextColor(120, 120, 120);
+        pdf.text('© MediWaste — Clinical Waste Management Solutions', marginX, pageH - 5);
+        pdf.text(`Page ${page} of ${totalPages}`, pageW - marginX, pageH - 5, { align: 'right' });
+      }
+
       pdf.save(`WTN-${wtn.wtn_number}.pdf`);
     } finally {
       setSavingPdf(false);
@@ -1134,7 +1166,7 @@ function WTNViewModal({ wtn, onClose }: WTNViewModalProps) {
                         src={p.job_photo.photo_url}
                         alt={p.job_photo.caption || `Photo ${i + 1}`}
                         crossOrigin="anonymous"
-                        className="w-full h-36 object-cover"
+                        className="w-full h-36 object-contain bg-gray-100"
                       />
                       {p.job_photo.caption && (
                         <p className="text-xs text-gray-600 px-2 py-1 bg-gray-50 truncate">{p.job_photo.caption}</p>
