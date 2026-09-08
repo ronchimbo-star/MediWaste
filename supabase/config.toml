@@ -60,3 +60,6 @@ verify_jwt = false
 
 [functions.fetch-markdown]
 verify_jwt = true
+
+[functions.serve-markdown]
+verify_jwt = false

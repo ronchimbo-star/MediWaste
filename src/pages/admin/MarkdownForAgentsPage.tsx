@@ -1,44 +1,58 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import AdminLayout from '../../components/admin/AdminLayout';
 import { useToastContext } from '../../contexts/ToastContext';
+import { useAuth } from '../../hooks/useAuth';
 import { convertHtmlToMarkdown, type ConversionResult } from '../../utils/htmlToMarkdown';
-import { Link2, Loader2, Copy, Download, FileText, Code2, Eye, Trash2, Zap, ArrowRight } from 'lucide-react';
+import { supabase } from '../../lib/supabase';
+import { Link2, Loader2, Copy, Download, FileText, Code2, Eye, Zap, History, GitCompare, Globe, Lock } from 'lucide-react';
 
-interface HistoryItem {
-  url: string;
+interface MarkdownVersion {
+  id: string;
+  source_url: string;
   title: string;
-  timestamp: number;
-  savingsPercent: number;
+  description: string | null;
+  image: string | null;
+  markdown_content: string;
+  content_signal: string;
+  token_counts: { original: number; markdown: number; savings: number; savingsPercent: number };
+  jsonld_count: number;
+  version_number: number;
+  content_hash: string;
+  is_latest: boolean;
+  is_published: boolean;
+  public_slug: string | null;
+  created_at: string;
 }
 
 export default function MarkdownForAgentsPage() {
   const { toast } = useToastContext();
+  const { user } = useAuth();
   const [url, setUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ConversionResult | null>(null);
   const [rawHtml, setRawHtml] = useState('');
-  const [activeTab, setActiveTab] = useState<'markdown' | 'html' | 'preview'>('markdown');
+  const [activeTab, setActiveTab] = useState<'markdown' | 'html' | 'preview' | 'versions'>('markdown');
   const [copied, setCopied] = useState(false);
-  const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [versions, setVersions] = useState<MarkdownVersion[]>([]);
 
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem('md-agents-history');
-      if (stored) setHistory(JSON.parse(stored));
-    } catch { /* ignore */ }
+  const [diffVersionA, setDiffVersionA] = useState<MarkdownVersion | null>(null);
+  const [diffVersionB, setDiffVersionB] = useState<MarkdownVersion | null>(null);
+  const [showDiff, setShowDiff] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [publishing, setPublishing] = useState<string | null>(null);
+
+  const fetchVersions = useCallback(async (sourceUrl: string) => {
+    const { data, error } = await supabase
+      .from('markdown_versions')
+      .select('*')
+      .eq('source_url', sourceUrl)
+      .order('version_number', { ascending: false });
+    if (error) {
+      console.error('Error fetching versions:', error);
+      return;
+    }
+    setVersions(data || []);
   }, []);
-
-  const saveToHistory = useCallback((r: ConversionResult, inputUrl: string) => {
-    const item: HistoryItem = {
-      url: inputUrl,
-      title: r.metadata.title || inputUrl,
-      timestamp: Date.now(),
-      savingsPercent: r.tokenCounts.savingsPercent,
-    };
-    const updated = [item, ...history.filter((h) => h.url !== inputUrl)].slice(0, 10);
-    setHistory(updated);
-    localStorage.setItem('md-agents-history', JSON.stringify(updated));
-  }, [history]);
 
   const handleConvert = async () => {
     if (!url.trim()) {
@@ -53,6 +67,8 @@ export default function MarkdownForAgentsPage() {
     setLoading(true);
     setResult(null);
     setRawHtml('');
+    setVersions([]);
+    setShowDiff(false);
     try {
       const resp = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/fetch-markdown`, {
         method: 'POST',
@@ -68,12 +84,78 @@ export default function MarkdownForAgentsPage() {
       setRawHtml(data.html);
       const converted = convertHtmlToMarkdown(data.html, data.finalUrl || normalizedUrl, data.contentSignal || 'ai-train=yes, search=yes, ai-input=yes');
       setResult(converted);
-      saveToHistory(converted, normalizedUrl);
+      await fetchVersions(normalizedUrl);
       toast.success(`Converted — ${converted.tokenCounts.savingsPercent}% token savings`);
     } catch (err: any) {
       toast.error(err.message || 'Conversion failed');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSaveVersion = async () => {
+    if (!result || !url) return;
+    setSaving(true);
+    try {
+      const normalizedUrl = url.trim().startsWith('http') ? url.trim() : 'https://' + url.trim();
+      // Compute a simple hash
+      const encoder = new TextEncoder();
+      const hashBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(result.markdown));
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      const contentHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+      // Check if content changed from latest version
+      const latest = versions.find(v => v.is_latest);
+      if (latest && latest.content_hash === contentHash) {
+        toast.info('Content unchanged from latest version — no new version saved');
+        setSaving(false);
+        return;
+      }
+
+      const { error } = await supabase.from('markdown_versions').insert({
+        source_url: normalizedUrl,
+        source_type: 'manual',
+        title: result.metadata.title || normalizedUrl,
+        description: result.metadata.description || null,
+        image: result.metadata.image || null,
+        markdown_content: result.markdown,
+        content_signal: result.contentSignal,
+        token_counts: result.tokenCounts,
+        jsonld_count: result.jsonld.length,
+        content_hash: contentHash,
+        created_by: user?.id || null,
+      });
+
+      if (error) throw error;
+      toast.success('Version saved to database');
+      await fetchVersions(normalizedUrl);
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to save version');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleTogglePublish = async (version: MarkdownVersion) => {
+    setPublishing(version.id);
+    try {
+      const newPublished = !version.is_published;
+      const { error } = await supabase
+        .from('markdown_versions')
+        .update({ is_published: newPublished })
+        .eq('id', version.id);
+
+      if (error) throw error;
+
+      const updated = versions.map(v =>
+        v.id === version.id ? { ...v, is_published: newPublished, public_slug: newPublished ? v.public_slug : v.public_slug } : v
+      );
+      setVersions(updated);
+      toast.success(newPublished ? 'Markdown published — AI bots can now access it' : 'Markdown unpublished');
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to toggle publish');
+    } finally {
+      setPublishing(null);
     }
   };
 
@@ -100,9 +182,15 @@ export default function MarkdownForAgentsPage() {
     URL.revokeObjectURL(a.href);
   };
 
-  const clearHistory = () => {
-    setHistory([]);
-    localStorage.removeItem('md-agents-history');
+  const loadVersion = (version: MarkdownVersion) => {
+    setResult({
+      markdown: version.markdown_content,
+      metadata: { title: version.title, description: version.description || '', image: version.image || '', url: version.source_url },
+      jsonld: [],
+      tokenCounts: version.token_counts,
+      contentSignal: version.content_signal,
+    });
+    setActiveTab('markdown');
   };
 
   const isValidUrl = (val: string): boolean => {
@@ -114,12 +202,36 @@ export default function MarkdownForAgentsPage() {
     }
   };
 
+  const computeDiff = (a: string, b: string): { type: 'same' | 'added' | 'removed'; line: string }[] => {
+    const linesA = a.split('\n');
+    const linesB = b.split('\n');
+    const maxLen = Math.max(linesA.length, linesB.length);
+    const result: { type: 'same' | 'added' | 'removed'; line: string }[] = [];
+    for (let i = 0; i < maxLen; i++) {
+      const lineA = linesA[i];
+      const lineB = linesB[i];
+      if (lineA === undefined && lineB !== undefined) {
+        result.push({ type: 'added', line: lineB });
+      } else if (lineA !== undefined && lineB === undefined) {
+        result.push({ type: 'removed', line: lineA });
+      } else if (lineA === lineB) {
+        result.push({ type: 'same', line: lineA });
+      } else {
+        if (lineA !== undefined) result.push({ type: 'removed', line: lineA });
+        if (lineB !== undefined) result.push({ type: 'added', line: lineB });
+      }
+    }
+    return result;
+  };
+
+  const diffLines = diffVersionA && diffVersionB ? computeDiff(diffVersionA.markdown_content, diffVersionB.markdown_content) : [];
+
   return (
     <AdminLayout pageTitle="Markdown for Agents" breadcrumbs={[{ label: 'Dashboard', path: '/admin' }, { label: 'Markdown for Agents' }]}>
       <div className="max-w-6xl mx-auto px-4 py-8">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-900">Markdown for Agents</h1>
-          <p className="text-sm text-gray-500 mt-1">Convert any webpage into clean, structured Markdown optimised for AI consumption.</p>
+          <p className="text-sm text-gray-500 mt-1">Convert any webpage into clean, structured Markdown — with version history, diffing, and public AI bot access.</p>
         </div>
 
         {/* URL Input */}
@@ -150,36 +262,6 @@ export default function MarkdownForAgentsPage() {
           )}
         </div>
 
-        {/* History */}
-        {history.length > 0 && !result && (
-          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 mb-6">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-semibold text-gray-700">Recent Conversions</h3>
-              <button onClick={clearHistory} className="text-xs text-gray-400 hover:text-red-500 flex items-center gap-1">
-                <Trash2 className="w-3.5 h-3.5" /> Clear
-              </button>
-            </div>
-            <div className="space-y-2">
-              {history.map((item, i) => (
-                <div
-                  key={i}
-                  onClick={() => { setUrl(item.url); }}
-                  className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors group"
-                >
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-800 truncate">{item.title}</p>
-                    <p className="text-xs text-gray-400 truncate">{item.url}</p>
-                  </div>
-                  <span className="text-xs font-mono text-green-600 bg-green-50 px-2 py-0.5 rounded-full whitespace-nowrap">
-                    -{item.savingsPercent}%
-                  </span>
-                  <ArrowRight className="w-4 h-4 text-gray-300 group-hover:text-red-500 transition-colors" />
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
         {/* Results */}
         {result && (
           <>
@@ -202,29 +284,51 @@ export default function MarkdownForAgentsPage() {
               </div>
             </div>
 
-            {/* Tabs + Actions */}
+            {/* Action Bar */}
+            <div className="flex flex-wrap items-center gap-2 mb-4">
+              <button
+                onClick={handleSaveVersion}
+                disabled={saving}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors disabled:opacity-50"
+              >
+                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <History className="w-4 h-4" />}
+                {saving ? 'Saving...' : 'Save as Version'}
+              </button>
+              <button
+                onClick={handleCopy}
+                className="flex items-center gap-1.5 px-3 py-2 text-sm text-gray-600 hover:text-gray-900 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                <Copy className="w-4 h-4" />
+                {copied ? 'Copied!' : 'Copy'}
+              </button>
+              <button
+                onClick={handleDownload}
+                className="flex items-center gap-1.5 px-3 py-2 text-sm text-gray-600 hover:text-gray-900 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                <Download className="w-4 h-4" />
+                Download .md
+              </button>
+              {versions.length > 0 && (
+                <button
+                  onClick={() => setActiveTab(activeTab === 'versions' ? 'markdown' : 'versions')}
+                  className="flex items-center gap-1.5 px-3 py-2 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  <History className="w-4 h-4" />
+                  Versions ({versions.length})
+                </button>
+              )}
+            </div>
+
+            {/* Tabs */}
             <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
               <div className="flex items-center justify-between border-b border-gray-100 px-4 py-2.5">
                 <div className="flex gap-1">
                   <TabButton active={activeTab === 'markdown'} onClick={() => setActiveTab('markdown')} icon={<FileText className="w-4 h-4" />} label="Markdown" />
                   <TabButton active={activeTab === 'html'} onClick={() => setActiveTab('html')} icon={<Code2 className="w-4 h-4" />} label="Raw HTML" />
                   <TabButton active={activeTab === 'preview'} onClick={() => setActiveTab('preview')} icon={<Eye className="w-4 h-4" />} label="Preview" />
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={handleCopy}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-gray-600 hover:text-gray-900 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-                  >
-                    <Copy className="w-3.5 h-3.5" />
-                    {copied ? 'Copied!' : 'Copy'}
-                  </button>
-                  <button
-                    onClick={handleDownload}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-gray-600 hover:text-gray-900 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-                  >
-                    <Download className="w-3.5 h-3.5" />
-                    Download .md
-                  </button>
+                  {versions.length > 0 && (
+                    <TabButton active={activeTab === 'versions'} onClick={() => setActiveTab('versions')} icon={<History className="w-4 h-4" />} label={`Versions (${versions.length})`} />
+                  )}
                 </div>
               </div>
 
@@ -244,20 +348,138 @@ export default function MarkdownForAgentsPage() {
                 {activeTab === 'preview' && (
                   <div className="max-h-[600px] overflow-y-auto prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: renderMarkdownPreview(result.markdown) }} />
                 )}
+                {activeTab === 'versions' && (
+                  <div className="max-h-[600px] overflow-y-auto">
+                    {/* Diff controls */}
+                    {versions.length >= 2 && (
+                      <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-100">
+                        <div className="flex items-center gap-3 flex-wrap">
+                          <GitCompare className="w-4 h-4 text-blue-600" />
+                          <select
+                            value={diffVersionA?.id || ''}
+                            onChange={(e) => setDiffVersionA(versions.find(v => v.id === e.target.value) || null)}
+                            className="text-sm border border-gray-200 rounded px-2 py-1"
+                          >
+                            <option value="">Version A...</option>
+                            {versions.map(v => <option key={v.id} value={v.id}>v{v.version_number} — {new Date(v.created_at).toLocaleDateString('en-GB')}</option>)}
+                          </select>
+                          <span className="text-gray-400">vs</span>
+                          <select
+                            value={diffVersionB?.id || ''}
+                            onChange={(e) => setDiffVersionB(versions.find(v => v.id === e.target.value) || null)}
+                            className="text-sm border border-gray-200 rounded px-2 py-1"
+                          >
+                            <option value="">Version B...</option>
+                            {versions.map(v => <option key={v.id} value={v.id}>v{v.version_number} — {new Date(v.created_at).toLocaleDateString('en-GB')}</option>)}
+                          </select>
+                          <button
+                            onClick={() => setShowDiff(true)}
+                            disabled={!diffVersionA || !diffVersionB}
+                            className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+                          >
+                            Compare
+                          </button>
+                          {showDiff && (
+                            <button onClick={() => setShowDiff(false)} className="px-3 py-1 text-sm text-gray-500 hover:text-gray-700">
+                              Hide diff
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Diff output */}
+                    {showDiff && diffLines.length > 0 && (
+                      <div className="mb-4 rounded-lg border border-gray-200 overflow-hidden">
+                        <div className="bg-gray-50 px-3 py-2 text-xs font-semibold text-gray-600 border-b border-gray-200">
+                          Diff: v{diffVersionA?.version_number} → v{diffVersionB?.version_number}
+                        </div>
+                        <div className="max-h-[300px] overflow-y-auto font-mono text-xs">
+                          {diffLines.map((line, i) => (
+                            <div
+                              key={i}
+                              className={`px-3 py-0.5 ${
+                                line.type === 'added' ? 'bg-green-50 text-green-800' :
+                                line.type === 'removed' ? 'bg-red-50 text-red-800' :
+                                'text-gray-500'
+                              }`}
+                            >
+                              <span className="inline-block w-5 text-gray-400">
+                                {line.type === 'added' ? '+' : line.type === 'removed' ? '-' : ' '}
+                              </span>
+                              {line.line}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Version list */}
+                    <div className="space-y-2">
+                      {versions.map(v => (
+                        <div key={v.id} className={`border rounded-lg p-3 ${v.is_latest ? 'border-blue-300 bg-blue-50' : 'border-gray-200 bg-white'}`}>
+                          <div className="flex items-center justify-between">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm font-semibold text-gray-800">Version {v.version_number}</span>
+                                {v.is_latest && <span className="text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full">Latest</span>}
+                                {v.is_published && <span className="text-xs bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full flex items-center gap-1"><Globe className="w-3 h-3" /> Published</span>}
+                              </div>
+                              <p className="text-xs text-gray-500 mt-1">
+                                {new Date(v.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                {' — '}{v.token_counts.savingsPercent}% savings, {v.jsonld_count} JSON-LD blocks
+                              </p>
+                              {v.is_published && v.public_slug && (
+                                <a
+                                  href={`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/serve-markdown/${v.public_slug}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-xs text-blue-600 hover:underline mt-1 inline-block"
+                                >
+                                  Public URL: /serve-markdown/{v.public_slug}
+                                </a>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={() => loadVersion(v)}
+                                className="text-xs px-2 py-1 text-gray-600 hover:text-gray-900 border border-gray-200 rounded hover:bg-gray-50"
+                              >
+                                Load
+                              </button>
+                              <button
+                                onClick={() => handleTogglePublish(v)}
+                                disabled={publishing === v.id}
+                                className={`text-xs px-2 py-1 rounded border flex items-center gap-1 ${
+                                  v.is_published
+                                    ? 'text-orange-600 border-orange-200 hover:bg-orange-50'
+                                    : 'text-green-600 border-green-200 hover:bg-green-50'
+                                } disabled:opacity-50`}
+                              >
+                                {publishing === v.id ? <Loader2 className="w-3 h-3 animate-spin" /> : v.is_published ? <Lock className="w-3 h-3" /> : <Globe className="w-3 h-3" />}
+                                {v.is_published ? 'Unpublish' : 'Publish'}
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </>
         )}
 
         {/* Empty State */}
-        {!result && !loading && history.length === 0 && (
+        {!result && !loading && (
           <div className="text-center py-16">
             <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
               <Zap className="w-8 h-8 text-red-500" />
             </div>
             <h3 className="text-lg font-semibold text-gray-800 mb-1">Paste a URL to get started</h3>
             <p className="text-sm text-gray-500 max-w-md mx-auto">
-              Convert any webpage into clean Markdown with YAML frontmatter, preserved JSON-LD, and token savings — all processed locally in your browser.
+              Convert any webpage into clean Markdown with YAML frontmatter, preserved JSON-LD, version history, and public AI bot access.
             </p>
           </div>
         )}

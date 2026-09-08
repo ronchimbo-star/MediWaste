@@ -2,7 +2,10 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useToastContext } from '../../contexts/ToastContext';
+import { useAuth } from '../../hooks/useAuth';
+import { convertHtmlToMarkdown } from '../../utils/htmlToMarkdown';
 import AdminLayout from '../../components/admin/AdminLayout';
+import { Zap, Loader2, Globe } from 'lucide-react';
 
 interface NewsArticle {
   id: string;
@@ -17,9 +20,12 @@ interface NewsArticle {
 
 export default function NewsManagementPage() {
   const { toast } = useToastContext();
+  const { user } = useAuth();
   const [articles, setArticles] = useState<NewsArticle[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'published' | 'draft'>('all');
+  const [generatingMd, setGeneratingMd] = useState<string | null>(null);
+  const [markdownVersions, setMarkdownVersions] = useState<Record<string, { version: number; is_published: boolean; public_slug: string | null }>>({});
 
   useEffect(() => {
     fetchArticles();
@@ -102,6 +108,89 @@ export default function NewsManagementPage() {
   const filteredArticles = articles;
   const publishedCount = articles.filter(a => a.status === 'published').length;
   const draftCount = articles.filter(a => a.status === 'draft').length;
+
+  // Fetch markdown version status for published articles
+  useEffect(() => {
+    if (articles.length === 0) return;
+    const publishedSlugs = articles.filter(a => a.status === 'published').map(a => a.slug);
+    if (publishedSlugs.length === 0) return;
+    (async () => {
+      const { data } = await supabase
+        .from('markdown_versions')
+        .select('article_id, version_number, is_published, public_slug')
+        .in('article_id', articles.filter(a => a.status === 'published').map(a => a.id))
+        .order('version_number', { ascending: false });
+      if (data) {
+        const map: Record<string, { version: number; is_published: boolean; public_slug: string | null }> = {};
+        data.forEach(row => {
+          if (!map[row.article_id] || row.version_number > map[row.article_id].version) {
+            map[row.article_id] = { version: row.version_number, is_published: row.is_published, public_slug: row.public_slug };
+          }
+        });
+        setMarkdownVersions(map);
+      }
+    })();
+  }, [articles]);
+
+  const handleGenerateMarkdown = async (article: NewsArticle) => {
+    setGeneratingMd(article.id);
+    try {
+      const publicUrl = `${window.location.origin}/news/${article.slug}`;
+      const resp = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/fetch-markdown`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ url: publicUrl }),
+      });
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.error || 'Failed to fetch article');
+
+      const converted = convertHtmlToMarkdown(data.html, data.finalUrl || publicUrl, data.contentSignal || 'ai-train=yes, search=yes, ai-input=yes');
+
+      // Compute hash
+      const encoder = new TextEncoder();
+      const hashBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(converted.markdown));
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      const contentHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+      const { error } = await supabase.from('markdown_versions').insert({
+        source_url: publicUrl,
+        source_type: 'news_article',
+        article_id: article.id,
+        title: converted.metadata.title || article.title,
+        description: converted.metadata.description || null,
+        image: converted.metadata.image || null,
+        markdown_content: converted.markdown,
+        content_signal: converted.contentSignal,
+        token_counts: converted.tokenCounts,
+        jsonld_count: converted.jsonld.length,
+        content_hash: contentHash,
+        created_by: user?.id || null,
+      });
+
+      if (error) throw error;
+      toast.success(`Markdown v${(markdownVersions[article.id]?.version || 0) + 1} generated for "${article.title}"`);
+      // Refresh version status
+      const { data: versions } = await supabase
+        .from('markdown_versions')
+        .select('version_number, is_published, public_slug')
+        .eq('article_id', article.id)
+        .order('version_number', { ascending: false })
+        .limit(1);
+      if (versions && versions.length > 0) {
+        setMarkdownVersions(prev => ({
+          ...prev,
+          [article.id]: { version: versions[0].version_number, is_published: versions[0].is_published, public_slug: versions[0].public_slug }
+        }));
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to generate markdown');
+    } finally {
+      setGeneratingMd(null);
+    }
+  };
 
   return (
     <AdminLayout pageTitle="News Management" breadcrumbs={[{ label: 'Dashboard', path: '/admin' }, { label: 'News' }]}>
@@ -267,6 +356,28 @@ export default function NewsManagementPage() {
                               className="text-blue-600 hover:text-blue-700 font-medium text-sm"
                             >
                               View
+                            </a>
+                          )}
+                          {article.status === 'published' && (
+                            <button
+                              onClick={() => handleGenerateMarkdown(article)}
+                              disabled={generatingMd === article.id}
+                              className="flex items-center gap-1 text-purple-600 hover:text-purple-700 font-medium text-sm disabled:opacity-50"
+                              title="Generate Markdown for AI agents"
+                            >
+                              {generatingMd === article.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Zap className="w-3.5 h-3.5" />}
+                              {markdownVersions[article.id] ? `v${markdownVersions[article.id].version}` : 'MD'}
+                            </button>
+                          )}
+                          {article.status === 'published' && markdownVersions[article.id]?.is_published && markdownVersions[article.id]?.public_slug && (
+                            <a
+                              href={`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/serve-markdown/${markdownVersions[article.id].public_slug}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-1 text-green-600 hover:text-green-700 font-medium text-sm"
+                              title="Public markdown URL for AI bots"
+                            >
+                              <Globe className="w-3.5 h-3.5" />
                             </a>
                           )}
                           <Link
