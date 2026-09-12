@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import CertificatePreview from '../components/certificates/CertificatePreview';
+import { useSiteSettings } from '../hooks/useSiteSettings';
 import { downloadCertificateAsPDF } from '../utils/certificateDownload';
 import CollectionRequestModal from '../components/CollectionRequestModal';
 import { Download, Award, FileText, CheckCircle, XCircle, Clock, MapPin, Phone, Mail, Building, AlertTriangle, AlertOctagon, Truck, Loader, Eye, X } from 'lucide-react';
@@ -48,6 +49,7 @@ export default function CompliancePage() {
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [selectedWtnId, setSelectedWtnId] = useState<string | null>(null);
+  const { settings: siteSettings } = useSiteSettings();
 
   const { data: cert, isLoading, error } = useQuery({
     queryKey: ['compliance-cert', token],
@@ -100,6 +102,9 @@ export default function CompliancePage() {
     }
   };
   const customer = cert?.mw_customers;
+  const contactPhone = siteSettings?.phone_number?.trim() || '';
+  const contactPhoneHref = contactPhone.replace(/[^\d+]/g, '');
+  const contactEmail = siteSettings?.contact_email?.trim() || '';
 
   if (isLoading) {
     return (
@@ -173,12 +178,16 @@ export default function CompliancePage() {
           <div className="bg-white border border-gray-200 rounded-xl p-6 mt-6">
             <p className="text-sm font-semibold text-gray-900 mb-3">Contact MediWaste</p>
             <div className="space-y-2">
-              <a href="tel:08000469806" className="flex items-center justify-center gap-2 text-red-600 hover:text-red-700 text-sm font-medium">
-                <Phone size={16} /> 0800 046 9806
-              </a>
-              <a href="mailto:hello@mediwaste.co.uk" className="flex items-center justify-center gap-2 text-gray-600 hover:text-gray-800 text-sm">
-                <Mail size={16} /> hello@mediwaste.co.uk
-              </a>
+              {contactPhone && contactPhoneHref && (
+                <a href={`tel:${contactPhoneHref}`} className="flex items-center justify-center gap-2 text-red-600 hover:text-red-700 text-sm font-medium">
+                  <Phone size={16} /> {contactPhone}
+                </a>
+              )}
+              {contactEmail && (
+                <a href={`mailto:${contactEmail}`} className="flex items-center justify-center gap-2 text-gray-600 hover:text-gray-800 text-sm">
+                  <Mail size={16} /> {contactEmail}
+                </a>
+              )}
             </div>
           </div>
           <p className="text-xs text-gray-400 mt-4 font-mono">Reference: {cert.certificate_number}</p>
