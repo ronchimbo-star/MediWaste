@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/useAuth';
 import AdminLayout from '../../components/admin/AdminLayout';
 import { useToastContext } from '../../contexts/ToastContext';
-import { Plus, Award, Search, Eye, FileEdit as Edit, ExternalLink, CheckCircle, XCircle, Clock, AlertTriangle, Pause, Play, Archive, Trash2, AlertOctagon } from 'lucide-react';
+import { Plus, Award, Search, Eye, FileEdit as Edit, ExternalLink, CheckCircle, XCircle, Clock, AlertTriangle, Pause, Play, Archive, Trash2 } from 'lucide-react';
 
 interface Certificate {
   id: string;
