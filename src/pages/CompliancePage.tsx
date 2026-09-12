@@ -5,7 +5,7 @@ import { supabase } from '../lib/supabase';
 import CertificatePreview from '../components/certificates/CertificatePreview';
 import { downloadCertificateAsPDF } from '../utils/certificateDownload';
 import CollectionRequestModal from '../components/CollectionRequestModal';
-import { Download, Award, FileText, CheckCircle, XCircle, Clock, MapPin, Phone, Mail, Building, AlertTriangle, Truck, Loader, Eye, X } from 'lucide-react';
+import { Download, Award, FileText, CheckCircle, XCircle, Clock, MapPin, Phone, Mail, Building, AlertTriangle, AlertOctagon, Truck, Loader, Eye, X } from 'lucide-react';
 
 interface WasteTransferNote {
   id: string;
@@ -27,6 +27,8 @@ function statusBadge(status: string) {
     expired: { label: 'Expired', classes: 'bg-red-100 text-red-700 border-red-200', icon: <XCircle size={14} /> },
     revoked: { label: 'Revoked', classes: 'bg-gray-100 text-gray-600 border-gray-200', icon: <XCircle size={14} /> },
     pending: { label: 'Pending', classes: 'bg-yellow-100 text-yellow-800 border-yellow-200', icon: <Clock size={14} /> },
+    suspended: { label: 'Suspended', classes: 'bg-orange-100 text-orange-800 border-orange-200', icon: <AlertOctagon size={14} /> },
+    archived: { label: 'Archived', classes: 'bg-gray-200 text-gray-500 border-gray-300', icon: <XCircle size={14} /> },
   };
   const s = map[status] || map.pending;
   return (
@@ -143,6 +145,50 @@ export default function CompliancePage() {
   };
 
   const isExpired = cert.status === 'expired' || (cert.expiry_date && new Date(cert.expiry_date) < new Date());
+  const isSuspended = cert.status === 'suspended';
+  const isArchived = cert.status === 'archived';
+  const showNotice = isSuspended || isArchived;
+
+  if (showNotice) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
+        <div className="text-center max-w-lg">
+          <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 ${isSuspended ? 'bg-orange-100' : 'bg-gray-200'}`}>
+            {isSuspended ? <AlertOctagon size={36} className="text-orange-600" /> : <XCircle size={36} className="text-gray-500" />}
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-3">
+            {isSuspended ? 'Certificate Suspended' : 'Certificate No Longer Active'}
+          </h1>
+          <p className="text-gray-600 text-sm leading-relaxed mb-2">
+            {isSuspended
+              ? 'There is an issue with this waste disposal certificate that requires attention. Please contact the MediWaste team as soon as possible to resolve this matter.'
+              : 'This waste disposal certificate is no longer active. Please contact the MediWaste team for more information or to arrange a new certificate.'}
+          </p>
+          {cert.suspended_reason && isSuspended && (
+            <p className="text-sm text-gray-500 mb-2 italic">Reason: {cert.suspended_reason}</p>
+          )}
+          {cert.archived_reason && isArchived && (
+            <p className="text-sm text-gray-500 mb-2 italic">Reason: {cert.archived_reason}</p>
+          )}
+          <div className="bg-white border border-gray-200 rounded-xl p-6 mt-6">
+            <p className="text-sm font-semibold text-gray-900 mb-3">Contact MediWaste</p>
+            <div className="space-y-2">
+              <a href="tel:08000469806" className="flex items-center justify-center gap-2 text-red-600 hover:text-red-700 text-sm font-medium">
+                <Phone size={16} /> 0800 046 9806
+              </a>
+              <a href="mailto:hello@mediwaste.co.uk" className="flex items-center justify-center gap-2 text-gray-600 hover:text-gray-800 text-sm">
+                <Mail size={16} /> hello@mediwaste.co.uk
+              </a>
+            </div>
+          </div>
+          <p className="text-xs text-gray-400 mt-4 font-mono">Reference: {cert.certificate_number}</p>
+          <Link to="/" className="mt-6 inline-flex items-center gap-2 text-red-600 hover:text-red-700 text-sm font-medium">
+            Return to MediWaste
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -152,7 +198,7 @@ export default function CompliancePage() {
             <img src="/mediwaste-logo.png" alt="MediWaste" className="h-7 w-auto" />
             <span className="text-sm text-gray-400 hidden sm:block">Compliance Verification</span>
           </div>
-          {cert && !isExpired && customer && (
+          {cert && !isExpired && !isSuspended && !isArchived && customer && (
             <button
               onClick={() => setShowRequestModal(true)}
               className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm"
@@ -344,7 +390,7 @@ export default function CompliancePage() {
         </div>
       </main>
 
-      {cert && !isExpired && customer && (
+      {cert && !isExpired && !isSuspended && !isArchived && customer && (
         <div className="max-w-5xl mx-auto px-4 pb-8">
           <div className="bg-red-600 rounded-2xl p-6 text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>

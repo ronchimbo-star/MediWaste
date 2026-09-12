@@ -168,6 +168,7 @@ export default function CertificatePreviewPage() {
             <CertificatePreview
               data={previewData}
               settings={settings || null}
+              greyedOut={cert.status === 'suspended' || cert.status === 'archived'}
               logoDataUrl={logoDataUrl}
               faviconDataUrl={faviconDataUrl}
               signatureDataUrl={signatureDataUrl}

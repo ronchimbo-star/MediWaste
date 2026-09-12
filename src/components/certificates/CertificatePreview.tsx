@@ -25,6 +25,7 @@ interface Props {
   data: CertificateData;
   settings: CertificateSettings | null;
   forDownload?: boolean;
+  greyedOut?: boolean;
   logoDataUrl?: string;
   faviconDataUrl?: string;
   signatureDataUrl?: string;
@@ -36,7 +37,7 @@ function fmt(date: string) {
   return new Date(date).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
 
-export default function CertificatePreview({ data, settings, forDownload = false, logoDataUrl, faviconDataUrl, signatureDataUrl, whiteLogoDataUrl }: Props) {
+export default function CertificatePreview({ data, settings, forDownload = false, greyedOut = false, logoDataUrl, faviconDataUrl, signatureDataUrl, whiteLogoDataUrl }: Props) {
   const licenceNo = data.waste_carrier_licence || settings?.waste_carrier_licence || '';
   const signatoryName = data.authorised_signatory_name || settings?.default_signatory_name || '';
   const signatoryTitle = data.authorised_signatory_title || settings?.default_signatory_title || '';
@@ -61,6 +62,7 @@ export default function CertificatePreview({ data, settings, forDownload = false
         flexDirection: 'row',
         position: 'relative',
         boxShadow: forDownload ? 'none' : '0 4px 32px rgba(0,0,0,0.14)',
+        ...(greyedOut ? { filter: 'grayscale(100%) opacity(0.4)' } : {}),
       }}
     >
       <div

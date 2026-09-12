@@ -392,6 +392,8 @@ export default function CertificateEditPage() {
                   <option value="pending">Pending</option>
                   <option value="expired">Expired</option>
                   <option value="revoked">Revoked</option>
+                  <option value="suspended">Suspended</option>
+                  <option value="archived">Archived</option>
                 </select>
               </div>
               <div>
