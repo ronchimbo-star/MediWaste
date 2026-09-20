@@ -92,6 +92,7 @@ export default function AuditRenderer({
         {practiceName && <p className="text-red-100 text-sm mt-1">{practiceName}</p>}
         {legalEntity && legalEntity !== practiceName && <p className="text-red-200 text-xs mt-0.5">Trading as: {legalEntity}</p>}
       </div>
+      <div className="audit-content">
 
       <div className="px-8 py-6 space-y-8">
         {/* Meta info */}
@@ -252,11 +253,12 @@ export default function AuditRenderer({
         )}
 
         {/* Footer */}
-        <div className="border-t border-gray-200 pt-4 text-center">
+        <div className="border-t border-gray-200 pt-4 text-center no-break">
           <p className="text-xs text-gray-400">© MediWaste — Clinical Waste Management Solutions</p>
           <p className="text-xs text-gray-400 mt-1">MediWaste is a tradename of Circular Horizons International LTD. Co Reg. 15821509. Environment Agency #CBDU542939 Upper Tier</p>
           <p className="text-xs text-gray-400 mt-1">This document is confidential and intended solely for the practice named above.</p>
         </div>
+      </div>
       </div>
     </div>
   );
@@ -264,11 +266,11 @@ export default function AuditRenderer({
 
 function Section({ number, title, icon, children }: { number: string; title: string; icon: React.ReactNode; children: React.ReactNode }) {
   return (
-    <div>
+    <div className="audit-section no-break">
       <div className="flex items-center gap-2 mb-3 pb-2 border-b-2 border-[#dc2626]">
-        <span className="w-6 h-6 rounded-full bg-[#dc2626] text-white text-xs font-bold flex items-center justify-center">{number}</span>
+        <span className="inline-flex w-6 h-6 rounded-full bg-[#dc2626] text-white text-xs font-bold items-center justify-center flex-shrink-0">{number}</span>
         <h3 className="text-base font-bold text-[#dc2626]">{title}</h3>
-        <span className="text-red-400">{icon}</span>
+        <span className="text-red-400 flex-shrink-0">{icon}</span>
       </div>
       {children}
     </div>
@@ -333,7 +335,7 @@ function DeclarationBlock({ label, name, title, signedAt, canEditName, onNameCha
   onTitleChange?: (v: string) => void;
 }) {
   return (
-    <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+    <div className="declaration-block no-break bg-gray-50 rounded-lg p-4 border border-gray-200">
       <div className="grid grid-cols-2 gap-4 text-sm">
         <div>
           <span className="text-gray-500 font-medium">{label} Name:</span>{' '}

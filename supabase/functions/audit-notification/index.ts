@@ -19,7 +19,7 @@ Deno.serve(async (req: Request) => {
 
   try {
     const data = await req.json();
-    const { type, auditId, recipientEmail, recipientName, auditNumber, shareToken, customSubject, customMessage } = data;
+    const { type, auditId, recipientEmail, recipientName, auditNumber, shareToken, customSubject, customMessage, practiceName } = data;
 
     const resendApiKey = Deno.env.get("RESEND_API_KEY");
     if (!resendApiKey) throw new Error("RESEND_API_KEY is not configured");
@@ -32,6 +32,53 @@ Deno.serve(async (req: Request) => {
     let emailHtml = "";
 
     switch (type) {
+      case "audit_created": {
+        subject = `New waste audit created — ${auditNumber}`;
+        emailHtml = `
+<!DOCTYPE html><html><body style="font-family:Segoe UI,Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
+<div style="background:#1a1a1a;padding:24px;border-radius:8px 8px 0 0;text-align:center;">
+<h1 style="color:#fff;margin:0;font-size:22px;">MediWaste</h1>
+<p style="color:#dc2626;margin:4px 0 0;font-size:13px;">Clinical Waste Management Solutions</p>
+</div>
+<div style="border:1px solid #e0e0e0;border-top:none;padding:28px;border-radius:0 0 8px 8px;">
+<h2 style="color:#dc2626;margin:0 0 12px;">New Waste Audit Created</h2>
+<p style="color:#333;font-size:15px;line-height:1.6;">A new Pre-Acceptance Waste Audit (<strong>${auditNumber}</strong>) has been created${practiceName ? ` for <strong>${practiceName}</strong>` : ""}.</p>
+<div style="text-align:center;margin:24px 0;">
+<a href="${siteUrl}/admin/waste-audits" style="background:#dc2626;color:#fff;padding:12px 28px;border-radius:6px;text-decoration:none;font-size:15px;font-weight:600;display:inline-block;">View in Dashboard</a>
+</div>
+</div>
+</body></html>`;
+        await supabase.from("system_notifications").insert({
+          type: "audit_created",
+          title: `New audit created: ${auditNumber}`,
+          message: practiceName ? `Waste audit ${auditNumber} created for ${practiceName}` : `Waste audit ${auditNumber} created`,
+          link: "/admin/waste-audits",
+        });
+        break;
+      }
+      case "client_details_entered": {
+        subject = `Client entered details for audit ${auditNumber}`;
+        emailHtml = `
+<!DOCTYPE html><html><body style="font-family:Segoe UI,Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
+<div style="background:#1a1a1a;padding:24px;border-radius:8px 8px 0 0;text-align:center;">
+<h1 style="color:#fff;margin:0;font-size:22px;">MediWaste</h1>
+</div>
+<div style="border:1px solid #e0e0e0;border-top:none;padding:28px;border-radius:0 0 8px 8px;">
+<h2 style="color:#dc2626;">Client Details Entered for Audit ${auditNumber}</h2>
+<p style="color:#333;font-size:15px;line-height:1.6;">The client has entered their details${practiceName ? ` for <strong>${practiceName}</strong>` : ""} on audit <strong>${auditNumber}</strong>. Please review in the dashboard.</p>
+<div style="text-align:center;margin:24px 0;">
+<a href="${siteUrl}/admin/waste-audits" style="background:#dc2626;color:#fff;padding:12px 28px;border-radius:6px;text-decoration:none;font-size:15px;font-weight:600;display:inline-block;">Review in Dashboard</a>
+</div>
+</div>
+</body></html>`;
+        await supabase.from("system_notifications").insert({
+          type: "audit_client_details",
+          title: `Client entered details: ${auditNumber}`,
+          message: practiceName ? `Client details submitted for ${practiceName} (${auditNumber})` : `Client details submitted for ${auditNumber}`,
+          link: "/admin/waste-audits",
+        });
+        break;
+      }
       case "sent_to_client":
         subject = customSubject || `MediWaste Pre-Acceptance Waste Audit — ${auditNumber}`;
         {
@@ -117,7 +164,7 @@ ${customBody}
         throw new Error(`Unknown notification type: ${type}`);
     }
 
-    const recipients = type === "client_edited" || type === "fully_signed"
+    const recipients = type === "client_edited" || type === "fully_signed" || type === "audit_created" || type === "client_details_entered"
       ? ["ronchimbo@gmail.com"]
       : [recipientEmail || "ronchimbo@gmail.com"];
 
@@ -142,11 +189,13 @@ ${customBody}
 
     const result = await resendResponse.json();
 
-    await supabase.from("waste_audit_logs").insert({
-      audit_id: auditId,
-      action: `notification_${type}`,
-      details: `Email sent: ${subject}`,
-    });
+    if (auditId) {
+      await supabase.from("waste_audit_logs").insert({
+        audit_id: auditId,
+        action: `notification_${type}`,
+        details: `Email sent: ${subject}`,
+      });
+    }
 
     return new Response(
       JSON.stringify({ success: true, messageId: result.id }),

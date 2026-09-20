@@ -870,79 +870,15 @@ function WTNViewModal({ wtn, onClose }: WTNViewModalProps) {
     if (!element) return;
     setSavingPdf(true);
     try {
-      const html2canvas = (await import('html2canvas')).default;
-      const jsPDF = (await import('jspdf')).default;
-      const clone = element.cloneNode(true) as HTMLElement;
-      clone.style.position = 'absolute';
-      clone.style.left = '-9999px';
-      clone.style.top = '0';
-      clone.style.width = `${element.scrollWidth}px`;
-      clone.style.maxWidth = 'none';
-      clone.style.transform = 'none';
-      clone.style.boxSizing = 'border-box';
-      clone.querySelectorAll('img').forEach(img => {
-        img.style.maxWidth = '100%';
-        img.style.height = 'auto';
-        img.style.objectFit = 'contain';
-        img.style.display = 'block';
-      });
-      document.body.appendChild(clone);
-      const images = clone.querySelectorAll('img');
-      await Promise.all(Array.from(images).map(img => new Promise<void>(res => { if (img.complete) res(); else { img.onload = () => res(); img.onerror = () => res(); } })));
-      await new Promise(r => setTimeout(r, 300));
-      const canvas = await html2canvas(clone, {
+      const { renderElementToPDF } = await import('../../utils/pdfDownload');
+      await renderElementToPDF({
+        elementId: 'wtn-print-area',
+        fileName: `WTN-${wtn.wtn_number}.pdf`,
         scale: 2,
-        useCORS: true,
-        allowTaint: false,
-        backgroundColor: '#ffffff',
-        logging: false,
-        width: clone.scrollWidth,
-        height: clone.scrollHeight,
+        marginTop: 8,
+        marginBottom: 12,
+        noBreakSelectors: ['table', 'img', '.no-break'],
       });
-      document.body.removeChild(clone);
-
-      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-      const pageW = pdf.internal.pageSize.getWidth();
-      const pageH = pdf.internal.pageSize.getHeight();
-      const marginX = 8;
-      const marginTop = 8;
-      const footerHeight = 12;
-      const contentW = pageW - marginX * 2;
-      const contentH = pageH - marginTop - footerHeight;
-      const pxPerMm = canvas.width / contentW;
-      const pageSliceHeightPx = Math.floor(contentH * pxPerMm);
-      let sourceY = 0;
-      let pageNumber = 0;
-
-      while (sourceY < canvas.height) {
-        if (pageNumber > 0) pdf.addPage();
-        const sliceHeightPx = Math.min(pageSliceHeightPx, canvas.height - sourceY);
-        const sliceCanvas = document.createElement('canvas');
-        sliceCanvas.width = canvas.width;
-        sliceCanvas.height = sliceHeightPx;
-        const context = sliceCanvas.getContext('2d');
-        if (!context) throw new Error('Unable to prepare PDF page');
-        context.fillStyle = '#ffffff';
-        context.fillRect(0, 0, sliceCanvas.width, sliceCanvas.height);
-        context.drawImage(canvas, 0, sourceY, canvas.width, sliceHeightPx, 0, 0, canvas.width, sliceHeightPx);
-        const renderedHeight = sliceHeightPx / pxPerMm;
-        pdf.addImage(sliceCanvas.toDataURL('image/png'), 'PNG', marginX, marginTop, contentW, renderedHeight);
-        pageNumber += 1;
-        sourceY += sliceHeightPx;
-      }
-
-      const totalPages = pdf.getNumberOfPages();
-      for (let page = 1; page <= totalPages; page += 1) {
-        pdf.setPage(page);
-        pdf.setDrawColor(220, 220, 220);
-        pdf.line(marginX, pageH - footerHeight + 1, pageW - marginX, pageH - footerHeight + 1);
-        pdf.setFontSize(7);
-        pdf.setTextColor(120, 120, 120);
-        pdf.text('© MediWaste — Clinical Waste Management Solutions', marginX, pageH - 5);
-        pdf.text(`Page ${page} of ${totalPages}`, pageW - marginX, pageH - 5, { align: 'right' });
-      }
-
-      pdf.save(`WTN-${wtn.wtn_number}.pdf`);
     } finally {
       setSavingPdf(false);
     }

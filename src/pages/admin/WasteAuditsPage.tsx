@@ -174,7 +174,7 @@ export default function WasteAuditsPage() {
         .select('id')
         .single();
       if (error) throw error;
-      return data;
+      return { id: data.id, auditNumber };
     },
     onSuccess: async (audit) => {
       setGenerating(true);
@@ -200,6 +200,20 @@ export default function WasteAuditsPage() {
           action: 'audit_created',
           details: `Audit created with ${selectedStreams.length} waste streams`,
         });
+
+        await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/audit-notification`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            type: 'audit_created',
+            auditId: audit.id,
+            auditNumber: audit.auditNumber,
+            practiceName,
+          }),
+        }).catch(() => {});
 
         queryClient.invalidateQueries({ queryKey: ['waste-audits'] });
         toast.success('Audit draft generated successfully');

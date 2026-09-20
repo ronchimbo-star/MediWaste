@@ -73,6 +73,20 @@ export default function PublicAuditView() {
           auditNumber: audit.audit_number,
         }),
       });
+
+      await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/audit-notification`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          type: 'client_details_entered',
+          auditId: audit.id,
+          auditNumber: audit.audit_number,
+          practiceName: audit.practice_name,
+        }),
+      }).catch(() => {});
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['public-audit', shareToken] });

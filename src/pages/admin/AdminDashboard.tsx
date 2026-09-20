@@ -6,7 +6,7 @@ import {
   Bell, Mail, FileText, CheckCircle, XCircle, Clock,
   Users, AlertTriangle, Calendar, TrendingUp, CreditCard,
   Receipt, Briefcase, Settings, Newspaper, Inbox, List,
-  FileCheck, BarChart2, ShieldCheck, Truck, Zap
+  FileCheck, BarChart2, ShieldCheck, Truck, Zap, ClipboardCheck
 } from 'lucide-react';
 import AdminLayout from '../../components/admin/AdminLayout';
 import { useToastContext } from '../../contexts/ToastContext';
@@ -142,6 +142,17 @@ export default function AdminDashboard() {
         .select('*', { count: 'exact', head: true })
         .eq('status', 'active')
         .lte('next_service_date', in7days.toISOString().split('T')[0]);
+      return count || 0;
+    },
+  });
+
+  const { data: pendingWasteAudits } = useQuery({
+    queryKey: ['pending-waste-audits-count'],
+    queryFn: async () => {
+      const { count } = await supabase
+        .from('waste_audits')
+        .select('*', { count: 'exact', head: true })
+        .in('status', ['client_editing', 'ready_for_review']);
       return count || 0;
     },
   });
@@ -300,6 +311,14 @@ export default function AdminDashboard() {
               Collected This Month
             </div>
             <p className="text-3xl font-bold text-gray-900">{paidThisMonth != null ? fmtCurrency(paidThisMonth) : '—'}</p>
+          </div>
+          <div className={`bg-white rounded-xl border p-5 ${(pendingWasteAudits || 0) > 0 ? 'border-blue-200 bg-blue-50' : 'border-gray-200'}`}>
+            <div className={`flex items-center gap-2 mb-3 text-sm font-medium ${(pendingWasteAudits || 0) > 0 ? 'text-blue-600' : 'text-gray-500'}`}>
+              <ClipboardCheck size={16} />
+              Waste Audits
+            </div>
+            <p className="text-3xl font-bold text-gray-900">{pendingWasteAudits ?? '—'}</p>
+            <p className="text-xs text-gray-500 mt-0.5">awaiting review</p>
           </div>
         </div>
 
@@ -528,6 +547,10 @@ export default function AdminDashboard() {
                             <CheckCircle className="w-5 h-5 text-green-600" />
                           ) : n.type === 'quote_declined' ? (
                             <XCircle className="w-5 h-5 text-red-500" />
+                          ) : n.type === 'audit_created' ? (
+                            <ClipboardCheck className="w-5 h-5 text-blue-600" />
+                          ) : n.type === 'audit_client_details' ? (
+                            <ClipboardCheck className="w-5 h-5 text-amber-600" />
                           ) : (
                             <Bell className="w-5 h-5 text-gray-400" />
                           )}
