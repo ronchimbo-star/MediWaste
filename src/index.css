@@ -214,6 +214,149 @@ body {
   @apply text-sm text-gray-600 mt-2 text-center italic;
 }
 
+/* ===== Colour-Coded Article Styles ===== */
+.article-content .regulatory-card {
+  @apply bg-red-600 text-white p-6 rounded-lg my-8;
+}
+
+.article-content .regulatory-card p {
+  @apply text-white mb-4;
+}
+
+.article-content .regulatory-card p:last-child {
+  @apply mb-0;
+}
+
+.article-content .regulatory-card strong {
+  @apply text-white font-semibold;
+}
+
+.article-content .regulatory-card a {
+  @apply text-white underline;
+}
+
+.article-content .colour-table {
+  @apply w-full border-collapse my-8 shadow-sm overflow-hidden rounded-lg;
+}
+
+.article-content .colour-table th {
+  @apply border border-gray-200 px-4 py-3 text-left font-semibold text-gray-900 bg-gray-50;
+}
+
+.article-content .colour-table td {
+  @apply border border-gray-200 px-4 py-3;
+}
+
+.article-content .colour-table .row-orange {
+  background-color: rgba(249, 115, 22, 0.12);
+}
+
+.article-content .colour-table .row-yellow {
+  background-color: rgba(234, 179, 8, 0.12);
+}
+
+.article-content .colour-table .row-tiger {
+  background: repeating-linear-gradient(45deg, rgba(234, 179, 8, 0.10), rgba(234, 179, 8, 0.10) 10px, rgba(30, 41, 59, 0.06) 10px, rgba(30, 41, 59, 0.06) 20px);
+}
+
+.article-content .colour-table .row-purple {
+  background-color: rgba(147, 51, 234, 0.12);
+}
+
+.article-content .colour-table .row-blue {
+  background-color: rgba(59, 130, 246, 0.12);
+}
+
+.article-content .colour-table .row-red {
+  background-color: rgba(220, 38, 38, 0.12);
+}
+
+.article-content .colour-badge {
+  @apply inline-flex items-center gap-2;
+}
+
+.article-content .colour-badge::before {
+  content: '';
+  @apply inline-block w-4 h-4 rounded-full;
+  flex-shrink: 0;
+}
+
+.article-content .colour-badge.orange::before {
+  background-color: #f97316;
+}
+
+.article-content .colour-badge.yellow::before {
+  background-color: #eab308;
+}
+
+.article-content .colour-badge.tiger::before {
+  background: repeating-linear-gradient(45deg, #eab308, #eab308 4px, #1e293b 4px, #1e293b 8px);
+}
+
+.article-content .colour-badge.purple::before {
+  background-color: #9333ea;
+}
+
+.article-content .colour-badge.blue::before {
+  background-color: #3b82f6;
+}
+
+.article-content .colour-badge.red::before {
+  background-color: #dc2626;
+}
+
+.article-content .section-badge {
+  @apply inline-flex items-center gap-3 mb-2;
+}
+
+.article-content .section-badge .badge-dot {
+  @apply inline-block w-5 h-5 rounded-full flex-shrink-0;
+}
+
+.article-content .section-badge.orange .badge-dot {
+  background-color: #f97316;
+}
+
+.article-content .section-badge.yellow .badge-dot {
+  background-color: #eab308;
+}
+
+.article-content .section-badge.tiger .badge-dot {
+  background: repeating-linear-gradient(45deg, #eab308, #eab308 4px, #1e293b 4px, #1e293b 8px);
+}
+
+.article-content .section-badge.purple .badge-dot {
+  background-color: #9333ea;
+}
+
+.article-content .section-badge.blue .badge-dot {
+  background-color: #3b82f6;
+}
+
+.article-content .section-badge.red .badge-dot {
+  background-color: #dc2626;
+}
+
+.article-content .tips-card {
+  @apply bg-blue-50 border-l-4 border-blue-500 p-6 rounded-lg my-8;
+}
+
+.article-content .tips-card h2 {
+  @apply mt-0;
+}
+
+.article-content .tips-card h3 {
+  @apply text-lg font-semibold text-gray-900 mt-6 mb-2;
+}
+
+.article-content .tips-card p {
+  @apply mb-4;
+}
+
+.article-content .tips-card p:last-child {
+  @apply mb-0;
+}
+
 /* ===== Admin Responsive Table System ===== */
 /* admin-table-wrap provides horizontal scrolling for wide tables on mobile */
 .admin-table-wrap {
