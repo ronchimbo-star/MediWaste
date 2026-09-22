@@ -54,7 +54,7 @@ export default function InvoicePreview({ data, settings, logoDataUrl }: Props) {
   const hasPONumbers = data.line_items.some((it) => it.po_number);
 
   const bankName = settings?.bank_name || 'Tide Business Banking';
-  const accountName = settings?.account_name || 'Circular Horizons International LTD';
+  const accountName = settings?.account_name || 'MediWaste LTD';
   const sortCode = settings?.sort_code || '04-06-05';
   const accountNumber = settings?.account_number || '2283 7469';
   const vatNumber = settings?.vat_number || data.vat_number || '';
@@ -85,7 +85,7 @@ export default function InvoicePreview({ data, settings, logoDataUrl }: Props) {
       {/* Invoice Info Row */}
       <div style={{ padding: '0 48px 24px', display: 'flex', justifyContent: 'space-between', borderBottom: '2px solid #FF0000' }}>
         <div style={{ fontSize: '13px', color: '#333' }}>
-          <p style={{ margin: '0 0 2px', fontWeight: 'bold', color: '#111' }}>Circular Horizons International LTD</p>
+          <p style={{ margin: '0 0 2px', fontWeight: 'bold', color: '#111' }}>MediWaste LTD</p>
           <p style={{ margin: '0 0 1px', color: '#555' }}>t/a MediWaste</p>
           <p style={{ margin: '0 0 1px', color: '#555' }}>Unit 2 Capital Industrial Estate</p>
           <p style={{ margin: '0 0 1px', color: '#555' }}>Crabtree Manorway South, Belvedere</p>
@@ -207,7 +207,7 @@ export default function InvoicePreview({ data, settings, logoDataUrl }: Props) {
       {/* Footer */}
       <div style={{ padding: '16px 48px', borderTop: '1px solid #eee', fontSize: '10px', color: '#aaa', textAlign: 'center', flexShrink: 0 }}>
         <p style={{ margin: '0 0 2px' }}>
-          Circular Horizons International LTD | Company No. 15821509 | Registered in England and Wales
+          MediWaste LTD | Company No. 15821509 | Registered in England and Wales
           {vatNumber && <> | VAT No. {vatNumber}</>}
         </p>
         <p style={{ margin: 0 }}>Unit 2 Capital Industrial Estate, Crabtree Manorway South, Belvedere, Kent, DA17 6BJ</p>

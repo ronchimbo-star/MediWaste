@@ -138,7 +138,7 @@ export default function CertificatePreview({ data, settings, forDownload = false
         </div>
 
         <div style={{ marginBottom: '20px', fontFamily: 'Arial, sans-serif', fontSize: '14px', color: '#333' }}>
-          <p style={{ fontWeight: 'bold', margin: '0 0 2px 0' }}>Circular Horizons International LTD t/a MediWaste</p>
+          <p style={{ fontWeight: 'bold', margin: '0 0 2px 0' }}>MediWaste LTD</p>
           <p style={{ margin: 0 }}>certifies that the organization</p>
         </div>
 

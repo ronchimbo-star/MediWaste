@@ -214,7 +214,7 @@ export default function AuditRenderer({
             <div className="bg-red-50 rounded-lg p-4 border border-red-200 mb-4">
               <p className="text-sm font-bold text-[#dc2626] mb-1">MediWaste</p>
               <p className="text-xs text-gray-700 leading-relaxed">
-                MediWaste is a tradename of Circular Horizons International LTD. Co Reg. 15821509.<br/>
+                MediWaste LTD. Co Reg. 15821509.<br/>
                 Environment Agency #CBDU542939 Upper Tier.<br/>
                 MediWaste, Unit 2 Capital Industrial Estate, Crabtree Manorway South, Belvedere, Kent, England, DA17 6BJ.
               </p>
@@ -255,7 +255,7 @@ export default function AuditRenderer({
         {/* Footer */}
         <div className="border-t border-gray-200 pt-4 text-center no-break">
           <p className="text-xs text-gray-400">© MediWaste — Clinical Waste Management Solutions</p>
-          <p className="text-xs text-gray-400 mt-1">MediWaste is a tradename of Circular Horizons International LTD. Co Reg. 15821509. Environment Agency #CBDU542939 Upper Tier</p>
+          <p className="text-xs text-gray-400 mt-1">MediWaste LTD. Co Reg. 15821509. Environment Agency #CBDU542939 Upper Tier</p>
           <p className="text-xs text-gray-400 mt-1">This document is confidential and intended solely for the practice named above.</p>
         </div>
       </div>
