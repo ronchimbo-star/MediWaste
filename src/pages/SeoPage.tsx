@@ -149,7 +149,7 @@ export default function SeoPage() {
       '@type': 'LocalBusiness',
       name: 'MediWaste',
       url: baseUrl,
-      telephone: '0800 046 9806',
+      telephone: '01322 879 713',
       description: `Clinical waste collection and disposal services${page.location ? ` in ${page.location}` : ''}`,
       areaServed: page.location || 'United Kingdom',
       priceRange: '$$',

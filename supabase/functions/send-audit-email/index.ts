@@ -124,7 +124,7 @@ Deno.serve(async (req: Request) => {
 
     const { data: siteSettings } = await supabase
       .from("site_settings").select("phone_number").maybeSingle();
-    const phone = siteSettings?.phone_number || "0800 046 9806";
+    const phone = siteSettings?.phone_number || "01322 879 713";
 
     const sent: string[] = [];
 

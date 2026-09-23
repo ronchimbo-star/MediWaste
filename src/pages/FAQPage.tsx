@@ -182,7 +182,7 @@ export default function FAQPage() {
     <div className="min-h-screen bg-white">
       <SEO
         title="FAQ | Clinical Waste Disposal Questions | MediWaste"
-        description="Answers to common questions about clinical waste disposal, sharps collection, compliance and pricing. Get a free quote from MediWaste. Call 0800 046 9806."
+        description="Answers to common questions about clinical waste disposal, sharps collection, compliance and pricing. Get a free quote from MediWaste. Call 01322 879 713."
         canonical="https://mediwaste.co.uk/faq"
         schema={faqSchema}
       />
@@ -251,10 +251,10 @@ export default function FAQPage() {
                 Contact Us
               </Link>
               <a
-                href="tel:08000469806"
+                href="tel:01322879713"
                 className="border-2 border-white text-white px-8 py-3 rounded-full font-semibold hover:bg-white hover:text-red-600 transition-colors"
               >
-                Call 0800 046 9806
+                Call 01322 879 713
               </a>
             </div>
           </div>

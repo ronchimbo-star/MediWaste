@@ -108,7 +108,7 @@ export default function ContactPage() {
     <div className="min-h-screen bg-white">
       <SEO
         title="Contact MediWaste | Get a Free Waste Disposal Quote"
-        description="Contact MediWaste for a free clinical waste quote. Call 0800 046 9806 or fill in our online form. Serving London, Kent, Essex, Surrey and Sussex."
+        description="Contact MediWaste for a free clinical waste quote. Call 01322 879 713 or fill in our online form. Serving London, Kent, Essex, Surrey and Sussex."
         canonical="https://mediwaste.co.uk/contact"
         schema={organizationSchema}
       />

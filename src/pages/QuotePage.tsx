@@ -9,7 +9,7 @@ export default function QuotePage() {
     <>
       <SEO
         title="Get a Free Quote - Clinical Waste Disposal | MediWaste"
-        description="Request a free clinical waste disposal quote. Competitive pricing for sharps, infectious and pharmaceutical waste collection. Fast response. Call 0800 046 9806."
+        description="Request a free clinical waste disposal quote. Competitive pricing for sharps, infectious and pharmaceutical waste collection. Fast response. Call 01322 879 713."
         canonical="https://mediwaste.co.uk/quote"
         schema={{
           '@context': 'https://schema.org',

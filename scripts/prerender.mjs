@@ -273,7 +273,7 @@ const STATIC_ROUTES = [
   {
     path: '/',
     title: 'Clinical Waste Collection London & SE | MediWaste',
-    description: 'Licensed clinical waste collection for GP surgeries, dental practices and care homes in London and the South East. Free quote. Call 0800 046 9806.',
+    description: 'Licensed clinical waste collection for GP surgeries, dental practices and care homes in London and the South East. Free quote. Call 01322 879 713.',
     keywords: 'clinical waste collection, medical waste disposal, sharps disposal, clinical waste London, healthcare waste management, infectious waste, pharmaceutical waste disposal',
     canonical: `${BASE_URL}/`,
     h1: 'Clinical Waste Collection London & South East',
@@ -314,7 +314,7 @@ ${COMPLIANCE_BOX}
 <h3>Are you licensed by the Environment Agency?</h3>
 <p>Yes, MediWaste is a registered upper tier waste carrier with the Environment Agency. We are audited annually and hold all required licences for clinical and hazardous waste transport.</p>
 <h3>How much does clinical waste collection cost?</h3>
-<p>Pricing depends on the volume and type of waste, collection frequency and your location. <a href="/quote">Request a free quote</a> or call us on 0800 046 9806 for a tailored price.</p>
+<p>Pricing depends on the volume and type of waste, collection frequency and your location. <a href="/quote">Request a free quote</a> or call us on 01322 879 713 for a tailored price.</p>
 ${EXTERNAL_LINKS}
 `,
   },
@@ -362,14 +362,14 @@ ${EXTERNAL_LINKS}
 <p>We provide clinical waste collection across <a href="/service-areas/london">London</a>, <a href="/service-areas/kent">Kent</a>, <a href="/service-areas/essex">Essex</a>, <a href="/service-areas/surrey">Surrey</a>, <a href="/service-areas/sussex">Sussex</a> and <a href="/service-areas/hampshire">Hampshire</a>. See our full <a href="/service-coverage">service coverage area</a> for more details.</p>
 ${COMPLIANCE_BOX}
 <h2>Contact Us</h2>
-<p>Ready to get started? <a href="/quote">Request a free quote</a> or call us on 0800 046 9806. We can usually begin collections within 7 days of your enquiry.</p>
+<p>Ready to get started? <a href="/quote">Request a free quote</a> or call us on 01322 879 713. We can usually begin collections within 7 days of your enquiry.</p>
 ${EXTERNAL_LINKS}
 `,
   },
   {
     path: '/waste-services',
     title: 'Clinical Waste Disposal & Sharps Collection | MediWaste',
-    description: 'Licensed clinical waste disposal and sharps collection across London and the South East. Infectious, pharmaceutical, dental and anatomical waste handled compliantly. Get a free quote today — call 0800 046 9806.',
+    description: 'Licensed clinical waste disposal and sharps collection across London and the South East. Infectious, pharmaceutical, dental and anatomical waste handled compliantly. Get a free quote today — call 01322 879 713.',
     keywords: 'clinical waste disposal, medical waste collection, sharps disposal UK, infectious waste, pharmaceutical waste, dental waste, anatomical waste, healthcare waste management, hazardous clinical waste',
     canonical: `${BASE_URL}/waste-services`,
     h1: 'Clinical Waste Disposal Services',
@@ -414,14 +414,14 @@ ${COMPLIANCE_BOX}
 <h3>How quickly can you start collections?</h3>
 <p>We can usually begin collections within 7 days of your signed service agreement. For urgent requirements, we offer an emergency collection service that can be arranged within 48 hours.</p>
 <h2>Get a Free Clinical Waste Disposal Quote</h2>
-<p><a href="/quote">Request a free, no-obligation quote</a> or call us on 0800 046 9806. We can usually start collections within 7 days.</p>
+<p><a href="/quote">Request a free, no-obligation quote</a> or call us on 01322 879 713. We can usually start collections within 7 days.</p>
 ${EXTERNAL_LINKS}
 `,
   },
   {
     path: '/waste-services/infectious-waste',
     title: 'Infectious Waste Disposal UK | Yellow Bag Collection',
-    description: 'Licensed infectious waste disposal and yellow bag collection for healthcare facilities. Contaminated dressings, swabs and PPE incinerated compliantly. Free quote — call 0800 046 9806.',
+    description: 'Licensed infectious waste disposal and yellow bag collection for healthcare facilities. Contaminated dressings, swabs and PPE incinerated compliantly. Free quote — call 01322 879 713.',
     keywords: 'infectious waste disposal, clinical waste collection, yellow bag waste, contaminated waste, PPE disposal, medical waste incineration',
     canonical: `${BASE_URL}/waste-services/infectious-waste`,
     h1: 'Infectious Clinical Waste Disposal',
@@ -463,14 +463,14 @@ ${COMPLIANCE_BOX}
 <p>Infectious waste should be stored in a designated, secure area away from public access, in the correct colour-coded bag, sealed when three-quarters full. Store bags in a cool, well-ventilated area and keep them off the floor.</p>
 <h3>Do you provide documentation for CQC inspections?</h3>
 <p>Yes, we provide waste transfer notes within 48 hours of every collection and hazardous waste consignment notes where applicable. All records are retained for a minimum of two years and can be provided for inspections.</p>
-<p><a href="/quote">Request a free quote</a> or call 0800 046 9806.</p>
+<p><a href="/quote">Request a free quote</a> or call 01322 879 713.</p>
 ${EXTERNAL_LINKS}
 `,
   },
   {
     path: '/waste-services/sharps-waste',
     title: 'Sharps Waste Disposal UK | Needle & Syringe Collection',
-    description: 'Licensed sharps disposal and needle collection for healthcare clinics, dental practices and aesthetic studios. Free puncture-proof bins, compliant incineration. Call 0800 046 9806 for a free quote.',
+    description: 'Licensed sharps disposal and needle collection for healthcare clinics, dental practices and aesthetic studios. Free puncture-proof bins, compliant incineration. Call 01322 879 713 for a free quote.',
     keywords: 'sharps disposal, needle disposal UK, sharps bins, sharps waste collection',
     canonical: `${BASE_URL}/waste-services/sharps-waste`,
     h1: 'Sharps Waste Disposal',
@@ -518,14 +518,14 @@ ${COMPLIANCE_BOX}
 <p>Yes, we collect sharps waste from tattoo studios, beauty salons, aesthetic clinics, acupuncture clinics and any business that generates sharps waste. All businesses producing sharps waste have a legal duty to dispose of it safely.</p>
 <h3>What records do I need to keep for sharps disposal?</h3>
 <p>You must retain waste transfer notes or hazardous waste consignment notes for a minimum of two years. We provide all documentation within 48 hours of collection and can supply copies on request.</p>
-<p><a href="/quote">Request a free quote</a> or call 0800 046 9806.</p>
+<p><a href="/quote">Request a free quote</a> or call 01322 879 713.</p>
 ${EXTERNAL_LINKS}
 `,
   },
   {
     path: '/waste-services/pharmaceutical-waste',
     title: 'Pharmaceutical Waste Disposal UK | Medicine Disposal',
-    description: 'Licensed pharmaceutical waste disposal for pharmacies, GP surgeries and care homes. Expired medicine, controlled drug and blue bin collection with compliant incineration. Free quote — call 0800 046 9806.',
+    description: 'Licensed pharmaceutical waste disposal for pharmacies, GP surgeries and care homes. Expired medicine, controlled drug and blue bin collection with compliant incineration. Free quote — call 01322 879 713.',
     keywords: 'pharmaceutical waste disposal, medicine disposal UK, drug waste collection',
     canonical: `${BASE_URL}/waste-services/pharmaceutical-waste`,
     h1: 'Pharmaceutical Waste Disposal',
@@ -574,14 +574,14 @@ ${COMPLIANCE_BOX}
 <p>Pharmaceutical waste is typically collected monthly or quarterly, depending on volume. We can adjust the frequency based on your needs and can arrange emergency collections if required.</p>
 <h3>What is a hazardous waste consignment note?</h3>
 <p>A consignment note is a legal document that accompanies hazardous waste during transport. It details the waste type, quantity, producer, carrier and disposal facility. We prepare all consignment notes on your behalf and provide copies within 48 hours of collection.</p>
-<p><a href="/quote">Request a free quote</a> or call 0800 046 9806.</p>
+<p><a href="/quote">Request a free quote</a> or call 01322 879 713.</p>
 ${EXTERNAL_LINKS}
 `,
   },
   {
     path: '/waste-services/cytotoxic-waste',
     title: 'Cytotoxic & Chemotherapy Waste Disposal UK | MediWaste',
-    description: 'Licensed cytotoxic and cytostatic waste disposal. Chemotherapy waste collection in purple bins with compliant incineration. Free quote. Call 0800 046 9806.',
+    description: 'Licensed cytotoxic and cytostatic waste disposal. Chemotherapy waste collection in purple bins with compliant incineration. Free quote. Call 01322 879 713.',
     keywords: 'cytotoxic waste disposal, chemotherapy waste, cytostatic waste UK, cancer treatment waste, purple bin waste, hazardous medical waste',
     canonical: `${BASE_URL}/waste-services/cytotoxic-waste`,
     h1: 'Cytotoxic Waste Disposal',
@@ -628,14 +628,14 @@ ${COMPLIANCE_BOX}
 <p>Yes, we collect cytotoxic waste from veterinary practices that handle chemotherapy treatments for animals. We provide the correct purple containers and full chain-of-custody documentation.</p>
 <h3>How is cytotoxic waste transported?</h3>
 <p>Cytotoxic waste is transported in sealed, UN-approved purple containers by licensed waste carriers. Vehicles are equipped with spill kits and drivers are trained in handling hazardous materials. Full documentation is provided for every collection.</p>
-<p><a href="/quote">Request a free quote</a> or call 0800 046 9806.</p>
+<p><a href="/quote">Request a free quote</a> or call 01322 879 713.</p>
 ${EXTERNAL_LINKS}
 `,
   },
   {
     path: '/waste-services/dental-waste',
     title: 'Dental Waste Disposal UK | Amalgam & Sharps Collection',
-    description: 'Licensed dental waste disposal for dental practices: amalgam, sharps, X-ray chemicals and infectious materials. Mercury recovery and compliant incineration. Free quote — call 0800 046 9806.',
+    description: 'Licensed dental waste disposal for dental practices: amalgam, sharps, X-ray chemicals and infectious materials. Mercury recovery and compliant incineration. Free quote — call 01322 879 713.',
     keywords: 'dental waste disposal, amalgam waste UK, dental clinical waste',
     canonical: `${BASE_URL}/waste-services/dental-waste`,
     h1: 'Dental Waste Disposal',
@@ -683,14 +683,14 @@ ${COMPLIANCE_BOX}
 <p>Yes, we serve dental practices of all sizes, from single-practitioner clinics to multi-site groups. Collection frequency is tailored to your waste volume, with most small practices opting for monthly or fortnightly collections.</p>
 <h3>What documentation do I need for CQC inspections?</h3>
 <p>You must have current waste transfer notes, hazardous waste consignment notes (for amalgam and X-ray chemicals), and a valid waste carrier registration number. We provide all documentation within 48 hours of collection and can supply a compliance pack for inspections.</p>
-<p><a href="/quote">Request a free quote</a> or call 0800 046 9806.</p>
+<p><a href="/quote">Request a free quote</a> or call 01322 879 713.</p>
 ${EXTERNAL_LINKS}
 `,
   },
   {
     path: '/waste-services/anatomical-waste',
     title: 'Anatomical Waste Disposal UK | Tissue & Pathology Waste',
-    description: 'Licensed anatomical waste disposal for hospitals, pathology labs and veterinary practices. Dignified incineration of human tissue, organs and pathology waste. Fully compliant. Free quote — call 0800 046 9806.',
+    description: 'Licensed anatomical waste disposal for hospitals, pathology labs and veterinary practices. Dignified incineration of human tissue, organs and pathology waste. Fully compliant. Free quote — call 01322 879 713.',
     keywords: 'anatomical waste disposal, human tissue waste, pathology waste UK',
     canonical: `${BASE_URL}/waste-services/anatomical-waste`,
     h1: 'Anatomical Waste Disposal',
@@ -735,20 +735,20 @@ ${COMPLIANCE_BOX}
 <h3>Is the Human Tissue Act relevant to waste disposal?</h3>
 <p>Yes, human tissue may be subject to the Human Tissue Act 2004, which regulates the removal, storage and disposal of human tissue. We ensure all anatomical waste is handled in accordance with both the Hazardous Waste Regulations 2005 and the Human Tissue Act.</p>
 <h3>How quickly can you collect anatomical waste?</h3>
-<p>We can usually arrange anatomical waste collection within 48 hours for urgent cases. Regular collections are scheduled based on your facility's needs. Contact us on 0800 046 9806 for emergency collection.</p>
-<p><a href="/quote">Request a free quote</a> or call 0800 046 9806.</p>
+<p>We can usually arrange anatomical waste collection within 48 hours for urgent cases. Regular collections are scheduled based on your facility's needs. Contact us on 01322 879 713 for emergency collection.</p>
+<p><a href="/quote">Request a free quote</a> or call 01322 879 713.</p>
 ${EXTERNAL_LINKS}
 `,
   },
   {
     path: '/faq',
     title: 'FAQ | Clinical Waste Disposal Questions | MediWaste',
-    description: 'Answers to common questions about clinical waste disposal, sharps collection, compliance and pricing. Get a free quote from MediWaste. Call 0800 046 9806.',
+    description: 'Answers to common questions about clinical waste disposal, sharps collection, compliance and pricing. Get a free quote from MediWaste. Call 01322 879 713.',
     keywords: 'clinical waste FAQ, medical waste questions, sharps disposal FAQ, clinical waste disposal FAQ',
     canonical: `${BASE_URL}/faq`,
     h1: 'Frequently Asked Questions',
     schema: FAQ_SCHEMA([
-      ['How much does clinical waste collection cost?', 'Pricing depends on the volume and type of waste, collection frequency and your location. We offer free, no-obligation quotes tailored to your specific needs. Call us on 0800 046 9806 for a personalised price.'],
+      ['How much does clinical waste collection cost?', 'Pricing depends on the volume and type of waste, collection frequency and your location. We offer free, no-obligation quotes tailored to your specific needs. Call us on 01322 879 713 for a personalised price.'],
       ['What types of clinical waste do you collect?', 'We collect all categories of clinical waste including infectious waste, sharps, pharmaceutical waste, cytotoxic waste, dental waste and anatomical waste. See our full range of waste services for details.'],
       ['Are you registered with the Environment Agency?', 'Yes, MediWaste is a registered upper tier waste carrier with the Environment Agency. We are audited annually and hold all required licences for clinical and hazardous waste transport.'],
       ['How quickly can you start collections?', 'We can usually begin collections within 7 days of your initial enquiry. In urgent cases, we may be able to arrange a first collection sooner.'],
@@ -758,10 +758,10 @@ ${EXTERNAL_LINKS}
       ['What areas do you cover?', 'We cover London, Kent, Essex, Surrey, Sussex and Hampshire. See our service coverage page for a full list of areas.'],
     ]),
     content: `
-<p>Here are answers to the most common questions we receive about clinical waste collection and disposal. If you have a question that is not covered here, please <a href="/contact">contact us</a> or call 0800 046 9806.</p>
+<p>Here are answers to the most common questions we receive about clinical waste collection and disposal. If you have a question that is not covered here, please <a href="/contact">contact us</a> or call 01322 879 713.</p>
 <h2>Pricing and Quotes</h2>
 <h3>How much does clinical waste collection cost?</h3>
-<p>Pricing depends on the volume and type of waste, collection frequency and your location. We offer free, no-obligation quotes tailored to your specific needs. <a href="/quote">Request a quote online</a> or call us on 0800 046 9806.</p>
+<p>Pricing depends on the volume and type of waste, collection frequency and your location. We offer free, no-obligation quotes tailored to your specific needs. <a href="/quote">Request a quote online</a> or call us on 01322 879 713.</p>
 <h3>Are there any hidden fees?</h3>
 <p>No. Our pricing is transparent and includes all containers, collection, disposal and documentation. There are no hidden charges.</p>
 <h2>Services</h2>
@@ -784,7 +784,7 @@ ${EXTERNAL_LINKS}
 <h3>Can I switch from my current waste contractor?</h3>
 <p>Yes, we manage the entire transition process. We coordinate with your existing contractor to collect any remaining containers, deliver our own containers and begin collections with minimal disruption. Most practices switch in under 7 days.</p>
 <h3>Do you offer emergency or ad-hoc collections?</h3>
-<p>Yes, we offer emergency collections for urgent situations such as container overflow or unexpected waste volume increases. Call us on 0800 046 9806 to arrange an emergency collection.</p>
+<p>Yes, we offer emergency collections for urgent situations such as container overflow or unexpected waste volume increases. Call us on 01322 879 713 to arrange an emergency collection.</p>
 <h3>How do I know which waste goes in which container?</h3>
 <p>We provide a free waste segregation guide as part of your service agreement, and our team will advise you during your initial consultation. The guide covers all colour-coded containers and which waste streams belong in each one.</p>
 <h3>What happens to my waste after collection?</h3>
@@ -795,7 +795,7 @@ ${EXTERNAL_LINKS}
   {
     path: '/contact',
     title: 'Contact MediWaste | Get a Free Waste Disposal Quote',
-    description: 'Contact MediWaste for a free clinical waste disposal quote. Call us on 0800 046 9806 or fill in our online form. Serving London, Kent, Essex, Surrey and Sussex.',
+    description: 'Contact MediWaste for a free clinical waste disposal quote. Call us on 01322 879 713 or fill in our online form. Serving London, Kent, Essex, Surrey and Sussex.',
     canonical: `${BASE_URL}/contact`,
     h1: 'Contact MediWaste',
     schema: [LOCAL_BUSINESS_SCHEMA, {
@@ -808,7 +808,7 @@ ${EXTERNAL_LINKS}
 <p>Get in touch with MediWaste for a free, no-obligation quote for clinical waste collection. Our team is ready to help you find the right waste management solution for your healthcare facility.</p>
 <h2>Phone</h2>
 <ul>
-<li><strong>Freephone:</strong> 0800 046 9806 — for quotes and general enquiries</li>
+<li><strong>Freephone:</strong> 01322 879 713 — for quotes and general enquiries</li>
 <li><strong>Local office:</strong> 01322 879 713</li>
 <li><strong>Email:</strong> hello@mediwaste.co.uk</li>
 </ul>
@@ -854,25 +854,25 @@ ${EXTERNAL_LINKS}
 <h3>What areas do you cover?</h3>
 <p>We cover London, Kent, Essex, Surrey, Sussex and Hampshire. See our <a href="/service-coverage">service coverage page</a> for a full list of areas.</p>
 <h3>How much does clinical waste collection cost?</h3>
-<p>Pricing depends on waste volume, type and collection frequency. We offer free, no-obligation quotes tailored to your needs. Call 0800 046 9806 for a personalised price.</p>
+<p>Pricing depends on waste volume, type and collection frequency. We offer free, no-obligation quotes tailored to your needs. Call 01322 879 713 for a personalised price.</p>
 ${EXTERNAL_LINKS}
 `,
   },
   {
     path: '/quote',
     title: 'Get a Free Quote — Clinical Waste Disposal | MediWaste',
-    description: 'Request a free clinical waste disposal quote. Competitive pricing for sharps, infectious and pharmaceutical waste collection. Fast response. Call 0800 046 9806.',
+    description: 'Request a free clinical waste disposal quote. Competitive pricing for sharps, infectious and pharmaceutical waste collection. Fast response. Call 01322 879 713.',
     canonical: `${BASE_URL}/quote`,
     h1: 'Get a Free Quote',
     schema: {
       '@context': 'https://schema.org',
       '@type': 'Service',
       name: 'Clinical Waste Disposal Quote',
-      provider: { '@type': 'LocalBusiness', name: 'MediWaste', url: BASE_URL, telephone: '0800 046 9806' },
+      provider: { '@type': 'LocalBusiness', name: 'MediWaste', url: BASE_URL, telephone: '01322 879 713' },
       offers: { '@type': 'Offer', price: '0', priceCurrency: 'GBP', description: 'Free no-obligation quote' },
     },
     content: `
-<p>Request a free, no-obligation quote for clinical waste collection. Tell us about your waste streams and collection requirements, and we will send you a personalised quote within one business day. Alternatively, call us on 0800 046 9806.</p>
+<p>Request a free, no-obligation quote for clinical waste collection. Tell us about your waste streams and collection requirements, and we will send you a personalised quote within one business day. Alternatively, call us on 01322 879 713.</p>
 <h2>Types of Clinical Waste We Collect</h2>
 <ul>
 <li><a href="/waste-services/infectious-waste">Infectious waste</a> — contaminated dressings, swabs, PPE</li>
@@ -914,7 +914,7 @@ ${COMPLIANCE_BOX}
 <h3>Can you match my current pricing?</h3>
 <p>We offer competitive pricing and are happy to discuss your current arrangements. Many of our clients save 20-40% by switching to our cluster collection model.</p>
 <h2>Get Your Free Quote Today</h2>
-<p>Call <a href="/contact">0800 046 9806</a> or fill in the form above to request your free, no-obligation quote. We can usually start collections within 7 days of your enquiry.</p>
+<p>Call <a href="/contact">01322 879 713</a> or fill in the form above to request your free, no-obligation quote. We can usually start collections within 7 days of your enquiry.</p>
 ${EXTERNAL_LINKS}
 `,
   },
@@ -995,7 +995,7 @@ ${EXTERNAL_LINKS}
   {
     path: '/compliance',
     title: 'Clinical Waste Compliance & Regulations | MediWaste',
-    description: 'Clinical waste compliance and Duty of Care guidance for UK healthcare providers. Waste transfer notes and consignment notes within 48 hours. Call 0800 046 9806.',
+    description: 'Clinical waste compliance and Duty of Care guidance for UK healthcare providers. Waste transfer notes and consignment notes within 48 hours. Call 01322 879 713.',
     keywords: 'clinical waste compliance, duty of care waste, hazardous waste regulations, waste transfer notes',
     canonical: `${BASE_URL}/compliance`,
     h1: 'Clinical Waste Compliance',
@@ -1043,14 +1043,14 @@ ${COMPLIANCE_BOX}
 <p>MediWaste holds comprehensive public liability and employer liability insurance. Certificates are available on request and can be included in your compliance documentation pack.</p>
 <h3>Can you help with CQC inspection preparation?</h3>
 <p>Yes, we can help you prepare for CQC inspections by reviewing your waste management practices, ensuring your documentation is up to date and providing a compliance summary. Our <a href="/audit">free audit tool</a> is also designed to identify gaps before an inspection.</p>
-<p><a href="/quote">Request a free quote</a> or call 0800 046 9806 to discuss your compliance requirements.</p>
+<p><a href="/quote">Request a free quote</a> or call 01322 879 713 to discuss your compliance requirements.</p>
 ${EXTERNAL_LINKS}
 `,
   },
   {
     path: '/service-coverage',
     title: 'Service Coverage | Clinical Waste Disposal UK | MediWaste',
-    description: 'Licensed clinical waste collection across London, Kent, Surrey, Sussex, Hampshire and Essex. Serving GP surgeries, dental practices, care homes and aesthetic clinics. Free quote — call 0800 046 9806.',
+    description: 'Licensed clinical waste collection across London, Kent, Surrey, Sussex, Hampshire and Essex. Serving GP surgeries, dental practices, care homes and aesthetic clinics. Free quote — call 01322 879 713.',
     keywords: 'clinical waste collection UK, medical waste disposal areas, waste management London Kent Essex',
     canonical: `${BASE_URL}/service-coverage`,
     h1: 'Service Coverage Areas',
@@ -1095,14 +1095,14 @@ ${EXTERNAL_LINKS}
 ${PROCESS_STEPS}
 ${COMPLIANCE_BOX}
 <h2>Can We Start in Your Area?</h2>
-<p>We can usually begin collections within 7 days of your enquiry. <a href="/quote">Request a free quote</a> or call 0800 046 9806 to find out if we cover your area.</p>
+<p>We can usually begin collections within 7 days of your enquiry. <a href="/quote">Request a free quote</a> or call 01322 879 713 to find out if we cover your area.</p>
 ${EXTERNAL_LINKS}
 `,
   },
   {
     path: '/audit',
     title: 'Free Clinical Waste Audit Tool | Compliance | MediWaste',
-    description: 'Free clinical waste audit tool for UK healthcare providers. Answer 15 questions, get an AI compliance report with risk scores and action plan. Call 0800 046 9806.',
+    description: 'Free clinical waste audit tool for UK healthcare providers. Answer 15 questions, get an AI compliance report with risk scores and action plan. Call 01322 879 713.',
     keywords: 'clinical waste audit, waste compliance audit, healthcare waste assessment, CQC inspection preparation',
     canonical: `${BASE_URL}/audit`,
     h1: 'Free Clinical Waste Audit Tool',
@@ -1164,7 +1164,7 @@ ${EXTERNAL_LINKS}
 <h3>How long does the audit take?</h3>
 <p>The questionnaire takes approximately 10-15 minutes to complete. Your personalised report is generated immediately after submission.</p>
 <h3>What do I do with the results?</h3>
-<p>The report includes a prioritised action plan. You can use this to improve your waste management practices, or contact us for help implementing the recommendations. <a href="/contact">Get in touch</a> or call 0800 046 9806.</p>
+<p>The report includes a prioritised action plan. You can use this to improve your waste management practices, or contact us for help implementing the recommendations. <a href="/contact">Get in touch</a> or call 01322 879 713.</p>
 <h3>Will my data be shared?</h3>
 <p>No. Your audit responses are kept private and are never shared with third parties. We may use your email address to send you your report and follow up on any recommendations.</p>
 ${EXTERNAL_LINKS}
@@ -1232,7 +1232,7 @@ ${EXTERNAL_LINKS}
 <h3>Can non-clients be listed?</h3>
 <p>The directory is currently for MediWaste clients only. If you would like to join our service, <a href="/quote">request a free quote</a>.</p>
 ${COMPLIANCE_BOX}
-<p>For more information about our services, call 0800 046 9806 or <a href="/contact">contact us online</a>.</p>
+<p>For more information about our services, call 01322 879 713 or <a href="/contact">contact us online</a>.</p>
 ${EXTERNAL_LINKS}
 `,
   },
@@ -1283,7 +1283,7 @@ ${EXTERNAL_LINKS}
 <h2>Governing Law</h2>
 <p>These terms are governed by the laws of England and Wales. Any disputes shall be subject to the exclusive jurisdiction of the courts of England and Wales.</p>
 <h2>Contact</h2>
-<p>For questions about these terms, please <a href="/contact">contact us</a> or call 0800 046 9806.</p>
+<p>For questions about these terms, please <a href="/contact">contact us</a> or call 01322 879 713.</p>
 ${EXTERNAL_LINKS}
 `,
   },
@@ -1341,7 +1341,7 @@ ${EXTERNAL_LINKS}
 <h2>Data Security</h2>
 <p>We implement appropriate technical and organisational measures to protect your personal data, including secure storage, access controls and regular security reviews. Data is only retained for as long as necessary to fulfil the purposes for which it was collected, or as required by law.</p>
 <h2>Exercising Your Rights</h2>
-<p>To exercise any of these rights, please <a href="/contact">contact us</a> or call 0800 046 9806. You can also write to us at: MediWaste, Data Protection, Dartford, Kent.</p>
+<p>To exercise any of these rights, please <a href="/contact">contact us</a> or call 01322 879 713. You can also write to us at: MediWaste, Data Protection, Dartford, Kent.</p>
 `,
   },
   {
@@ -1372,7 +1372,7 @@ ${EXTERNAL_LINKS}
 <h2>GDPR and ePrivacy Compliance</h2>
 <p>Under the UK GDPR and the ePrivacy Directive, we require your consent to set non-essential cookies. Our cookie consent banner allows you to accept or reject non-essential cookies. You can change your preference at any time.</p>
 <h2>Contact</h2>
-<p>For questions about our use of cookies, please <a href="/contact">contact us</a> or call 0800 046 9806.</p>
+<p>For questions about our use of cookies, please <a href="/contact">contact us</a> or call 01322 879 713.</p>
 <h2>Cookies and clinical waste services</h2>
 <p>MediWaste uses a small number of cookies to keep the website working, remember your preferences and understand how visitors use our service pages. These technologies do not change the way clinical waste is collected, transported or treated, and they do not replace the records we provide for waste transfer and consignment notes.</p>
 <p>If you manage a GP surgery, dental practice, care home, aesthetic clinic or other healthcare setting, you can browse our <a href="/waste-services">clinical waste services</a> without accepting optional cookies. You can also return to this policy at any time from the footer to review or change your choices.</p>
@@ -1388,17 +1388,17 @@ ${EXTERNAL_LINKS}
   {
     path: '/contact',
     title: 'Contact MediWaste | Free Clinical Waste Disposal Quote',
-    description: 'Contact MediWaste for a free clinical waste quote. Call 0800 046 9806 or fill in our online form. Serving London, Kent, Essex, Surrey and Sussex.',
+    description: 'Contact MediWaste for a free clinical waste quote. Call 01322 879 713 or fill in our online form. Serving London, Kent, Essex, Surrey and Sussex.',
     keywords: 'contact mediwaste, clinical waste quote, medical waste disposal contact',
     canonical: `${BASE_URL}/contact`,
     h1: 'Contact MediWaste',
     schema: [LOCAL_BUSINESS_SCHEMA, FAQ_SCHEMA([
       ['How quickly can you start collections?', 'We can usually begin collections within 7 days of your enquiry. For urgent requirements, we may be able to arrange a first collection sooner.'],
       ['Do you supply containers?', 'Yes, all containers are supplied free of charge as part of your service agreement. We deliver them before your first collection and top up supplies as needed.'],
-      ['What information do I need for a quote?', 'Have your facility type, waste types, approximate volume, collection frequency and postcode ready. Request a free quote or call 0800 046 9806.'],
+      ['What information do I need for a quote?', 'Have your facility type, waste types, approximate volume, collection frequency and postcode ready. Request a free quote or call 01322 879 713.'],
     ])],
     content: `
-<p>Get in touch with MediWaste for a free, no-obligation quote for clinical waste collection. Call us on 0800 046 9806 or fill in our online form and we will respond within one business day.</p>
+<p>Get in touch with MediWaste for a free, no-obligation quote for clinical waste collection. Call us on 01322 879 713 or fill in our online form and we will respond within one business day.</p>
 <h2>Our Clinical Waste Services</h2>
 <ul>
 <li><a href="/waste-services/infectious-waste">Infectious waste collection</a> — contaminated dressings, swabs and PPE</li>
@@ -1437,7 +1437,7 @@ ${COMPLIANCE_BOX}
 <h3>Do you supply containers?</h3>
 <p>Yes, all containers are supplied free of charge as part of your service agreement. We deliver them before your first collection and top up supplies as needed.</p>
 <h3>What information do I need for a quote?</h3>
-<p>Have your facility type, waste types, approximate volume, collection frequency and postcode ready. <a href="/quote">Request a free quote</a> or call 0800 046 9806.</p>
+<p>Have your facility type, waste types, approximate volume, collection frequency and postcode ready. <a href="/quote">Request a free quote</a> or call 01322 879 713.</p>
 ${EXTERNAL_LINKS}
 `,
   },
@@ -1452,12 +1452,12 @@ ${EXTERNAL_LINKS}
   ].map((area) => ({
     path: `/service-areas/${area.slug}`,
     title: `Clinical Waste Disposal ${area.name} | Licensed | MediWaste`,
-    description: `Licensed clinical waste disposal in ${area.name}. Free containers, full compliance documentation, flexible scheduling. Get a free quote. Call 0800 046 9806.`,
+    description: `Licensed clinical waste disposal in ${area.name}. Free containers, full compliance documentation, flexible scheduling. Get a free quote. Call 01322 879 713.`,
     keywords: area.keywords,
     canonical: `${BASE_URL}/service-areas/${area.slug}`,
     h1: `Clinical Waste Disposal ${area.name}`,
     schema: [LOCAL_BUSINESS_SCHEMA, FAQ_SCHEMA([
-      [`How much does clinical waste collection cost in ${area.name}?`, `Pricing depends on waste volume, type and collection frequency. We offer free, no-obligation quotes. Call 0800 046 9806 for a tailored price.`],
+      [`How much does clinical waste collection cost in ${area.name}?`, `Pricing depends on waste volume, type and collection frequency. We offer free, no-obligation quotes. Call 01322 879 713 for a tailored price.`],
       [`What types of clinical waste do you collect in ${area.name}?`, `We collect infectious waste, sharps, pharmaceutical waste, cytotoxic waste, dental waste and anatomical waste across ${area.name}.`],
       [`Are you registered with the Environment Agency?`, `Yes, MediWaste is a registered upper tier waste carrier with the Environment Agency, audited annually.`],
       [`How quickly can you start collections in ${area.name}?`, `We can usually begin collections within 7 days of your enquiry.`],
@@ -1493,13 +1493,13 @@ ${PROCESS_STEPS}
 ${COMPLIANCE_BOX}
 <h2>Frequently Asked Questions</h2>
 <h3>How much does clinical waste collection cost in ${area.name}?</h3>
-<p>Pricing depends on waste volume, type and collection frequency. We offer free, no-obligation quotes. Call 0800 046 9806 for a tailored price.</p>
+<p>Pricing depends on waste volume, type and collection frequency. We offer free, no-obligation quotes. Call 01322 879 713 for a tailored price.</p>
 <h3>What types of clinical waste do you collect in ${area.name}?</h3>
 <p>We collect infectious waste, sharps, pharmaceutical waste, cytotoxic waste, dental waste and anatomical waste across ${area.name}.</p>
 <h3>Are you registered with the Environment Agency?</h3>
 <p>Yes, MediWaste is a registered upper tier waste carrier with the Environment Agency, audited annually.</p>
 <h3>How quickly can you start collections in ${area.name}?</h3>
-<p>We can usually begin collections within 7 days of your enquiry. <a href="/quote">Request a free quote</a> or call 0800 046 9806.</p>
+<p>We can usually begin collections within 7 days of your enquiry. <a href="/quote">Request a free quote</a> or call 01322 879 713.</p>
 ${EXTERNAL_LINKS}
 `,
   })),
@@ -1581,7 +1581,7 @@ async function main() {
           '@type': 'LocalBusiness',
           name: 'MediWaste',
           url: BASE_URL,
-          telephone: '0800 046 9806',
+          telephone: '01322 879 713',
           description: `Clinical waste collection and disposal services${page.location ? ` in ${page.location}` : ''}`,
           areaServed: page.location || 'United Kingdom',
         },

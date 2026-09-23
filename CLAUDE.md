@@ -55,7 +55,7 @@ All SEO pages generated via the AI content tool MUST follow these guidelines. Th
 ### CTA (localised, handled by page template)
 
 - Title: "Get your free, no-obligation quote for [location] today"
-- Phone: 0800 046 9806 (national freephone)
+- Phone: 01322 879 713
 - "We can usually start collections within 7 days in the [location] area"
 
 ### Things to Avoid
@@ -86,7 +86,7 @@ Each page renders unique crawler-visible meta tags:
 
 ### Phone Numbers
 
-- **CTA / Freephone**: 0800 046 9806
+- **CTA / Freephone**: 01322 879 713
 - **Local office**: 01322 879 713 (used in header, mobile CTA, contact pages, BottomCTA call button)
 
 ### Internal Links

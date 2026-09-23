@@ -132,7 +132,7 @@ export default function AuditPage() {
   const navigate = useNavigate();
   const reportRef = useRef<HTMLDivElement>(null);
   const { settings } = useSiteSettings();
-  const phone = settings?.phone_number || '0800 046 9806';
+  const phone = settings?.phone_number || '01322 879 713';
   const telHref = `tel:${phone.replace(/\s+/g, '')}`;
 
   const [step, setStep] = useState(0); // 0=landing, 1-4=wizard steps
