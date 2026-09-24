@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/useAuth';
 import { Lock, Loader2, CheckCircle, AlertCircle, Key } from 'lucide-react';
+import AdminLayout from '../../components/admin/AdminLayout';
 
 export default function FinancialPinSettingsPage() {
   const { user } = useAuth();
@@ -114,6 +115,7 @@ export default function FinancialPinSettingsPage() {
   }
 
   return (
+    <AdminLayout pageTitle="Financial PIN" breadcrumbs={[{ label: 'Dashboard', path: '/admin' }, { label: 'Settings', path: '/admin/settings' }, { label: 'Financial PIN' }]}>
     <div className="max-w-2xl mx-auto px-4 py-8">
       <div className="flex items-center gap-3 mb-6">
         <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
@@ -297,5 +299,6 @@ export default function FinancialPinSettingsPage() {
         </ul>
       </div>
     </div>
+    </AdminLayout>
   );
 }

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { Save, Loader2, CheckCircle } from 'lucide-react';
 import type { InvoiceSettings } from '../../types/invoice';
+import AdminLayout from '../../components/admin/AdminLayout';
 
 export default function PaymentSettingsPage() {
   const [settings, setSettings] = useState<InvoiceSettings | null>(null);
@@ -60,6 +61,7 @@ export default function PaymentSettingsPage() {
   const update = (field: string, value: any) => setSettings({ ...settings, [field]: value });
 
   return (
+    <AdminLayout pageTitle="Payment Settings" breadcrumbs={[{ label: 'Dashboard', path: '/admin' }, { label: 'Settings', path: '/admin/settings' }, { label: 'Payment Details' }]}>
     <div className="max-w-4xl mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold text-gray-900 mb-6">Payment Details Settings</h1>
 
@@ -136,6 +138,7 @@ export default function PaymentSettingsPage() {
         )}
       </div>
     </div>
+    </AdminLayout>
   );
 }
 

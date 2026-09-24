@@ -4,6 +4,7 @@ import { supabase } from '../../lib/supabase';
 import { Loader2, Download, DollarSign } from 'lucide-react';
 import { formatGBP, formatDate, isOverdue, daysOverdue, STATUS_COLORS, STATUS_LABELS } from '../../utils/invoiceCalculations';
 import type { Invoice } from '../../types/invoice';
+import AdminLayout from '../../components/admin/AdminLayout';
 
 export default function PendingPaymentsPage() {
   const navigate = useNavigate();
@@ -67,6 +68,7 @@ export default function PendingPaymentsPage() {
   if (loading) return <div className="flex items-center justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-red-600" /></div>;
 
   return (
+    <AdminLayout pageTitle="Pending Payments" breadcrumbs={[{ label: 'Dashboard', path: '/admin' }, { label: 'Finance', path: '/admin/finance/pending-payments' }, { label: 'Pending Payments' }]}>
     <div className="max-w-6xl mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold text-gray-900 mb-6">Pending Payments</h1>
 
@@ -143,6 +145,7 @@ export default function PendingPaymentsPage() {
         )}
       </div>
     </div>
+    </AdminLayout>
   );
 }
 
