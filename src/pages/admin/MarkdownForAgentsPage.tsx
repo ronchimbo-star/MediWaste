@@ -1,10 +1,10 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import AdminLayout from '../../components/admin/AdminLayout';
 import { useToastContext } from '../../contexts/ToastContext';
 import { useAuth } from '../../hooks/useAuth';
 import { convertHtmlToMarkdown, type ConversionResult } from '../../utils/htmlToMarkdown';
 import { supabase } from '../../lib/supabase';
-import { Link2, Loader2, Copy, Download, FileText, Code2, Eye, Zap, History, GitCompare, Globe, Lock } from 'lucide-react';
+import { Link2, Loader2, Copy, Download, FileText, Code2, Eye, Zap, History, GitCompare, Globe, Lock, Trash2, RefreshCw, ExternalLink } from 'lucide-react';
 
 interface MarkdownVersion {
   id: string;
@@ -40,6 +40,101 @@ export default function MarkdownForAgentsPage() {
   const [showDiff, setShowDiff] = useState(false);
   const [saving, setSaving] = useState(false);
   const [publishing, setPublishing] = useState<string | null>(null);
+  const [allPages, setAllPages] = useState<MarkdownVersion[]>([]);
+  const [allPagesLoading, setAllPagesLoading] = useState(true);
+  const [deleting, setDeleting] = useState<string | null>(null);
+  const [regenerating, setRegenerating] = useState<string | null>(null);
+  const [viewingPage, setViewingPage] = useState<MarkdownVersion | null>(null);
+
+  const fetchAllPages = useCallback(async () => {
+    setAllPagesLoading(true);
+    const { data, error } = await supabase
+      .from('markdown_versions')
+      .select('*')
+      .eq('is_latest', true)
+      .order('created_at', { ascending: false });
+    if (error) {
+      console.error('Error fetching all pages:', error);
+    } else {
+      setAllPages(data || []);
+    }
+    setAllPagesLoading(false);
+  }, []);
+
+  useEffect(() => {
+    fetchAllPages();
+  }, [fetchAllPages]);
+
+  const handleDeletePage = async (page: MarkdownVersion) => {
+    if (!confirm(`Delete "${page.title}" and all its versions? This cannot be undone.`)) return;
+    setDeleting(page.id);
+    try {
+      const { error } = await supabase
+        .from('markdown_versions')
+        .delete()
+        .eq('source_url', page.source_url);
+      if (error) throw error;
+      toast.success('Page deleted');
+      await fetchAllPages();
+      if (url === page.source_url) {
+        setResult(null);
+        setVersions([]);
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to delete');
+    } finally {
+      setDeleting(null);
+    }
+  };
+
+  const handleRegenerate = async (page: MarkdownVersion) => {
+    setRegenerating(page.id);
+    try {
+      const resp = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/fetch-markdown`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ url: page.source_url }),
+      });
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.error || 'Failed to fetch page');
+
+      const converted = convertHtmlToMarkdown(data.html, data.finalUrl || page.source_url, data.contentSignal || 'ai-train=yes, search=yes, ai-input=yes');
+
+      const encoder = new TextEncoder();
+      const hashBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(converted.markdown));
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      const contentHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+      const { error } = await supabase.from('markdown_versions').insert({
+        source_url: page.source_url,
+        source_type: 'manual',
+        title: converted.metadata.title || page.source_url,
+        description: converted.metadata.description || null,
+        image: converted.metadata.image || null,
+        markdown_content: converted.markdown,
+        content_signal: converted.contentSignal,
+        token_counts: converted.tokenCounts,
+        jsonld_count: converted.jsonld.length,
+        content_hash: contentHash,
+        created_by: user?.id || null,
+      });
+
+      if (error) throw error;
+      toast.success(`Regenerated — new version saved (v${(page.version_number || 0) + 1})`);
+      await fetchAllPages();
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to regenerate');
+    } finally {
+      setRegenerating(null);
+    }
+  };
+
+  const handleViewPage = (page: MarkdownVersion) => {
+    setViewingPage(page);
+  };
 
   const fetchVersions = useCallback(async (sourceUrl: string) => {
     const { data, error } = await supabase
@@ -129,6 +224,7 @@ export default function MarkdownForAgentsPage() {
       if (error) throw error;
       toast.success('Version saved to database');
       await fetchVersions(normalizedUrl);
+      await fetchAllPages();
     } catch (err: any) {
       toast.error(err.message || 'Failed to save version');
     } finally {
@@ -481,6 +577,143 @@ export default function MarkdownForAgentsPage() {
             <p className="text-sm text-gray-500 max-w-md mx-auto">
               Convert any webpage into clean Markdown with YAML frontmatter, preserved JSON-LD, version history, and public AI bot access.
             </p>
+          </div>
+        )}
+
+        {/* All Pages Table */}
+        <div className="mt-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-bold text-gray-900">Saved Pages</h2>
+            <button
+              onClick={fetchAllPages}
+              className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700"
+            >
+              <RefreshCw className="w-4 h-4" /> Refresh
+            </button>
+          </div>
+
+          {allPagesLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="w-6 h-6 animate-spin text-red-600" />
+            </div>
+          ) : allPages.length === 0 ? (
+            <div className="text-center py-12 text-gray-400 text-sm border border-gray-200 rounded-xl bg-white">
+              No saved pages yet. Convert a URL above to create your first one.
+            </div>
+          ) : (
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-gray-100 bg-gray-50">
+                      <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Page Name</th>
+                      <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">URL</th>
+                      <th className="text-center px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Version</th>
+                      <th className="text-center px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Status</th>
+                      <th className="text-right px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-50">
+                    {allPages.map((page) => (
+                      <tr key={page.id} className="hover:bg-gray-50 transition-colors">
+                        <td className="px-4 py-3">
+                          <p className="font-medium text-gray-900 truncate max-w-[200px]">{page.title || 'Untitled'}</p>
+                        </td>
+                        <td className="px-4 py-3">
+                          <a href={page.source_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline truncate max-w-[250px] block">
+                            {page.source_url}
+                          </a>
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          <span className="inline-flex items-center justify-center w-7 h-5 rounded-full bg-blue-100 text-blue-700 text-xs font-semibold">
+                            v{page.version_number}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          {page.is_published ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                              <Globe className="w-3 h-3" /> Published
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500">
+                              Unpublished
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center justify-end gap-1">
+                            <button
+                              onClick={() => handleViewPage(page)}
+                              className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg"
+                              title="View"
+                            >
+                              <Eye className="w-4 h-4" />
+                            </button>
+                            {page.is_published && page.public_slug && (
+                              <a
+                                href={`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/serve-markdown/${page.public_slug}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="p-1.5 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg"
+                                title="Open public URL"
+                              >
+                                <ExternalLink className="w-4 h-4" />
+                              </a>
+                            )}
+                            <button
+                              onClick={() => handleRegenerate(page)}
+                              disabled={regenerating === page.id}
+                              className="p-1.5 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg disabled:opacity-50"
+                              title="Regenerate (creates new version)"
+                            >
+                              {regenerating === page.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+                            </button>
+                            <button
+                              onClick={() => handleDeletePage(page)}
+                              disabled={deleting === page.id}
+                              className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg disabled:opacity-50"
+                              title="Delete all versions"
+                            >
+                              {deleting === page.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* View Modal */}
+        {viewingPage && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50" onClick={() => setViewingPage(null)}>
+            <div className="bg-white rounded-xl shadow-xl max-w-3xl w-full max-h-[80vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+                <div className="min-w-0">
+                  <h3 className="text-base font-semibold text-gray-900 truncate">{viewingPage.title}</h3>
+                  <p className="text-xs text-gray-500 mt-0.5">v{viewingPage.version_number} — {new Date(viewingPage.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => { navigator.clipboard.writeText(viewingPage.markdown_content); toast.success('Copied to clipboard'); }}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50"
+                  >
+                    <Copy className="w-4 h-4" /> Copy
+                  </button>
+                  <button onClick={() => setViewingPage(null)} className="p-1.5 text-gray-400 hover:text-gray-700">
+                    <span className="text-xl">×</span>
+                  </button>
+                </div>
+              </div>
+              <div className="flex-1 overflow-y-auto p-5">
+                <pre className="text-sm text-gray-800 font-mono whitespace-pre-wrap break-words bg-gray-50 rounded-lg p-4 border border-gray-100">
+                  {viewingPage.markdown_content}
+                </pre>
+              </div>
+            </div>
           </div>
         )}
       </div>
