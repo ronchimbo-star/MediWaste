@@ -63,3 +63,12 @@ verify_jwt = true
 
 [functions.serve-markdown]
 verify_jwt = false
+
+[functions.analyze-conversation]
+verify_jwt = false
+
+[functions.send-invoice-email]
+verify_jwt = false
+
+[functions.send-payment-receipt]
+verify_jwt = false

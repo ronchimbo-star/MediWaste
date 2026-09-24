@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
-import { Plus, FileText, Eye, FileEdit as Edit, Search, RefreshCw, CheckCircle, Clock, AlertTriangle, XCircle, DollarSign } from 'lucide-react';
+import { Plus, FileText, Eye, FileEdit as Edit, Search, RefreshCw, CheckCircle, Clock, AlertTriangle, XCircle, DollarSign, Sparkles } from 'lucide-react';
 import RecordPaymentModal from '../../components/RecordPaymentModal';
 import AdminLayout from '../../components/admin/AdminLayout';
 import { useToastContext } from '../../contexts/ToastContext';
@@ -154,6 +154,9 @@ export default function InvoicingPage() {
             <button onClick={generateRecurringInvoices} disabled={generatingRecurring} className="flex items-center gap-2 border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-50">
               <RefreshCw size={15} className={generatingRecurring ? 'animate-spin' : ''} />
               Generate Recurring
+            </button>
+            <button onClick={() => navigate('/admin/invoices/new-from-conversation')} className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium">
+              <Sparkles size={16} /> From Conversation
             </button>
             <button onClick={() => navigate('/admin/invoices/create')} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium">
               <Plus size={16} /> New Invoice

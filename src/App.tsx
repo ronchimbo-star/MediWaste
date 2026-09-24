@@ -49,6 +49,11 @@ const StaffManagementPage = lazy(() => import('./pages/admin/StaffManagementPage
 const InvoicingPage = lazy(() => import('./pages/admin/InvoicingPage'));
 const InvoiceEditPage = lazy(() => import('./pages/admin/InvoiceEditPage'));
 const InvoicePreviewPage = lazy(() => import('./pages/admin/InvoicePreviewPage'));
+const ConversationIntakePage = lazy(() => import('./pages/admin/ConversationIntakePage'));
+const InvoiceReviewPage = lazy(() => import('./pages/admin/InvoiceReviewPage'));
+const PaymentSettingsPage = lazy(() => import('./pages/admin/PaymentSettingsPage'));
+const PendingPaymentsPage = lazy(() => import('./pages/admin/PendingPaymentsPage'));
+const PublicInvoicePage = lazy(() => import('./pages/PublicInvoicePage'));
 const WasteTransferNotesPage = lazy(() => import('./pages/admin/WasteTransferNotesPage'));
 const WasteCarriersPage = lazy(() => import('./pages/admin/WasteCarriersPage'));
 const StaffDashboard = lazy(() => import('./pages/staff/StaffDashboard'));
@@ -204,9 +209,13 @@ function App() {
           <Route path="/admin/jobs" element={<ProtectedRoute><ServiceJobsPage /></ProtectedRoute>} />
           <Route path="/admin/staff" element={<ProtectedRoute><StaffManagementPage /></ProtectedRoute>} />
           <Route path="/admin/invoices" element={<ProtectedRoute><InvoicingPage /></ProtectedRoute>} />
+          <Route path="/admin/invoices/new-from-conversation" element={<ProtectedRoute><ConversationIntakePage /></ProtectedRoute>} />
+          <Route path="/admin/invoices/review" element={<ProtectedRoute><InvoiceReviewPage /></ProtectedRoute>} />
           <Route path="/admin/invoices/create" element={<ProtectedRoute><InvoiceEditPage /></ProtectedRoute>} />
           <Route path="/admin/invoices/:id/edit" element={<ProtectedRoute><InvoiceEditPage /></ProtectedRoute>} />
           <Route path="/admin/invoices/:id/preview" element={<ProtectedRoute><InvoicePreviewPage /></ProtectedRoute>} />
+          <Route path="/admin/finance/pending-payments" element={<ProtectedRoute><PendingPaymentsPage /></ProtectedRoute>} />
+          <Route path="/admin/settings/payment-details" element={<ProtectedRoute><PaymentSettingsPage /></ProtectedRoute>} />
           <Route path="/admin/invoicing" element={<Navigate to="/admin/invoices" replace />} />
           <Route path="/admin/waste-transfer-notes" element={<ProtectedRoute><WasteTransferNotesPage /></ProtectedRoute>} />
           <Route path="/admin/waste-carriers" element={<ProtectedRoute><WasteCarriersPage /></ProtectedRoute>} />
@@ -237,6 +246,7 @@ function App() {
           <Route path="/admin/audits/:id" element={<ProtectedRoute><AdminAuditDetailPage /></ProtectedRoute>} />
           <Route path="/staff/dashboard" element={<ProtectedRoute><StaffDashboard /></ProtectedRoute>} />
           <Route path="/customer/dashboard" element={<ProtectedRoute><CustomerDashboard /></ProtectedRoute>} />
+          <Route path="/invoice/:token" element={<PublicInvoicePage />} />
           <Route path="/c/:slug" element={<SeoPage />} />
           <Route path="/admin/markdown-for-agents" element={<ProtectedRoute><MarkdownForAgentsPage /></ProtectedRoute>} />
           <Route path="*" element={<NotFound />} />

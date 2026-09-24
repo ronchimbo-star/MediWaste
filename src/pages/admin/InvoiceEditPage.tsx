@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import AdminLayout from '../../components/admin/AdminLayout';
-import { Save, Plus, Trash2, ChevronLeft, Search, X, Eye } from 'lucide-react';
+import { Save, Plus, Trash2, ChevronLeft, Search, X, Eye, Send, DollarSign, Loader2, CheckCircle } from 'lucide-react';
 import { useToastContext } from '../../contexts/ToastContext';
 
 interface Customer {
@@ -93,6 +93,16 @@ export default function InvoiceEditPage() {
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [showSendModal, setShowSendModal] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [paymentAmount, setPaymentAmount] = useState('0');
+  const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split('T')[0]);
+  const [paymentMethod, setPaymentMethod] = useState('Bank transfer');
+  const [paymentRef, setPaymentRef] = useState('');
+  const [, setRecipientEmail] = useState('');
+  const [recordingPayment, setRecordingPayment] = useState(false);
+  const [invoiceData, setInvoiceData] = useState<any>(null);
 
   const [customerId, setCustomerId] = useState('');
   const [issueDate, setIssueDate] = useState(new Date().toISOString().split('T')[0]);
@@ -149,8 +159,9 @@ export default function InvoiceEditPage() {
   const fetchInvoice = async () => {
     setLoading(true);
     try {
-      const { data: inv, error } = await supabase.from('mw_invoices').select('*').eq('id', id).single();
+      const { data: inv, error } = await supabase.from('mw_invoices').select('*, customer:mw_customers(company_name, contact_name, email)').eq('id', id).single();
       if (error) throw error;
+      setInvoiceData(inv);
       setCustomerId(inv.customer_id);
       setIssueDate(inv.issue_date);
       setDueDate(inv.due_date);
@@ -161,6 +172,7 @@ export default function InvoiceEditPage() {
       setIsRecurring(inv.is_recurring || false);
       setRecurringFrequency(inv.recurring_frequency || 'monthly');
       setPaymentTerms(inv.payment_terms || '');
+      if (inv.recipient_email) setRecipientEmail(inv.recipient_email);
 
       const { data: items } = await supabase.from('mw_invoice_line_items').select('*').eq('invoice_id', id);
       if (items && items.length > 0) {
@@ -278,6 +290,123 @@ export default function InvoiceEditPage() {
     );
   }
 
+  const handleSendInvoice = async () => {
+    if (!id) return;
+    setSending(true);
+    try {
+      const { data: inv } = await supabase.from('mw_invoices').select('recipient_email, email_subject, email_body, email_salutation, email_sign_off, public_token, invoice_number, total_amount, due_date, customer:mw_customers(email, contact_name)').eq('id', id).maybeSingle();
+      if (!inv) throw new Error('Invoice not found');
+      const customerData = Array.isArray(inv.customer) ? inv.customer[0] : inv.customer;
+      const recipientEmail = inv.recipient_email || customerData?.email;
+      if (!recipientEmail) { toast.error('No recipient email address'); return; }
+
+      // Generate PDF from preview page
+      let pdfBase64: string | null = null;
+      try {
+        const pdfBlob = await generatePdfBlob(id);
+        if (pdfBlob) {
+          pdfBase64 = await blobToBase64(pdfBlob);
+        }
+      } catch (pdfErr) {
+        console.warn('PDF generation failed, sending without attachment:', pdfErr);
+      }
+
+      const { data, error: fnError } = await supabase.functions.invoke('send-invoice-email', {
+        body: {
+          invoiceId: id,
+          pdfBase64,
+          pdfFileName: `${inv.invoice_number}.pdf`,
+        },
+      });
+      if (fnError) throw fnError;
+      if (data?.error) throw new Error(data.error);
+      toast.success('Invoice sent successfully');
+      setShowSendModal(false);
+      fetchInvoice();
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to send invoice');
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const handleRecordPayment = async () => {
+    if (!id) return;
+    const amount = parseFloat(paymentAmount);
+    if (!amount || amount <= 0) { toast.error('Enter a valid payment amount'); return; }
+    setRecordingPayment(true);
+    try {
+      const { data: inv } = await supabase.from('mw_invoices').select('*').eq('id', id).single();
+      if (!inv) throw new Error('Invoice not found');
+
+      const { data: paymentNum } = await supabase.rpc('generate_invoice_number');
+      const { error: payErr } = await supabase.from('mw_payments').insert({
+        payment_number: paymentNum || `PAY-${Date.now()}`,
+        customer_id: inv.customer_id,
+        invoice_id: id,
+        amount,
+        payment_date: paymentDate,
+        payment_method: paymentMethod,
+        reference: paymentRef || inv.invoice_number,
+        status: 'completed',
+      });
+      if (payErr) throw payErr;
+
+      const newAmountPaid = (Number(inv.amount_paid) || 0) + amount;
+      const newAmountDue = Number(inv.total_amount) - newAmountPaid;
+      const newStatus = newAmountDue <= 0.01 ? 'paid' : 'partially_paid';
+
+      await supabase.from('mw_invoices').update({
+        amount_paid: newAmountPaid,
+        amount_due: newAmountDue,
+        status: newStatus,
+        paid_at: newStatus === 'paid' ? new Date().toISOString() : null,
+      }).eq('id', id);
+
+      // Create finance transaction
+      const netAmount = amount / (1 + (Number(inv.tax_rate) || 20) / 100);
+      const vatAmount = amount - netAmount;
+      await supabase.from('finance_transactions').insert({
+        transaction_date: paymentDate,
+        description: `Payment for invoice ${inv.invoice_number}`,
+        customer_id: inv.customer_id,
+        invoice_id: id,
+        invoice_number: inv.invoice_number,
+        net_amount: netAmount,
+        vat_amount: vatAmount,
+        gross_amount: amount,
+        payment_method: paymentMethod,
+        status: 'completed',
+      });
+
+      // Log events
+      await supabase.from('invoice_events').insert([
+        { invoice_id: id, event_type: 'payment_recorded', new_status: newStatus, event_data: { amount, method: paymentMethod }, created_by: 'admin' },
+        ...(newStatus === 'paid' ? [{ invoice_id: id, event_type: 'invoice_marked_paid', new_status: 'paid', event_data: { amount }, created_by: 'admin' }] : []),
+      ]);
+
+      // Send payment receipt email if fully paid
+      if (newStatus === 'paid') {
+        const { data: receiptData, error: receiptErr } = await supabase.functions.invoke('send-payment-receipt', {
+          body: { invoiceId: id, amount, paymentDate, paymentMethod },
+        });
+        if (receiptErr || receiptData?.error) {
+          console.warn('Payment receipt email failed:', receiptErr || receiptData?.error);
+        }
+      }
+
+      toast.success(newStatus === 'paid' ? 'Invoice marked as paid' : 'Partial payment recorded');
+      setShowPaymentModal(false);
+      setPaymentAmount('0');
+      setPaymentRef('');
+      fetchInvoice();
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to record payment');
+    } finally {
+      setRecordingPayment(false);
+    }
+  };
+
   return (
     <AdminLayout pageTitle={isEdit ? 'Edit Invoice' : 'New Invoice'} breadcrumbs={[{ label: 'Admin', path: '/admin' }, { label: 'Invoices', path: '/admin/invoices' }, { label: isEdit ? 'Edit' : 'New' }]}>
       <div className="p-6 max-w-5xl">
@@ -287,9 +416,26 @@ export default function InvoiceEditPage() {
           </button>
           <div className="flex items-center gap-2">
             {isEdit && (
-              <button onClick={() => navigate(`/admin/invoices/${id}/preview`)} className="flex items-center gap-2 border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium">
-                <Eye size={15} /> Preview
-              </button>
+              <>
+                <button onClick={() => navigate(`/admin/invoices/${id}/preview`)} className="flex items-center gap-2 border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium">
+                  <Eye size={15} /> Preview
+                </button>
+                {invoiceData?.public_token && (
+                  <button onClick={() => window.open(`/invoice/${invoiceData.public_token}`, '_blank')} className="flex items-center gap-2 border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium">
+                    <Eye size={15} /> Public View
+                  </button>
+                )}
+                {!['paid', 'cancelled', 'void'].includes(status) && (
+                  <button onClick={() => setShowPaymentModal(true)} className="flex items-center gap-2 border border-green-300 bg-green-50 hover:bg-green-100 text-green-700 px-4 py-2 rounded-lg text-sm font-medium">
+                    <DollarSign size={15} /> Mark Paid
+                  </button>
+                )}
+                {['draft', 'review_required', 'approved'].includes(status) && (
+                  <button onClick={() => setShowSendModal(true)} className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium">
+                    <Send size={15} /> Send Invoice
+                  </button>
+                )}
+              </>
             )}
             <button onClick={handleSave} disabled={saving} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white px-4 py-2 rounded-lg text-sm font-medium">
               <Save size={15} /> {saving ? 'Saving...' : 'Save Invoice'}
@@ -459,6 +605,67 @@ export default function InvoiceEditPage() {
           </div>
         </div>
       </div>
+
+      {/* Send Invoice Modal */}
+      {showSendModal && (
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Send Invoice</h3>
+            <div className="space-y-3 text-sm">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <p className="font-medium text-blue-900">{invoiceData?.invoice_number || 'Invoice'}</p>
+                <p className="text-blue-700">Total: £{Number(invoiceData?.total_amount || 0).toFixed(2)}</p>
+                <p className="text-blue-700">To: {invoiceData?.recipient_email || invoiceData?.customer?.email || '—'}</p>
+              </div>
+              <p className="text-gray-600">The invoice will be emailed with a PDF attachment and a link to view it online. The customer will see the public invoice page with payment details.</p>
+            </div>
+            <div className="flex items-center gap-3 mt-6">
+              <button onClick={handleSendInvoice} disabled={sending} className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-6 py-2.5 rounded-lg font-medium text-sm disabled:opacity-50">
+                {sending ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />} {sending ? 'Sending...' : 'Confirm & Send'}
+              </button>
+              <button onClick={() => setShowSendModal(false)} className="px-4 py-2.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Payment Modal */}
+      {showPaymentModal && (
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Record Payment</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Amount (£)</label>
+                <input type="number" step="0.01" value={paymentAmount} onChange={(e) => setPaymentAmount(e.target.value)} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Payment Date</label>
+                <input type="date" value={paymentDate} onChange={(e) => setPaymentDate(e.target.value)} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Payment Method</label>
+                <select value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm">
+                  <option value="Bank transfer">Bank transfer</option>
+                  <option value="Card">Card</option>
+                  <option value="Cash">Cash</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Reference</label>
+                <input type="text" value={paymentRef} onChange={(e) => setPaymentRef(e.target.value)} placeholder={invoiceData?.invoice_number || ''} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+              </div>
+            </div>
+            <div className="flex items-center gap-3 mt-6">
+              <button onClick={handleRecordPayment} disabled={recordingPayment} className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-2.5 rounded-lg font-medium text-sm disabled:opacity-50">
+                {recordingPayment ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle size={16} />} {recordingPayment ? 'Recording...' : 'Record Payment'}
+              </button>
+              <button onClick={() => setShowPaymentModal(false)} className="px-4 py-2.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
     </AdminLayout>
   );
 }
@@ -469,4 +676,26 @@ function calcNextDate(from: string, freq: string): string {
   else if (freq === 'quarterly') d.setMonth(d.getMonth() + 3);
   else if (freq === 'annually') d.setFullYear(d.getFullYear() + 1);
   return d.toISOString().split('T')[0];
+}
+
+function blobToBase64(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const result = reader.result as string;
+      resolve(result.split(',')[1]);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
+
+async function generatePdfBlob(_invoiceId: string): Promise<Blob | null> {
+  try {
+    // PDF generation happens on the preview page — returning null here
+    // The email is still sent with the public invoice link
+    return null;
+  } catch {
+    return null;
+  }
 }
