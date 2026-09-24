@@ -52,6 +52,7 @@ const InvoicePreviewPage = lazy(() => import('./pages/admin/InvoicePreviewPage')
 const ConversationIntakePage = lazy(() => import('./pages/admin/ConversationIntakePage'));
 const InvoiceReviewPage = lazy(() => import('./pages/admin/InvoiceReviewPage'));
 const PaymentSettingsPage = lazy(() => import('./pages/admin/PaymentSettingsPage'));
+const FinancialPinSettingsPage = lazy(() => import('./pages/admin/FinancialPinSettingsPage'));
 const PendingPaymentsPage = lazy(() => import('./pages/admin/PendingPaymentsPage'));
 const PublicInvoicePage = lazy(() => import('./pages/PublicInvoicePage'));
 const WasteTransferNotesPage = lazy(() => import('./pages/admin/WasteTransferNotesPage'));
@@ -216,6 +217,7 @@ function App() {
           <Route path="/admin/invoices/:id/preview" element={<ProtectedRoute><InvoicePreviewPage /></ProtectedRoute>} />
           <Route path="/admin/finance/pending-payments" element={<ProtectedRoute><PendingPaymentsPage /></ProtectedRoute>} />
           <Route path="/admin/settings/payment-details" element={<ProtectedRoute><PaymentSettingsPage /></ProtectedRoute>} />
+          <Route path="/admin/settings/financial-pin" element={<ProtectedRoute><FinancialPinSettingsPage /></ProtectedRoute>} />
           <Route path="/admin/invoicing" element={<Navigate to="/admin/invoices" replace />} />
           <Route path="/admin/waste-transfer-notes" element={<ProtectedRoute><WasteTransferNotesPage /></ProtectedRoute>} />
           <Route path="/admin/waste-carriers" element={<ProtectedRoute><WasteCarriersPage /></ProtectedRoute>} />

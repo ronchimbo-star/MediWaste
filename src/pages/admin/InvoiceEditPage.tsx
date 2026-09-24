@@ -114,6 +114,8 @@ export default function InvoiceEditPage() {
   const [isRecurring, setIsRecurring] = useState(false);
   const [recurringFrequency, setRecurringFrequency] = useState('monthly');
   const [paymentTerms, setPaymentTerms] = useState('');
+  const [certificateId, setCertificateId] = useState('');
+  const [certificates, setCertificates] = useState<any[]>([]);
   const [lineItems, setLineItems] = useState<LineItem[]>([{ description: '', quantity: 1, unit_price: 0, po_number: '' }]);
 
   useEffect(() => {
@@ -149,6 +151,16 @@ export default function InvoiceEditPage() {
     if (data) setCustomers(data);
   };
 
+  useEffect(() => {
+    if (customerId) {
+      supabase.from('mw_certificates').select('id, certificate_number, issue_date, expiry_date, status').eq('customer_id', customerId).order('issue_date', { ascending: false }).limit(20)
+        .then(({ data }) => { if (data) setCertificates(data); });
+    } else {
+      setCertificates([]);
+      setCertificateId('');
+    }
+  }, [customerId]);
+
   const fetchSubscriptions = async (custId: string) => {
     const { data } = await supabase.from('mw_subscriptions').select('id, service_plan:mw_service_plans(name, price)').eq('customer_id', custId).eq('status', 'active');
     if (data) {
@@ -172,6 +184,7 @@ export default function InvoiceEditPage() {
       setIsRecurring(inv.is_recurring || false);
       setRecurringFrequency(inv.recurring_frequency || 'monthly');
       setPaymentTerms(inv.payment_terms || '');
+      if (inv.certificate_id) setCertificateId(inv.certificate_id);
       if (inv.recipient_email) setRecipientEmail(inv.recipient_email);
 
       const { data: items } = await supabase.from('mw_invoice_line_items').select('*').eq('invoice_id', id);
@@ -231,6 +244,7 @@ export default function InvoiceEditPage() {
         vat_number: vatNumber || null,
         payment_terms: paymentTerms || null,
         billing_address: cust?.billing_address || null,
+        certificate_id: certificateId || null,
         subtotal,
         tax_rate: 20,
         tax_amount: totalVat,
@@ -372,6 +386,7 @@ export default function InvoiceEditPage() {
         customer_id: inv.customer_id,
         invoice_id: id,
         invoice_number: inv.invoice_number,
+        certificate_id: inv.certificate_id || null,
         net_amount: netAmount,
         vat_amount: vatAmount,
         gross_amount: amount,
@@ -484,6 +499,17 @@ export default function InvoiceEditPage() {
                 <p className="font-medium text-gray-900">{selectedCustomer.company_name || selectedCustomer.contact_name}</p>
                 <p className="text-gray-500">{selectedCustomer.email}</p>
                 {selectedCustomer.billing_address && <p className="text-gray-500 mt-1">{selectedCustomer.billing_address}</p>}
+              </div>
+            )}
+            {certificates.length > 0 && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Link to Certificate (optional)</label>
+                <select value={certificateId} onChange={(e) => setCertificateId(e.target.value)} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  <option value="">No certificate linked</option>
+                  {certificates.map((c) => (
+                    <option key={c.id} value={c.id}>{c.certificate_number} — {new Date(c.issue_date).toLocaleDateString('en-GB')} ({c.status})</option>
+                  ))}
+                </select>
               </div>
             )}
           </div>

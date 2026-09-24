@@ -7,6 +7,8 @@ import { useSiteSettings } from '../hooks/useSiteSettings';
 import { downloadCertificateAsPDF } from '../utils/certificateDownload';
 import CollectionRequestModal from '../components/CollectionRequestModal';
 import { Download, Award, FileText, CheckCircle, XCircle, Clock, MapPin, Phone, Mail, Building, AlertTriangle, AlertOctagon, Truck, Loader, Eye, X } from 'lucide-react';
+import FinancialSection from '../components/FinancialSection';
+import { useAuth } from '../hooks/useAuth';
 
 interface WasteTransferNote {
   id: string;
@@ -46,6 +48,7 @@ function fmt(date: string) {
 
 export default function CompliancePage() {
   const { token } = useParams<{ token: string }>();
+  const { user } = useAuth();
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [selectedWtnId, setSelectedWtnId] = useState<string | null>(null);
@@ -394,6 +397,10 @@ export default function CompliancePage() {
                 <FileText size={28} className="mx-auto text-gray-300 mb-2" />
                 <p className="text-gray-400 text-sm">No waste transfer notes on record</p>
               </div>
+            )}
+
+            {user && cert?.id && cert?.customer_id && (
+              <FinancialSection customerId={cert.customer_id} certificateId={cert.id} />
             )}
           </div>
         </div>

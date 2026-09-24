@@ -37,6 +37,7 @@ import {
   Zap,
   DollarSign,
   CreditCard,
+  Lock,
 } from 'lucide-react';
 
 interface AdminLayoutProps {
@@ -177,6 +178,7 @@ export default function AdminLayout({ children, pageTitle, breadcrumbs }: AdminL
         { label: 'Backup', path: '/admin/backup', icon: <HardDrive size={18} /> },
         { label: 'Markdown for Agents', path: '/admin/markdown-for-agents', icon: <Zap size={18} /> },
         { label: 'Settings', path: '/admin/settings', icon: <Settings size={18} /> },
+        { label: 'Financial PIN', path: '/admin/settings/financial-pin', icon: <Lock size={18} /> },
       ],
     },
   ];
