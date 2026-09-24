@@ -11,6 +11,7 @@ interface SEOProps {
   keywords?: string;
   noindex?: boolean;
   type?: string;
+  markdownSlug?: string;
 }
 
 const DEFAULT_OG_IMAGE = 'https://mediwaste.co.uk/Medical-Waste-Hero.jpg';
@@ -39,6 +40,7 @@ export default function SEO({
   keywords,
   noindex,
   type = 'website',
+  markdownSlug,
 }: SEOProps) {
   const { settings } = useSiteSettings();
 
@@ -62,6 +64,7 @@ export default function SEO({
       )}
       <link rel="canonical" href={canon} />
       <link rel="alternate" type="text/markdown" href="https://mediwaste.co.uk/llms.txt" />
+      {markdownSlug && <link rel="alternate" type="text/markdown" href={`https://mediwaste.co.uk/llms/${markdownSlug}`} title={resolvedTitle} />}
 
       <meta property="og:site_name" content="MediWaste" />
       <meta property="og:type" content={type} />

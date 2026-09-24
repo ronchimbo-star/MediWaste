@@ -137,6 +137,7 @@ function buildHtml(template, meta) {
     type = 'website',
     h1,
     content,
+    markdownSlug,
   } = meta;
 
   const title = fitTitle(rawTitle);
@@ -174,6 +175,7 @@ function buildHtml(template, meta) {
     desc       ? `    <meta name="twitter:description" content="${escAttr(desc)}" />` : '',
     `    <meta name="twitter:image" content="${escAttr(ogImage)}" />`,
     `    <link rel="alternate" type="text/markdown" href="${BASE_URL}/llms.txt" />`,
+    markdownSlug ? `    <link rel="alternate" type="text/markdown" href="${BASE_URL}/llms/${escAttr(markdownSlug)}" title="${escAttr(title)}" />` : '',
     ...schemas.map(s => `    <script type="application/ld+json">${JSON.stringify(s)}</script>`),
   ].filter(Boolean).join('\n');
 
@@ -1525,10 +1527,39 @@ async function main() {
   const template = fs.readFileSync(path.join(DIST, 'index.html'), 'utf-8');
   let count = 0;
 
+  // ── Fetch published markdown versions ─────────────────────────────────────
+  // Build a map of source_url → public_slug so each prerendered page can
+  // link directly to its own markdown counterpart via <link rel="alternate">.
+  const markdownMap = new Map();
+  if (SUPABASE_URL && SUPABASE_ANON_KEY) {
+    try {
+      const mdVersions = await supabaseFetch(SUPABASE_URL, SUPABASE_ANON_KEY, 'markdown_versions', {
+        is_published: 'eq.true',
+        is_latest: 'eq.true',
+        select: 'source_url,public_slug',
+      });
+      for (const v of mdVersions) {
+        if (v.source_url && v.public_slug) {
+          markdownMap.set(v.source_url, v.public_slug);
+        }
+      }
+      console.log(`[prerender]   ${markdownMap.size} published markdown versions`);
+    } catch (err) {
+      console.warn(`[prerender]   ⚠ Markdown versions fetch failed: ${err.message}`);
+    }
+  }
+
+  // Helper: look up the markdown slug for a given canonical URL
+  function markdownSlugFor(canonicalUrl) {
+    if (!canonicalUrl) return null;
+    return markdownMap.get(canonicalUrl) || markdownMap.get(canonicalUrl.replace(/\/$/, '')) || null;
+  }
+
   // ── Static routes ──────────────────────────────────────────────────────────
   console.log(`[prerender] Writing ${STATIC_ROUTES.length} static routes…`);
   for (const route of STATIC_ROUTES) {
-    writeRoute(route.path, buildHtml(template, route));
+    const mdSlug = markdownSlugFor(route.canonical);
+    writeRoute(route.path, buildHtml(template, { ...route, markdownSlug: mdSlug }));
     count++;
   }
 
@@ -1598,6 +1629,7 @@ async function main() {
         type: 'article',
         h1: page.h1 || title,
         content: page.content,
+        markdownSlug: markdownSlugFor(canonical),
       }));
       count++;
     }
@@ -1673,6 +1705,7 @@ async function main() {
         type: 'article',
         h1: article.title,
         content: article.content,
+        markdownSlug: markdownSlugFor(canonical),
       }));
       count++;
     }
