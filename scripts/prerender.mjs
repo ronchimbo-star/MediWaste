@@ -173,6 +173,7 @@ function buildHtml(template, meta) {
     `    <meta name="twitter:title" content="${escAttr(title)}" />`,
     desc       ? `    <meta name="twitter:description" content="${escAttr(desc)}" />` : '',
     `    <meta name="twitter:image" content="${escAttr(ogImage)}" />`,
+    `    <link rel="alternate" type="text/markdown" href="${BASE_URL}/llms.txt" />`,
     ...schemas.map(s => `    <script type="application/ld+json">${JSON.stringify(s)}</script>`),
   ].filter(Boolean).join('\n');
 

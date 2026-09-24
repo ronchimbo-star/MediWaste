@@ -61,6 +61,7 @@ export default function SEO({
         <meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1" />
       )}
       <link rel="canonical" href={canon} />
+      <link rel="alternate" type="text/markdown" href="https://mediwaste.co.uk/llms.txt" />
 
       <meta property="og:site_name" content="MediWaste" />
       <meta property="og:type" content={type} />

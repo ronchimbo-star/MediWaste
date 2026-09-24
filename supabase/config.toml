@@ -64,6 +64,9 @@ verify_jwt = true
 [functions.serve-markdown]
 verify_jwt = false
 
+[functions.serve-llms-txt]
+verify_jwt = false
+
 [functions.analyze-conversation]
 verify_jwt = false
 

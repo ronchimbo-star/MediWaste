@@ -4,6 +4,9 @@ https://www.mediwaste.co.uk/* https://mediwaste.co.uk/:splat 301!
 # Sitemap proxy
 /sitemap.xml https://xezovslgxkhzjumtfrjn.supabase.co/functions/v1/seo-sitemap 200!
 
+# llms.txt — dynamic AI agent index
+/llms.txt https://xezovslgxkhzjumtfrjn.supabase.co/functions/v1/serve-llms-txt 200!
+
 # Legacy WordPress assets – serve SPA so app can handle gracefully
 /wp-content/* /index.html 200
 /wp-admin/* /index.html 200
