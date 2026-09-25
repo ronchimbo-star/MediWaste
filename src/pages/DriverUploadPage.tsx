@@ -228,7 +228,7 @@ export default function DriverUploadPage() {
           </button>
         )}
         <div className="flex items-center gap-2 flex-1">
-          <img src="/mediwaste-logo.png" alt="MediWaste" className="h-6 object-contain" style={{ filter: 'brightness(0) invert(1)' }} />
+          <img src="/certificate-logo.png" alt="MediWaste" className="h-6 object-contain" style={{ filter: 'brightness(0) invert(1)' }} />
         </div>
         {screen !== 'pin' && screen !== 'success' && (
           <span className="text-xs text-gray-500 font-medium uppercase tracking-wide">Driver Upload</span>

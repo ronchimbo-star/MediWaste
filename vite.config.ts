@@ -36,9 +36,9 @@ function buildCleanPublic() {
   }
 
   for (const entry of fs.readdirSync(src)) {
-    if (entry.includes(' ')) continue;
     const srcPath = path.join(src, entry);
-    const destPath = path.join(cleanPublicDir, entry);
+    const outputName = entry === 'image copy 4.png' ? 'certificate-logo.png' : entry;
+    const destPath = path.join(cleanPublicDir, outputName);
     try {
       fs.copyFileSync(srcPath, destPath);
     } catch {}

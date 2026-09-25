@@ -19,7 +19,7 @@ export default function Header() {
         <div className="flex items-center justify-between">
           <Link to="/" onClick={closeMobileMenu} className="flex items-center flex-shrink-0">
             <img
-              src="/mediwaste-logo.png"
+              src="/certificate-logo.png"
               alt="MediWaste"
               className="h-12 md:h-16 w-auto flex-shrink-0"
             />

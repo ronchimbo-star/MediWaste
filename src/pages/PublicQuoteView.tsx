@@ -345,7 +345,7 @@ export default function PublicQuoteView() {
           <div className="flex justify-between items-start mb-6 flex-wrap gap-4">
             <div className="flex items-center gap-4">
               <img
-                src="/mediwaste-logo.png"
+                src="/certificate-logo.png"
                 alt="MediWaste Solutions"
                 className="h-16 w-auto"
               />
@@ -661,7 +661,7 @@ export default function PublicQuoteView() {
           <div className="text-center mb-4">
             <div className="flex items-center justify-center gap-3 mb-3">
               <img
-                src="/mediwaste-logo.png"
+                src="/certificate-logo.png"
                 alt="MediWaste Solutions"
                 className="h-12 w-auto brightness-0 invert"
               />

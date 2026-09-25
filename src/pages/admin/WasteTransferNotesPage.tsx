@@ -844,11 +844,11 @@ interface WTNViewModalProps {
 function WTNViewModal({ wtn, onClose }: WTNViewModalProps) {
   const [customerAddress, setCustomerAddress] = useState<any>(null);
   const [savingPdf, setSavingPdf] = useState(false);
-  const [logoDataUrl, setLogoDataUrl] = useState('/mediwaste-logo.png');
+  const [logoDataUrl, setLogoDataUrl] = useState('/certificate-logo.png');
 
   useEffect(() => {
     fetchCustomerAddress();
-    fetch('/mediwaste-logo.png')
+    fetch('/certificate-logo.png')
       .then(r => r.blob())
       .then(b => new Promise<string>(res => { const fr = new FileReader(); fr.onloadend = () => res(fr.result as string); fr.readAsDataURL(b); }))
       .then(url => setLogoDataUrl(url))

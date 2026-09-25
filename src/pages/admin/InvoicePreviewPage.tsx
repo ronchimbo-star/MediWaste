@@ -65,7 +65,7 @@ export default function InvoicePreviewPage() {
   useEffect(() => {
     fetchData();
     let cancelled = false;
-    imageToDataUrl('/mediwaste-logo.png').then((logo) => {
+    imageToDataUrl('/certificate-logo.png').then((logo) => {
       if (!cancelled) { setLogoDataUrl(logo); setImagesReady(true); }
     });
     return () => { cancelled = true; };

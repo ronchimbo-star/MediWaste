@@ -193,7 +193,7 @@ export default function AdminLayout({ children, pageTitle, breadcrumbs }: AdminL
       <div className={`flex items-center ${collapsed ? 'justify-center px-3' : 'justify-between px-4'} py-4 border-b border-slate-700`}>
         {!collapsed && (
           <div className="flex items-center gap-2">
-            <img src="/mediwaste-logo.png" alt="MediWaste" className="h-7 w-auto" />
+            <img src="/certificate-logo.png" alt="MediWaste" className="h-7 w-auto" />
             <span className="text-white font-semibold text-sm">Admin</span>
           </div>
         )}

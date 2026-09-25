@@ -49,7 +49,7 @@ function fmt(date: string) {
 }
 
 export default function InvoicePreview({ data, settings, logoDataUrl }: Props) {
-  const logoSrc = logoDataUrl || '/mediwaste-logo.png';
+  const logoSrc = logoDataUrl || '/certificate-logo.png';
 
   const hasPONumbers = data.line_items.some((it) => it.po_number);
 
