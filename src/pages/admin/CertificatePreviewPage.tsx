@@ -41,7 +41,7 @@ export default function CertificatePreviewPage() {
   useEffect(() => {
     let cancelled = false;
     Promise.all([
-      imageToDataUrl('/certificate-logo.png'),
+      imageToDataUrl('/new-mediwaste-logoV1.svg'),
       imageToDataUrl('/mediwaste-favicon.png'),
       imageToDataUrl('/signature.png'),
       imageToDataUrl('/mediwaste-logo-white.png'),

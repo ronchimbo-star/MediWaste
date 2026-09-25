@@ -488,7 +488,7 @@ export default function AuditPage() {
         <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
           <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
             <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
-              <img src="/certificate-logo.png" alt="MediWaste" className="h-7 w-auto" />
+              <img src="/new-mediwaste-logoV1.svg" alt="MediWaste" className="h-7 w-auto" />
               <Link to="/" className="text-sm text-gray-500 hover:text-gray-700 transition-colors">← Back to MediWaste</Link>
             </div>
           </header>
@@ -572,7 +572,7 @@ export default function AuditPage() {
       <div className="min-h-screen bg-gray-50">
         <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
           <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
-            <img src="/certificate-logo.png" alt="MediWaste" className="h-7 w-auto" />
+            <img src="/new-mediwaste-logoV1.svg" alt="MediWaste" className="h-7 w-auto" />
             <button onClick={() => setStep(0)} className="text-sm text-gray-400 hover:text-gray-600 transition-colors">
               <X size={18} />
             </button>
@@ -909,7 +909,7 @@ export default function AuditPage() {
                     {/* Report letterhead */}
                     <div className="bg-white rounded-xl border border-gray-200 p-6">
                       <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-100">
-                        <img src="/certificate-logo.png" alt="MediWaste" style={{ height: '40px', objectFit: 'contain' }} />
+                        <img src="/new-mediwaste-logoV1.svg" alt="MediWaste" style={{ height: '40px', objectFit: 'contain' }} />
                         <div className="text-right text-sm text-gray-500">
                           <p className="font-semibold text-gray-900">Clinical Waste Audit Report</p>
                           <p>{new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })}</p>

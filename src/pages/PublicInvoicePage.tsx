@@ -160,7 +160,7 @@ export default function PublicInvoicePage() {
         <div id="invoice-render" style={{ width: '794px', maxWidth: '100%', margin: '0 auto', background: 'white', fontFamily: "'Arial', sans-serif", boxShadow: '0 4px 32px rgba(0,0,0,0.14)' }}>
           <div style={{ height: '8px', background: '#FF0000', width: '100%' }} />
           <div style={{ padding: '40px 48px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-            <img src="/certificate-logo.png" alt="MediWaste" crossOrigin="anonymous" style={{ width: '220px', height: 'auto', objectFit: 'contain' }} />
+            <img src="/new-mediwaste-logoV1.svg" alt="MediWaste" crossOrigin="anonymous" style={{ width: '220px', height: 'auto', objectFit: 'contain' }} />
             <h1 style={{ fontSize: '32px', fontWeight: '900', color: '#111', margin: 0 }}>INVOICE</h1>
           </div>
           <div style={{ padding: '0 48px 24px', display: 'flex', justifyContent: 'space-between', borderBottom: '2px solid #FF0000' }}>

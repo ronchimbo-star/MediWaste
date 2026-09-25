@@ -207,7 +207,7 @@ export default function CompliancePage() {
       <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src="/certificate-logo.png" alt="MediWaste" className="h-7 w-auto" />
+            <img src="/new-mediwaste-logoV1.svg" alt="MediWaste" className="h-7 w-auto" />
             <span className="text-sm text-gray-400 hidden sm:block">Compliance Verification</span>
           </div>
           {cert && !isExpired && !isSuspended && !isArchived && customer && (
@@ -427,7 +427,7 @@ export default function CompliancePage() {
       <footer className="border-t border-gray-200 bg-white mt-12">
         <div className="max-w-5xl mx-auto px-4 py-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-400">
           <div className="flex items-center gap-3">
-            <img src="/certificate-logo.png" alt="MediWaste" className="h-5 w-auto opacity-60" />
+            <img src="/new-mediwaste-logoV1.svg" alt="MediWaste" className="h-5 w-auto opacity-60" />
             <span>MediWaste Solutions Ltd</span>
           </div>
           <div className="flex items-center gap-4">
@@ -465,10 +465,10 @@ function WtnDetailModal({ wtnId, onClose }: WtnDetailModalProps) {
   const [customerAddress, setCustomerAddress] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [savingPdf, setSavingPdf] = useState(false);
-  const [logoDataUrl, setLogoDataUrl] = useState('/certificate-logo.png');
+  const [logoDataUrl, setLogoDataUrl] = useState('/new-mediwaste-logoV1.svg');
 
   useEffect(() => {
-    fetch('/certificate-logo.png')
+    fetch('/new-mediwaste-logoV1.svg')
       .then(r => r.blob())
       .then(b => new Promise<string>(res => { const fr = new FileReader(); fr.onloadend = () => res(fr.result as string); fr.readAsDataURL(b); }))
       .then(url => setLogoDataUrl(url))

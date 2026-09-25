@@ -652,7 +652,7 @@ export default function ServiceAgreementEditPage() {
                 <div className="flex justify-between items-start mb-8 pb-8 border-b">
                   <div>
                     <img
-                      src="/certificate-logo.png"
+                      src="/new-mediwaste-logoV1.svg"
                       alt="MediWaste"
                       className="h-12 mb-4"
                     />

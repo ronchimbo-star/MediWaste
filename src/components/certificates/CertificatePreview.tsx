@@ -43,7 +43,7 @@ export default function CertificatePreview({ data, settings, forDownload = false
   const signatoryTitle = data.authorised_signatory_title || settings?.default_signatory_title || '';
   const verifyUrl = `${window.location.origin}/compliance/${data.qr_code_token}`;
 
-  const logoSrc = logoDataUrl || '/certificate-logo.png';
+  const logoSrc = logoDataUrl || '/new-mediwaste-logoV1.svg';
   const faviconSrc = faviconDataUrl || '/mediwaste-favicon.png';
   const signatureSrc = signatureDataUrl || '/signature.png';
   const whiteLogoSrc = whiteLogoDataUrl || '/mediwaste-logo-white.png';

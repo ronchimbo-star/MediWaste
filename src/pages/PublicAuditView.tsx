@@ -175,7 +175,7 @@ export default function PublicAuditView() {
       <div className="bg-white border-b border-gray-200 sticky top-0 z-10 print:hidden">
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src="/certificate-logo.png" alt="MediWaste" className="h-8" />
+            <img src="/new-mediwaste-logoV1.svg" alt="MediWaste" className="h-8" />
             <div>
               <h1 className="text-sm font-bold text-gray-900">Pre-Acceptance Waste Audit</h1>
               <p className="text-xs text-gray-500">{audit.audit_number}</p>
