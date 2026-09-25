@@ -43,9 +43,16 @@ export async function renderElementToPDF(opts: PdfOptions): Promise<void> {
 
   clone.querySelectorAll('img').forEach((img) => {
     (img as HTMLImageElement).style.maxWidth = '100%';
+    (img as HTMLImageElement).style.maxHeight = '200px';
     (img as HTMLImageElement).style.height = 'auto';
     (img as HTMLImageElement).style.objectFit = 'contain';
     (img as HTMLImageElement).style.display = 'block';
+  });
+
+  // Mark elements with pageBreakBefore/page-break-before:always to start on a new page
+  const forcedBreakEls = clone.querySelectorAll('[style*="page-break-before"], [style*="breakBefore"]');
+  forcedBreakEls.forEach((fbEl) => {
+    (fbEl as HTMLElement).setAttribute('data-forced-page-break', 'true');
   });
 
   document.body.appendChild(clone);
@@ -87,12 +94,22 @@ export async function renderElementToPDF(opts: PdfOptions): Promise<void> {
   const pageSliceHeightPx = Math.floor(contentH * pxPerMm);
 
   const breakBoundaries = findBreakBoundaries(el, noBreakSelectors, scale);
+  const forcedBreaks = findForcedBreaks(el, scale);
 
   let sourceY = 0;
   let pageNumber = 0;
 
   while (sourceY < canvas.height) {
     let sliceHeightPx = Math.min(pageSliceHeightPx, canvas.height - sourceY);
+
+    // Check if a forced page-break element starts within this slice — if so,
+    // end the current slice at the break point so the next page starts fresh.
+    for (const fbY of forcedBreaks) {
+      if (fbY > sourceY && fbY < sourceY + sliceHeightPx) {
+        sliceHeightPx = fbY - sourceY;
+        break;
+      }
+    }
 
     const sliceBottom = sourceY + sliceHeightPx;
     for (const boundary of breakBoundaries) {
@@ -162,4 +179,15 @@ function findBreakBoundaries(
 
   boundaries.sort((a, b) => a.top - b.top);
   return boundaries;
+}
+
+function findForcedBreaks(el: HTMLElement, scale: number): number[] {
+  const elRect = el.getBoundingClientRect();
+  const breaks: number[] = [];
+  el.querySelectorAll('[data-forced-page-break="true"]').forEach((child) => {
+    const rect = (child as HTMLElement).getBoundingClientRect();
+    breaks.push(Math.round((rect.top - elRect.top) * scale));
+  });
+  breaks.sort((a, b) => a - b);
+  return breaks;
 }

@@ -1091,18 +1091,19 @@ function WTNViewModal({ wtn, onClose }: WTNViewModalProps) {
               </div>
             </div>
 
-            {/* Collection Photos */}
+            {/* Collection Photos — forced to page 2 in PDF */}
             {wtnPhotos.length > 0 && (
-              <div className="border-t border-gray-300 pt-4 mt-4">
+              <div className="border-t border-gray-300 pt-4 mt-4 no-break" style={{ breakBefore: 'page', pageBreakBefore: 'always' }}>
                 <h4 className="font-bold text-gray-900 mb-3">Collection Evidence Photos ({wtnPhotos.length})</h4>
                 <div className="grid grid-cols-3 gap-3">
                   {wtnPhotos.map((p, i) => (
-                    <div key={p.id} className="rounded-lg overflow-hidden border border-gray-200">
+                    <div key={p.id} className="rounded-lg overflow-hidden border border-gray-200 no-break">
                       <img
                         src={p.job_photo.photo_url}
                         alt={p.job_photo.caption || `Photo ${i + 1}`}
                         crossOrigin="anonymous"
-                        className="w-full h-36 object-contain bg-gray-100"
+                        style={{ width: '100%', height: 'auto', maxHeight: '200px', objectFit: 'contain', display: 'block' }}
+                        className="bg-gray-100"
                       />
                       {p.job_photo.caption && (
                         <p className="text-xs text-gray-600 px-2 py-1 bg-gray-50 truncate">{p.job_photo.caption}</p>
