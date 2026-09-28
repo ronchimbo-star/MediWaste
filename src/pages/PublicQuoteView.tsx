@@ -349,10 +349,6 @@ export default function PublicQuoteView() {
                 alt="MediWaste Solutions"
                 className="h-16 w-auto"
               />
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">MediWaste Solutions</h1>
-                <p className="text-gray-600 text-sm">Healthcare Waste Management Specialists</p>
-              </div>
             </div>
             <div className="text-right text-sm text-gray-700">
               <div className="flex items-center gap-2 justify-end mb-1">
