@@ -29,6 +29,7 @@ interface SeoLocationLink {
 
 export default function ServiceAreaPage() {
   const { countySlug } = useParams<{ countySlug: string }>();
+  const normalizedCountySlug = countySlug?.replace(/\/+$/, '');
   const navigate = useNavigate();
   const [county, setCounty] = useState<County | null>(null);
   const [counties, setCounties] = useState<County[]>([]);
@@ -83,7 +84,7 @@ export default function ServiceAreaPage() {
       const { data: countyData, error: countyError } = await supabase
         .from('counties')
         .select('*')
-        .eq('slug', countySlug)
+        .eq('slug', normalizedCountySlug)
         .maybeSingle();
 
       if (countyError) {
@@ -119,12 +120,12 @@ export default function ServiceAreaPage() {
   };
 
   useEffect(() => {
-    if (countySlug) {
+    if (normalizedCountySlug) {
       fetchCountyData();
     } else {
       fetchAllCounties();
     }
-  }, [countySlug]);
+  }, [normalizedCountySlug]);
 
   if (loading) {
     return (
@@ -162,7 +163,7 @@ export default function ServiceAreaPage() {
   }
 
   // Show all counties if no specific county selected
-  if (!countySlug) {
+  if (!normalizedCountySlug) {
     return (
       <div className="min-h-screen bg-gray-50">
         <SEO
@@ -297,7 +298,7 @@ export default function ServiceAreaPage() {
       <SEO
         title={county.meta_title || `Clinical Waste Services in ${county.name} | MediWaste`}
         description={county.meta_description || `Professional clinical waste disposal and collection services in ${county.name}. Licensed medical waste management for healthcare providers. Get a free quote today.`}
-        canonical={`https://mediwaste.co.uk/service-areas/${countySlug}`}
+        canonical={`https://mediwaste.co.uk/service-areas/${normalizedCountySlug}`}
         schema={serviceSchema}
       />
       <Header />

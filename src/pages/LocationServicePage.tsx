@@ -36,7 +36,7 @@ export default function LocationServicePage() {
   const fetchPage = async (retryCount = 0) => {
     try {
       setLoading(true);
-      let slug = location.pathname.substring(1);
+      let slug = location.pathname.replace(/^\/+|\/+$/g, '');
 
       const areaMapping: Record<string, string> = {
         'service-areas/london': 'clinical-waste-disposal-london',
