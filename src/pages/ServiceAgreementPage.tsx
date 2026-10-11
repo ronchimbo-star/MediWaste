@@ -39,6 +39,14 @@ interface ServiceAgreement {
   declined_at: string | null;
   decline_reason: string | null;
   created_at: string;
+  override_company_name: string | null;
+  override_company_address: string | null;
+  override_company_number: string | null;
+  override_carrier_licence: string | null;
+  override_contact_name: string | null;
+  override_contact_email: string | null;
+  override_contact_phone: string | null;
+  override_contact_position: string | null;
 }
 
 export default function ServiceAgreementPage() {
@@ -56,14 +64,14 @@ export default function ServiceAgreementPage() {
     date: new Date().toISOString().split('T')[0]
   });
 
-  const companyName = settings?.company_legal_name || 'MediWaste LTD';
-  const companyAddress = settings?.company_registered_address || 'Unit 2 Capital Industrial Estate, Crabtree Manorway South, Belvedere, Kent, DA17 6BJ';
-  const companyNumber = settings?.company_number || '15821509';
-  const carrierLicence = settings?.waste_carrier_licence || 'CBDU542939';
-  const contactName = settings?.company_contact_name || 'Sarah Benson';
-  const contactEmail = settings?.company_contact_email || 'sarah.benson@mediwaste.co.uk';
-  const contactPhone = settings?.company_contact_phone || '01322 879 713';
-  const contactPosition = settings?.company_contact_position || 'Key Account Manager';
+  const companyName = agreement?.override_company_name || settings?.company_legal_name || 'MediWaste LTD';
+  const companyAddress = agreement?.override_company_address || settings?.company_registered_address || 'Unit 2 Capital Industrial Estate, Crabtree Manorway South, Belvedere, Kent, DA17 6BJ';
+  const companyNumber = agreement?.override_company_number || settings?.company_number || '15821509';
+  const carrierLicence = agreement?.override_carrier_licence || settings?.waste_carrier_licence || 'CBDU542939';
+  const contactName = agreement?.override_contact_name || settings?.company_contact_name || 'Sarah Benson';
+  const contactEmail = agreement?.override_contact_email || settings?.company_contact_email || 'sarah.benson@mediwaste.co.uk';
+  const contactPhone = agreement?.override_contact_phone || settings?.company_contact_phone || '01322 879 713';
+  const contactPosition = agreement?.override_contact_position || settings?.company_contact_position || 'Key Account Manager';
 
   useEffect(() => {
     if (token) {

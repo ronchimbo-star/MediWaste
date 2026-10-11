@@ -2,13 +2,25 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/useAuth';
-import { Save, Send, ExternalLink, Plus, Trash2, Eye, X } from 'lucide-react';
+import { useSiteSettings } from '../../hooks/useSiteSettings';
+import { Save, Send, ExternalLink, Plus, Trash2, Eye, X, Building2 } from 'lucide-react';
 import { useToastContext } from '../../contexts/ToastContext';
 import AdminLayout from '../../components/admin/AdminLayout';
 
 interface WasteItem {
   description: string;
   frequency: string;
+}
+
+interface CompanyOverrides {
+  override_company_name: string;
+  override_company_address: string;
+  override_company_number: string;
+  override_carrier_licence: string;
+  override_contact_name: string;
+  override_contact_email: string;
+  override_contact_phone: string;
+  override_contact_position: string;
 }
 
 interface AgreementForm {
@@ -29,11 +41,24 @@ interface AgreementForm {
   annual_value: string;
   status: string;
   notes: string;
+  overrides: CompanyOverrides;
 }
+
+const emptyOverrides: CompanyOverrides = {
+  override_company_name: '',
+  override_company_address: '',
+  override_company_number: '',
+  override_carrier_licence: '',
+  override_contact_name: '',
+  override_contact_email: '',
+  override_contact_phone: '',
+  override_contact_position: '',
+};
 
 export default function ServiceAgreementEditPage() {
   const { id } = useParams<{ id: string }>();
   const { user, loading: authLoading } = useAuth();
+  const { settings } = useSiteSettings();
   const navigate = useNavigate();
   const { toast } = useToastContext();
   const [loading, setLoading] = useState(false);
@@ -60,8 +85,19 @@ export default function ServiceAgreementEditPage() {
     start_date: '',
     annual_value: '',
     status: 'draft',
-    notes: ''
+    notes: '',
+    overrides: { ...emptyOverrides }
   });
+
+  // Resolved company details: override if non-empty, otherwise fall back to site_settings
+  const companyName = form.overrides.override_company_name || settings?.company_legal_name || 'MediWaste LTD';
+  const companyAddress = form.overrides.override_company_address || settings?.company_registered_address || '';
+  const companyNumber = form.overrides.override_company_number || settings?.company_number || '';
+  const carrierLicence = form.overrides.override_carrier_licence || settings?.waste_carrier_licence || 'CBDU542939';
+  const contactName = form.overrides.override_contact_name || settings?.company_contact_name || 'Sarah Benson';
+  const contactEmail = form.overrides.override_contact_email || settings?.company_contact_email || 'sarah.benson@mediwaste.co.uk';
+  const contactPhone = form.overrides.override_contact_phone || settings?.company_contact_phone || '01322 879 713';
+  const contactPosition = form.overrides.override_contact_position || settings?.company_contact_position || 'Key Account Manager';
 
   const wasteTypeOptions = [
     'Sharps waste',
@@ -110,7 +146,17 @@ export default function ServiceAgreementEditPage() {
           start_date: data.start_date || '',
           annual_value: data.annual_value?.toString() || '',
           status: data.status,
-          notes: data.notes || ''
+          notes: data.notes || '',
+          overrides: {
+            override_company_name: data.override_company_name || '',
+            override_company_address: data.override_company_address || '',
+            override_company_number: data.override_company_number || '',
+            override_carrier_licence: data.override_carrier_licence || '',
+            override_contact_name: data.override_contact_name || '',
+            override_contact_email: data.override_contact_email || '',
+            override_contact_phone: data.override_contact_phone || '',
+            override_contact_position: data.override_contact_position || '',
+          }
         });
         setSecureToken(data.secure_token);
         setAgreementNumber(data.agreement_number);
@@ -181,9 +227,31 @@ export default function ServiceAgreementEditPage() {
         const { data, error } = await supabase
           .from('service_agreements')
           .update({
-            ...form,
+            client_name: form.client_name,
+            client_address: form.client_address,
+            collection_address: form.collection_address,
+            contact_name: form.contact_name,
+            contact_email: form.contact_email,
+            contact_phone: form.contact_phone,
+            waste_types: form.waste_types,
+            waste_items: form.waste_items,
+            collection_frequency: form.collection_frequency,
+            containers: form.containers,
+            initial_term_months: form.initial_term_months,
+            payment_terms_days: form.payment_terms_days,
+            bin_rental: form.bin_rental,
+            start_date: form.start_date,
             annual_value: parseFloat(form.annual_value) || 0,
             status: statusToUse,
+            notes: form.notes,
+            override_company_name: form.overrides.override_company_name || null,
+            override_company_address: form.overrides.override_company_address || null,
+            override_company_number: form.overrides.override_company_number || null,
+            override_carrier_licence: form.overrides.override_carrier_licence || null,
+            override_contact_name: form.overrides.override_contact_name || null,
+            override_contact_email: form.overrides.override_contact_email || null,
+            override_contact_phone: form.overrides.override_contact_phone || null,
+            override_contact_position: form.overrides.override_contact_position || null,
             updated_at: new Date().toISOString()
           })
           .eq('id', id)
@@ -207,13 +275,35 @@ export default function ServiceAgreementEditPage() {
         }
 
         const { data, error } = await supabase.from('service_agreements').insert({
-          ...form,
+          client_name: form.client_name,
+          client_address: form.client_address,
+          collection_address: form.collection_address,
+          contact_name: form.contact_name,
+          contact_email: form.contact_email,
+          contact_phone: form.contact_phone,
+          waste_types: form.waste_types,
+          waste_items: form.waste_items,
+          collection_frequency: form.collection_frequency,
+          containers: form.containers,
+          initial_term_months: form.initial_term_months,
+          payment_terms_days: form.payment_terms_days,
+          bin_rental: form.bin_rental,
+          start_date: form.start_date,
+          annual_value: parseFloat(form.annual_value) || 0,
           agreement_number: newAgreementNumber,
           secure_token: newSecureToken,
-          annual_value: parseFloat(form.annual_value) || 0,
           end_date: endDate,
           status: statusToUse,
-          created_by: user.id
+          notes: form.notes,
+          created_by: user.id,
+          override_company_name: form.overrides.override_company_name || null,
+          override_company_address: form.overrides.override_company_address || null,
+          override_company_number: form.overrides.override_company_number || null,
+          override_carrier_licence: form.overrides.override_carrier_licence || null,
+          override_contact_name: form.overrides.override_contact_name || null,
+          override_contact_email: form.overrides.override_contact_email || null,
+          override_contact_phone: form.overrides.override_contact_phone || null,
+          override_contact_position: form.overrides.override_contact_position || null,
         }).select('id, secure_token, agreement_number').single();
 
         if (error) throw error;
@@ -614,6 +704,127 @@ export default function ServiceAgreementEditPage() {
               </div>
             </div>
 
+            {/* Company Details Overrides */}
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <Building2 className="w-5 h-5 text-gray-700" />
+                <h2 className="text-xl font-bold text-gray-900">Company Details</h2>
+              </div>
+              <p className="text-sm text-gray-500 mb-4">These appear on the agreement document. Defaults are pulled from Site Settings — leave any field blank to use the default. Override only the fields you need to change for this specific agreement.</p>
+              <div className="space-y-4">
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Company Name
+                      <span className="text-gray-400 font-normal ml-2">Default: {settings?.company_legal_name || 'MediWaste LTD'}</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={form.overrides.override_company_name}
+                      onChange={(e) => setForm({ ...form, overrides: { ...form.overrides, override_company_name: e.target.value } })}
+                      className="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                      placeholder={settings?.company_legal_name || 'MediWaste LTD'}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Company Number
+                      <span className="text-gray-400 font-normal ml-2">Default: {settings?.company_number || '15821509'}</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={form.overrides.override_company_number}
+                      onChange={(e) => setForm({ ...form, overrides: { ...form.overrides, override_company_number: e.target.value } })}
+                      className="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                      placeholder={settings?.company_number || '15821509'}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Registered Address
+                    <span className="text-gray-400 font-normal ml-2">Default: {settings?.company_registered_address || '—'}</span>
+                  </label>
+                  <textarea
+                    value={form.overrides.override_company_address}
+                    onChange={(e) => setForm({ ...form, overrides: { ...form.overrides, override_company_address: e.target.value } })}
+                    rows={2}
+                    className="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                    placeholder={settings?.company_registered_address || 'Enter registered address'}
+                  />
+                </div>
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Waste Carrier Licence
+                      <span className="text-gray-400 font-normal ml-2">Default: {settings?.waste_carrier_licence || 'CBDU542939'}</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={form.overrides.override_carrier_licence}
+                      onChange={(e) => setForm({ ...form, overrides: { ...form.overrides, override_carrier_licence: e.target.value } })}
+                      className="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                      placeholder={settings?.waste_carrier_licence || 'CBDU542939'}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Contact Name
+                      <span className="text-gray-400 font-normal ml-2">Default: {settings?.company_contact_name || 'Sarah Benson'}</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={form.overrides.override_contact_name}
+                      onChange={(e) => setForm({ ...form, overrides: { ...form.overrides, override_contact_name: e.target.value } })}
+                      className="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                      placeholder={settings?.company_contact_name || 'Sarah Benson'}
+                    />
+                  </div>
+                </div>
+                <div className="grid md:grid-cols-3 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Contact Position
+                      <span className="text-gray-400 font-normal ml-2">Default: {settings?.company_contact_position || 'Key Account Manager'}</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={form.overrides.override_contact_position}
+                      onChange={(e) => setForm({ ...form, overrides: { ...form.overrides, override_contact_position: e.target.value } })}
+                      className="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                      placeholder={settings?.company_contact_position || 'Key Account Manager'}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Contact Email
+                      <span className="text-gray-400 font-normal ml-2">Default: {settings?.company_contact_email || '—'}</span>
+                    </label>
+                    <input
+                      type="email"
+                      value={form.overrides.override_contact_email}
+                      onChange={(e) => setForm({ ...form, overrides: { ...form.overrides, override_contact_email: e.target.value } })}
+                      className="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                      placeholder={settings?.company_contact_email || ''}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Contact Phone
+                      <span className="text-gray-400 font-normal ml-2">Default: {settings?.company_contact_phone || '—'}</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={form.overrides.override_contact_phone}
+                      onChange={(e) => setForm({ ...form, overrides: { ...form.overrides, override_contact_phone: e.target.value } })}
+                      className="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                      placeholder={settings?.company_contact_phone || ''}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* Internal Notes */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -673,10 +884,10 @@ export default function ServiceAgreementEditPage() {
 
                     <div className="mb-6">
                       <p className="font-semibold text-gray-900">Supplier:</p>
-                      <p>Circular Horizons International LTD T/A MediWaste</p>
-                      <p>Unit 2 Capital Industrial Estate, Crabtree Manorway South, Belvedere, Kent, DA17 6BJ</p>
-                      <p>Company No: 15821509</p>
-                      <p>Contact: Sarah Benson – sarah.benson@mediwaste.co.uk / 01322 879 713</p>
+                      <p>{companyName}</p>
+                      <p>{companyAddress}</p>
+                      <p>Company No: {companyNumber}</p>
+                      <p>Contact: {contactName} – {contactEmail} / {contactPhone}</p>
                     </div>
 
                     <div>
@@ -690,7 +901,7 @@ export default function ServiceAgreementEditPage() {
                   {/* Section 1 */}
                   <div>
                     <h2 className="text-xl font-bold text-gray-900 mb-3">1. Services Provided</h2>
-                    <p className="mb-2">MediWaste agrees to provide the following waste collection and disposal services:</p>
+                    <p className="mb-2">{companyName} agrees to provide the following waste collection and disposal services:</p>
 
                     {form.collection_address && (
                       <div className="mb-4 p-3 bg-gray-50 rounded border border-gray-200">
@@ -766,7 +977,7 @@ export default function ServiceAgreementEditPage() {
                     <ul className="list-disc pl-6 space-y-2">
                       <li>Store all waste securely in appropriate containers.</li>
                       <li>Do not overfill containers.</li>
-                      <li>Inform MediWaste of any changes to waste types or volumes.</li>
+                      <li>Inform {companyName} of any changes to waste types or volumes.</li>
                     </ul>
                   </div>
 
@@ -774,8 +985,8 @@ export default function ServiceAgreementEditPage() {
                   <div>
                     <h2 className="text-xl font-bold text-gray-900 mb-3">5. Liability & Compliance</h2>
                     <ul className="list-disc pl-6 space-y-2">
-                      <li>MediWaste holds a valid Upper Tier Waste Carrier Licence (CBDU123456) and £5m public liability insurance.</li>
-                      <li>MediWaste will provide all legally required documentation and ensure waste is disposed of at permitted facilities.</li>
+                      <li>{companyName} holds a valid Upper Tier Waste Carrier Licence ({carrierLicence}) and £5m public liability insurance.</li>
+                      <li>{companyName} will provide all legally required documentation and ensure waste is disposed of at permitted facilities.</li>
                       <li>The client remains responsible for accurate waste classification.</li>
                     </ul>
                   </div>
@@ -784,7 +995,7 @@ export default function ServiceAgreementEditPage() {
                   <div>
                     <h2 className="text-xl font-bold text-gray-900 mb-3">6. Service Guarantee</h2>
                     <ul className="list-disc pl-6 space-y-2">
-                      <li>MediWaste guarantees a 2-hour collection window with 24 hours' notice.</li>
+                      <li>{companyName} guarantees a 2-hour collection window with 24 hours' notice.</li>
                       <li>If we miss a scheduled collection without 24 hours' notice, the next collection is free.</li>
                     </ul>
                   </div>
@@ -801,10 +1012,10 @@ export default function ServiceAgreementEditPage() {
                       </div>
 
                       <div>
-                        <p className="font-semibold text-gray-900 mb-4">For and on behalf of MediWaste:</p>
-                        <p className="mb-2">Signature: <span className="italic font-semibold">Sarah Benson</span></p>
+                        <p className="font-semibold text-gray-900 mb-4">For and on behalf of {companyName}:</p>
+                        <p className="mb-2">Signature: <span className="italic font-semibold">{contactName}</span></p>
                         <p className="mb-2">Date: {new Date().toLocaleDateString()}</p>
-                        <p>Sarah Benson, Key Account Manager</p>
+                        <p>{contactName}, {contactPosition}</p>
                       </div>
                     </div>
                   </div>
