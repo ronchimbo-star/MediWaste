@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
+import { useSiteSettings } from '../hooks/useSiteSettings';
 import { CheckCircle, XCircle, Download, Printer, Mail, Phone, HelpCircle } from 'lucide-react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
@@ -42,6 +43,7 @@ interface ServiceAgreement {
 
 export default function ServiceAgreementPage() {
   const { token } = useParams<{ token: string }>();
+  const { settings } = useSiteSettings();
   const [agreement, setAgreement] = useState<ServiceAgreement | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -53,6 +55,15 @@ export default function ServiceAgreementPage() {
     position: '',
     date: new Date().toISOString().split('T')[0]
   });
+
+  const companyName = settings?.company_legal_name || 'MediWaste LTD';
+  const companyAddress = settings?.company_registered_address || 'Unit 2 Capital Industrial Estate, Crabtree Manorway South, Belvedere, Kent, DA17 6BJ';
+  const companyNumber = settings?.company_number || '15821509';
+  const carrierLicence = settings?.waste_carrier_licence || 'CBDU542939';
+  const contactName = settings?.company_contact_name || 'Sarah Benson';
+  const contactEmail = settings?.company_contact_email || 'sarah.benson@mediwaste.co.uk';
+  const contactPhone = settings?.company_contact_phone || '01322 879 713';
+  const contactPosition = settings?.company_contact_position || 'Key Account Manager';
 
   useEffect(() => {
     if (token) {
@@ -270,7 +281,7 @@ export default function ServiceAgreementPage() {
               <div>
                 <img
                   src="/new-mediwaste-logoV1.svg"
-                  alt="MediWaste"
+                  alt={companyName}
                   className="h-12 mb-4"
                 />
                 <p className="text-sm text-gray-600">Agreement No: {agreement.agreement_number}</p>
@@ -290,10 +301,10 @@ export default function ServiceAgreementPage() {
 
                 <div className="mb-6">
                   <p className="font-semibold text-gray-900">Supplier:</p>
-                  <p>MediWaste LTD</p>
-                  <p>Unit 2 Capital Industrial Estate, Crabtree Manorway South, Belvedere, Kent, DA17 6BJ</p>
-                  <p>Company No: 15821509</p>
-                  <p>Contact: Sarah Benson – sarah.benson@mediwaste.co.uk / 01322 879 713</p>
+                  <p>{companyName}</p>
+                  <p>{companyAddress}</p>
+                  <p>Company No: {companyNumber}</p>
+                  <p>Contact: {contactName} – {contactEmail} / {contactPhone}</p>
                 </div>
 
                 <div>
@@ -307,7 +318,7 @@ export default function ServiceAgreementPage() {
               {/* Section 1 */}
               <div>
                 <h2 className="text-xl font-bold text-gray-900 mb-3">1. Services Provided</h2>
-                <p className="mb-2">MediWaste agrees to provide the following waste collection and disposal services:</p>
+                <p className="mb-2">{companyName} agrees to provide the following waste collection and disposal services:</p>
 
                 {agreement.collection_address && (
                   <div className="mb-4 p-3 bg-gray-50 rounded border border-gray-200">
@@ -383,7 +394,7 @@ export default function ServiceAgreementPage() {
                 <ul className="list-disc pl-6 space-y-2">
                   <li>Store all waste securely in appropriate containers.</li>
                   <li>Do not overfill containers.</li>
-                  <li>Inform MediWaste of any changes to waste types or volumes.</li>
+                  <li>Inform {companyName} of any changes to waste types or volumes.</li>
                 </ul>
               </div>
 
@@ -391,8 +402,8 @@ export default function ServiceAgreementPage() {
               <div>
                 <h2 className="text-xl font-bold text-gray-900 mb-3">5. Liability & Compliance</h2>
                 <ul className="list-disc pl-6 space-y-2">
-                  <li>MediWaste holds a valid Upper Tier Waste Carrier Licence (CBDU123456) and £5m public liability insurance.</li>
-                  <li>MediWaste will provide all legally required documentation and ensure waste is disposed of at permitted facilities.</li>
+                  <li>{companyName} holds a valid Upper Tier Waste Carrier Licence ({carrierLicence}) and £5m public liability insurance.</li>
+                  <li>{companyName} will provide all legally required documentation and ensure waste is disposed of at permitted facilities.</li>
                   <li>The client remains responsible for accurate waste classification.</li>
                 </ul>
               </div>
@@ -401,7 +412,7 @@ export default function ServiceAgreementPage() {
               <div>
                 <h2 className="text-xl font-bold text-gray-900 mb-3">6. Service Guarantee</h2>
                 <ul className="list-disc pl-6 space-y-2">
-                  <li>MediWaste guarantees a 2-hour collection window with 24 hours' notice.</li>
+                  <li>{companyName} guarantees a 2-hour collection window with 24 hours' notice.</li>
                   <li>If we miss a scheduled collection without 24 hours' notice, the next collection is free.</li>
                 </ul>
               </div>
@@ -429,10 +440,10 @@ export default function ServiceAgreementPage() {
                   </div>
 
                   <div>
-                    <p className="font-semibold text-gray-900 mb-4">For and on behalf of MediWaste:</p>
-                    <p className="mb-2">Signature: <span className="italic font-semibold">Sarah Benson</span></p>
+                    <p className="font-semibold text-gray-900 mb-4">For and on behalf of {companyName}:</p>
+                    <p className="mb-2">Signature: <span className="italic font-semibold">{contactName}</span></p>
                     <p className="mb-2">Date: {new Date(agreement.created_at).toLocaleDateString()}</p>
-                    <p>Sarah Benson, Key Account Manager</p>
+                    <p>{contactName}, {contactPosition}</p>
                   </div>
                 </div>
               </div>
@@ -569,7 +580,7 @@ export default function ServiceAgreementPage() {
                   How do I cancel the service?
                 </h3>
                 <p className="text-gray-700 pl-7">
-                  You can cancel with 30 days' written notice at any time after the initial term. Simply email us at sarah.benson@mediwaste.co.uk with your cancellation request.
+                  You can cancel with 30 days' written notice at any time after the initial term. Simply email us at {contactEmail} with your cancellation request.
                 </p>
               </div>
 
@@ -595,15 +606,15 @@ export default function ServiceAgreementPage() {
             <div className="space-y-3">
               <div className="flex items-center gap-3">
                 <Mail className="w-5 h-5 text-red-600" />
-                <a href="mailto:sarah.benson@mediwaste.co.uk" className="text-red-600 hover:text-red-700 font-medium">
-                  sarah.benson@mediwaste.co.uk
+                <a href={`mailto:${contactEmail}`} className="text-red-600 hover:text-red-700 font-medium">
+                  {contactEmail}
                 </a>
               </div>
 
               <div className="flex items-center gap-3">
                 <Phone className="w-5 h-5 text-red-600" />
-                <a href="tel:01322879713" className="text-red-600 hover:text-red-700 font-medium">
-                  01322 879 713
+                <a href={`tel:${contactPhone.replace(/\s/g, '')}`} className="text-red-600 hover:text-red-700 font-medium">
+                  {contactPhone}
                 </a>
               </div>
             </div>

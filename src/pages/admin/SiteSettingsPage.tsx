@@ -124,6 +124,122 @@ export default function SiteSettingsPage() {
             </div>
 
             <div>
+              <h3 className="text-lg font-bold text-gray-900 mb-4 pb-2 border-b">Company Details (for Documents)</h3>
+              <p className="text-sm text-gray-500 mb-4">These details appear on service agreements, certificates and other formal documents. Changing them here updates all documents going forward.</p>
+              <div className="space-y-4">
+                <div>
+                  <label htmlFor="company_legal_name" className="block text-sm font-medium text-gray-700 mb-2">
+                    Legal Company Name
+                  </label>
+                  <input
+                    type="text"
+                    name="company_legal_name"
+                    id="company_legal_name"
+                    defaultValue={settings?.company_legal_name || ''}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="company_registered_address" className="block text-sm font-medium text-gray-700 mb-2">
+                    Registered Office Address
+                  </label>
+                  <textarea
+                    name="company_registered_address"
+                    id="company_registered_address"
+                    rows={2}
+                    defaultValue={settings?.company_registered_address || ''}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  />
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="company_number" className="block text-sm font-medium text-gray-700 mb-2">
+                      Companies House Number
+                    </label>
+                    <input
+                      type="text"
+                      name="company_number"
+                      id="company_number"
+                      defaultValue={settings?.company_number || ''}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="waste_carrier_licence" className="block text-sm font-medium text-gray-700 mb-2">
+                      Waste Carrier Licence Number
+                    </label>
+                    <input
+                      type="text"
+                      name="waste_carrier_licence"
+                      id="waste_carrier_licence"
+                      defaultValue={settings?.waste_carrier_licence || ''}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="company_contact_name" className="block text-sm font-medium text-gray-700 mb-2">
+                      Document Contact Name
+                    </label>
+                    <input
+                      type="text"
+                      name="company_contact_name"
+                      id="company_contact_name"
+                      defaultValue={settings?.company_contact_name || ''}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="company_contact_position" className="block text-sm font-medium text-gray-700 mb-2">
+                      Document Contact Position
+                    </label>
+                    <input
+                      type="text"
+                      name="company_contact_position"
+                      id="company_contact_position"
+                      defaultValue={settings?.company_contact_position || ''}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="company_contact_email" className="block text-sm font-medium text-gray-700 mb-2">
+                      Document Contact Email
+                    </label>
+                    <input
+                      type="email"
+                      name="company_contact_email"
+                      id="company_contact_email"
+                      defaultValue={settings?.company_contact_email || ''}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="company_contact_phone" className="block text-sm font-medium text-gray-700 mb-2">
+                      Document Contact Phone
+                    </label>
+                    <input
+                      type="text"
+                      name="company_contact_phone"
+                      id="company_contact_phone"
+                      defaultValue={settings?.company_contact_phone || ''}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div>
               <h3 className="text-lg font-bold text-gray-900 mb-4 pb-2 border-b">Contact Details</h3>
               <div className="grid md:grid-cols-2 gap-4">
                 <div>

@@ -14,6 +14,14 @@ interface SiteSettings {
   tiktok_url: string;
   youtube_url: string;
   google_business_url: string;
+  company_legal_name: string | null;
+  company_registered_address: string | null;
+  company_number: string | null;
+  waste_carrier_licence: string | null;
+  company_contact_name: string | null;
+  company_contact_email: string | null;
+  company_contact_phone: string | null;
+  company_contact_position: string | null;
 }
 
 export function useSiteSettings() {
