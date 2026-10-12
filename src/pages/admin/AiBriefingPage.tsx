@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../lib/supabase';
 import { useToastContext } from '../../contexts/ToastContext';
-import { Sparkles, RefreshCw, Mail, AlertCircle, CheckCircle2, Calendar } from 'lucide-react';
+import { Sparkles, RefreshCw, Mail, AlertCircle, CheckCircle2, Calendar, GraduationCap, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 import AdminLayout from '../../components/admin/AdminLayout';
 
 interface Briefing {
@@ -20,11 +20,24 @@ interface Briefing {
   created_at: string;
 }
 
+interface TrainingExample {
+  id: string;
+  client_name: string;
+  client_business: string | null;
+  waste_types: string[];
+  quote_subject: string;
+  analysis_summary: string | null;
+  created_at: string;
+}
+
 export default function AiBriefingPage() {
   const { toast } = useToastContext();
   const queryClient = useQueryClient();
   const [generating, setGenerating] = useState(false);
+  const [training, setTraining] = useState(false);
   const [selectedBriefing, setSelectedBriefing] = useState<Briefing | null>(null);
+  const [showTraining, setShowTraining] = useState(false);
+  const [expandedExample, setExpandedExample] = useState<string | null>(null);
 
   const { data: briefings = [], isLoading } = useQuery<Briefing[]>({
     queryKey: ['ai-briefings'],
@@ -66,6 +79,63 @@ export default function AiBriefingPage() {
       toast.error(err.message || 'Failed to generate briefing');
     } finally {
       setGenerating(false);
+    }
+  };
+
+  const { data: trainingExamples = [], isLoading: loadingTraining } = useQuery<TrainingExample[]>({
+    queryKey: ['quote-training-examples'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('mw_quote_training_examples')
+        .select('id, client_name, client_business, waste_types, quote_subject, analysis_summary, created_at')
+        .order('created_at', { ascending: false })
+        .limit(50);
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  const handleTrain = async () => {
+    setTraining(true);
+    try {
+      const resp = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/train-quote-agent`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ maxEmails: 20 }),
+        }
+      );
+      const result = await resp.json();
+      if (!resp.ok) throw new Error(result.error || 'Failed to train agent');
+
+      queryClient.invalidateQueries({ queryKey: ['quote-training-examples'] });
+      toast.success(
+        result.trained > 0
+          ? `Analysed ${result.foundInGmail} sent quotes — ${result.trained} new examples learned`
+          : `Found ${result.foundInGmail || 0} sent quotes — all already trained (or none found)`
+      );
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to train agent');
+    } finally {
+      setTraining(false);
+    }
+  };
+
+  const handleDeleteExample = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('mw_quote_training_examples')
+        .delete()
+        .eq('id', id);
+      if (error) throw error;
+      queryClient.invalidateQueries({ queryKey: ['quote-training-examples'] });
+      toast.success('Training example removed');
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to delete example');
     }
   };
 
@@ -204,6 +274,94 @@ export default function AiBriefingPage() {
               ))
             )}
           </div>
+        </div>
+
+        {/* Quote Agent Training Section */}
+        <div className="mt-8 bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+          <button
+            onClick={() => setShowTraining(!showTraining)}
+            className="w-full px-5 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
+          >
+            <div className="flex items-center gap-2">
+              <GraduationCap className="w-5 h-5 text-blue-600" />
+              <div className="text-left">
+                <h3 className="text-sm font-semibold text-gray-900">Quote Agent Training</h3>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  {trainingExamples.length} example{trainingExamples.length !== 1 ? 's' : ''} learned from sent quotes
+                </p>
+              </div>
+            </div>
+            {showTraining ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
+          </button>
+
+          {showTraining && (
+            <div className="border-t border-gray-100">
+              <div className="px-5 py-4 bg-blue-50 border-b border-blue-100">
+                <p className="text-sm text-blue-800 mb-3">
+                  The AI quote agent learns from quotes you've already sent. Click "Train from Gmail" to scan your Gmail sent folder for emails with "quote" in the subject — the agent will analyse each one to learn your pricing, style, and tone.
+                </p>
+                <button
+                  onClick={handleTrain}
+                  disabled={training}
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-60 text-sm font-medium"
+                >
+                  <GraduationCap className="w-4 h-4" />
+                  {training ? 'Training...' : 'Train from Gmail'}
+                </button>
+              </div>
+
+              <div className="px-5 py-4">
+                {loadingTraining ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                  </div>
+                ) : trainingExamples.length === 0 ? (
+                  <div className="text-center py-8">
+                    <GraduationCap className="w-10 h-10 text-gray-300 mx-auto mb-3" />
+                    <p className="text-sm text-gray-500">No training examples yet. Click "Train from Gmail" to get started.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {trainingExamples.map((ex) => (
+                      <div key={ex.id} className="border border-gray-200 rounded-lg overflow-hidden">
+                        <div
+                          className="px-4 py-3 flex items-center justify-between cursor-pointer hover:bg-gray-50"
+                          onClick={() => setExpandedExample(expandedExample === ex.id ? null : ex.id)}
+                        >
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-gray-900 truncate">{ex.quote_subject}</p>
+                            <p className="text-xs text-gray-500 mt-0.5">
+                              {ex.client_name}
+                              {ex.client_business ? ` · ${ex.client_business}` : ''}
+                              {ex.waste_types?.length > 0 ? ` · ${ex.waste_types.join(', ')}` : ''}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-2 ml-3">
+                            {expandedExample === ex.id ? (
+                              <ChevronUp className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                            ) : (
+                              <ChevronDown className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                            )}
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleDeleteExample(ex.id); }}
+                              className="p-1 text-red-500 hover:text-red-700 hover:bg-red-50 rounded"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                        {expandedExample === ex.id && ex.analysis_summary && (
+                          <div className="px-4 py-3 bg-gray-50 border-t border-gray-200">
+                            <p className="text-xs text-gray-600 italic">{ex.analysis_summary}</p>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="mt-8 bg-amber-50 border border-amber-200 rounded-xl p-4">

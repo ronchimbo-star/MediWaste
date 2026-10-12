@@ -46,6 +46,9 @@ verify_jwt = false
 [functions.daily-email-briefing]
 verify_jwt = false
 
+[functions.train-quote-agent]
+verify_jwt = false
+
 [functions.draft-quote-reply]
 verify_jwt = false
 

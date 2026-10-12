@@ -77,6 +77,27 @@ Deno.serve(async (req: Request) => {
     const openaiKey = Deno.env.get("OPENAI_API_KEY");
     if (!openaiKey) throw new Error("OPENAI_API_KEY is not configured");
 
+    // Fetch training examples to use as few-shot context
+    const { data: trainingExamples } = await supabase
+      .from("mw_quote_training_examples")
+      .select("quote_subject, quote_body, key_details, analysis_summary")
+      .order("created_at", { ascending: false })
+      .limit(5);
+
+    const exampleContext = (trainingExamples || []).length > 0
+      ? `\n\nHere are ${trainingExamples!.length} examples of real quotes MediWaste has sent. Match their style, tone, and pricing patterns:\n\n` +
+        trainingExamples!.map((ex: any, i: number) => {
+          const details = ex.key_details || {};
+          const pricing = details.pricing ? `\nPricing used: ${details.pricing.join(", ")}` : "";
+          const tone = details.tone ? `\nTone: ${details.tone}` : "";
+          const summary = ex.analysis_summary ? `\nWhy it works: ${ex.analysis_summary}` : "";
+          return `--- Example ${i + 1} ---
+Subject: ${ex.quote_subject}${pricing}${tone}${summary}
+Body (excerpt):
+${(ex.quote_body || "").slice(0, 800)}`;
+        }).join("\n\n")
+      : "";
+
     const isQuoteRequest = !!emailData.contact_name;
     let extractionPrompt: string;
     let draftPrompt: string;
@@ -125,6 +146,7 @@ Use actual MediWaste pricing (all excl VAT):
 - Documentation & compliance fee (annual): £43.00
 - Additional line items typically range £20-£100
 Adjust quantities and totals based on frequency and volume mentioned in the email.
+${exampleContext}
 
 Do not send the email – just draft it and return it to me for review.
 

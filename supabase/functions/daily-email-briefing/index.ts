@@ -71,7 +71,7 @@ function categoriseEmail(email: EmailRow): CategorisedEmail {
   };
 }
 
-function buildPrompt(emails: EmailRow[]): string {
+function buildPrompt(emails: EmailRow[], windowLabel: string): string {
   const emailSummaries = emails.map((e, i) => {
     const sender = e.from_name || e.from_email;
     const customer = e.customer?.company_name || e.customer?.contact_name || '';
@@ -79,10 +79,11 @@ function buildPrompt(emails: EmailRow[]): string {
     return `Email ${i + 1}:
 From: ${sender}${customer ? ` (${customer})` : ''}
 Subject: ${e.subject}
+Date: ${new Date(e.received_at).toLocaleDateString('en-GB')}
 Snippet: ${bodySnippet}`;
   }).join('\n\n');
 
-  return `You are my MediWaste assistant. Review the following emails received in the last 24 hours.
+  return `You are my MediWaste assistant. Review the following emails received in the ${windowLabel}.
 
 Categorise each email into one of:
 - 🔴 Urgent – needs action today
@@ -134,6 +135,179 @@ function textToHtml(text: string): string {
     .replace(/\n/g, '<br>');
 }
 
+async function getGmailAccessToken(): Promise<string | null> {
+  const refreshToken = Deno.env.get("GMAIL_REFRESH_TOKEN");
+  const clientId = Deno.env.get("GMAIL_CLIENT_ID");
+  const clientSecret = Deno.env.get("GMAIL_CLIENT_SECRET");
+
+  if (refreshToken && clientId && clientSecret) {
+    const resp = await fetch("https://oauth2.googleapis.com/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        grant_type: "refresh_token",
+        refresh_token: refreshToken,
+        client_id: clientId,
+        client_secret: clientSecret,
+      }),
+    });
+
+    if (resp.ok) {
+      const data = await resp.json();
+      if (data.access_token) return data.access_token;
+    }
+    return null;
+  }
+
+  return Deno.env.get("GMAIL_ACCESS_TOKEN") || null;
+}
+
+function decodeBase64Url(str: string): string {
+  try {
+    const base64 = str.replace(/-/g, "+").replace(/_/g, "/");
+    const raw = atob(base64);
+    return decodeURIComponent(
+      raw
+        .split("")
+        .map((c) => "%" + c.charCodeAt(0).toString(16).padStart(2, "0"))
+        .join("")
+    );
+  } catch {
+    return "";
+  }
+}
+
+function extractEmailBody(payload: any): string {
+  let plain = "";
+  const processPart = (part: any) => {
+    if (!part) return;
+    const mimeType = part.mimeType || "";
+    const body = part.body || {};
+    if (mimeType === "text/plain" && body.data) {
+      plain = decodeBase64Url(body.data);
+    } else if (mimeType === "text/html" && body.data && !plain) {
+      plain = decodeBase64Url(body.data).replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+    }
+    if (part.parts) {
+      for (const subpart of part.parts) processPart(subpart);
+    }
+  };
+  processPart(payload);
+  return plain;
+}
+
+function getHeader(headers: any[], name: string): string {
+  const header = headers?.find((h: any) => h.name.toLowerCase() === name.toLowerCase());
+  return header?.value || "";
+}
+
+function parseEmailAddress(raw: string): { name: string; email: string } {
+  const match = raw.match(/^(.*?)\s*<([^>]+)>$/);
+  if (match) return { name: match[1].trim().replace(/^"|"$/g, ""), email: match[2].trim() };
+  return { name: "", email: raw.trim() };
+}
+
+async function syncGmail(supabase: any): Promise<{ fetched: number; newEmails: number; error: string | null }> {
+  let gmailToken: string;
+  try {
+    const token = await getGmailAccessToken();
+    if (!token) return { fetched: 0, newEmails: 0, error: "No Gmail credentials configured" };
+    gmailToken = token;
+  } catch (e: any) {
+    return { fetched: 0, newEmails: 0, error: e.message };
+  }
+
+  try {
+    let listUrl = `https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=50&q=to:mediwaste.co.uk OR from:mediwaste.co.uk`;
+    const listResp = await fetch(listUrl, { headers: { Authorization: `Bearer ${gmailToken}` } });
+
+    if (!listResp.ok) {
+      const errText = await listResp.text();
+      return { fetched: 0, newEmails: 0, error: `Gmail API list error: ${listResp.status} - ${errText}` };
+    }
+
+    const listData = await listResp.json();
+    const messages = listData.messages || [];
+    let newCount = 0;
+
+    const { data: allCustomers } = await supabase
+      .from("mw_customers")
+      .select("id, email");
+
+    const customerEmailMap: Record<string, string> = {};
+    for (const c of allCustomers || []) {
+      if (c.email) customerEmailMap[c.email.toLowerCase()] = c.id;
+    }
+
+    for (const msg of messages) {
+      const { data: existing } = await supabase
+        .from("mw_emails")
+        .select("id")
+        .eq("gmail_message_id", msg.id)
+        .maybeSingle();
+      if (existing) continue;
+
+      const msgResp = await fetch(
+        `https://gmail.googleapis.com/gmail/v1/users/me/messages/${msg.id}?format=full`,
+        { headers: { Authorization: `Bearer ${gmailToken}` } }
+      );
+      if (!msgResp.ok) continue;
+      const msgData = await msgResp.json();
+
+      const headers = msgData.payload?.headers || [];
+      const fromRaw = getHeader(headers, "From");
+      const toRaw = getHeader(headers, "To");
+      const subject = getHeader(headers, "Subject") || "(No Subject)";
+      const dateRaw = getHeader(headers, "Date");
+
+      const from = parseEmailAddress(fromRaw);
+      const to = parseEmailAddress(toRaw);
+      const bodyPlain = extractEmailBody(msgData.payload);
+      const receivedAt = dateRaw ? new Date(dateRaw).toISOString() : new Date().toISOString();
+
+      const mediwasteDomains = ["mediwaste.co.uk"];
+      const fromIsMediwaste = mediwasteDomains.some((d) => from.email.toLowerCase().includes(d));
+      const direction = fromIsMediwaste ? "outbound" : "inbound";
+      const matchEmail = direction === "inbound" ? from.email.toLowerCase() : to.email.toLowerCase();
+      const customerId = customerEmailMap[matchEmail] || null;
+
+      const labels = msgData.labelIds || [];
+      const isRead = !labels.includes("UNREAD");
+      const isStarred = labels.includes("STARRED");
+      const status = isStarred ? "starred" : isRead ? "read" : "unread";
+
+      await supabase.from("mw_emails").insert([{
+        gmail_message_id: msg.id,
+        gmail_thread_id: msgData.threadId || null,
+        customer_id: customerId,
+        from_email: from.email,
+        from_name: from.name,
+        to_email: to.email,
+        subject,
+        body_plain: bodyPlain,
+        body_html: null,
+        direction,
+        status,
+        has_attachments: false,
+        attachments: [],
+        labels,
+        received_at: receivedAt,
+      }]);
+      newCount++;
+    }
+
+    await supabase.from("mw_email_sync_log").insert([{
+      status: "success",
+      emails_fetched: messages.length,
+      emails_new: newCount,
+    }]);
+
+    return { fetched: messages.length, newEmails: newCount, error: null };
+  } catch (err: any) {
+    return { fetched: 0, newEmails: 0, error: err.message };
+  }
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { status: 200, headers: corsHeaders });
@@ -148,29 +322,58 @@ Deno.serve(async (req: Request) => {
     const body = req.method === "POST" ? await req.json().catch(() => ({})) : {};
     const sendEmail = body.sendEmail !== false;
     const recipientEmail = body.recipientEmail || "ronchimbo@gmail.com";
+    const skipSync = body.skipSync === true;
 
-    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    let syncResult: { fetched: number; newEmails: number; error: string | null } | null = null;
 
-    const { data: emails, error: emailError } = await supabase
-      .from("mw_emails")
-      .select(`
-        id, from_email, from_name, subject, body_plain, direction, received_at, customer_id,
-        customer:mw_customers(company_name, contact_name)
-      `)
-      .eq("direction", "inbound")
-      .gte("received_at", twentyFourHoursAgo)
-      .order("received_at", { ascending: false })
-      .limit(100);
+    if (!skipSync) {
+      syncResult = await syncGmail(supabase);
+    }
 
-    if (emailError) throw new Error(`Failed to fetch emails: ${emailError.message}`);
+    // Try 24h window first, then fall back to 7 days, then 30 days
+    const windows = [
+      { hours: 24, label: "last 24 hours" },
+      { hours: 168, label: "last 7 days" },
+      { hours: 720, label: "last 30 days" },
+    ];
 
-    const inboundEmails = (emails || []) as EmailRow[];
+    let inboundEmails: EmailRow[] = [];
+    let windowLabel = windows[0].label;
+
+    for (const w of windows) {
+      const since = new Date(Date.now() - w.hours * 60 * 60 * 1000).toISOString();
+      const { data, error } = await supabase
+        .from("mw_emails")
+        .select(`
+          id, from_email, from_name, subject, body_plain, direction, received_at, customer_id,
+          customer:mw_customers(company_name, contact_name)
+        `)
+        .eq("direction", "inbound")
+        .gte("received_at", since)
+        .order("received_at", { ascending: false })
+        .limit(100);
+
+      if (error) throw new Error(`Failed to fetch emails: ${error.message}`);
+
+      inboundEmails = (data || []) as EmailRow[];
+      windowLabel = w.label;
+      if (inboundEmails.length > 0) break;
+    }
+
+    const syncNote = syncResult
+      ? syncResult.error
+        ? ` (Gmail sync skipped: ${syncResult.error})`
+        : syncResult.newEmails > 0
+          ? ` (Gmail synced: ${syncResult.newEmails} new emails)`
+          : " (Gmail synced: no new emails)"
+      : "";
 
     if (inboundEmails.length === 0) {
       const noEmailHtml = `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
         <h1 style="color: #dc2626;">MediWaste Daily Briefing</h1>
         <p style="font-size: 16px; color: #666;">${new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</p>
-        <p style="font-size: 16px; color: #666;">No new inbound emails in the last 24 hours. You're all caught up!</p>
+        <p style="font-size: 16px; color: #666;">No inbound emails found in the last 30 days. You're all caught up!</p>
+        <p style="font-size: 12px; color: #aaa;">${syncNote}</p>
       </div>`;
 
       const { data: briefing } = await supabase
@@ -178,7 +381,7 @@ Deno.serve(async (req: Request) => {
         .insert([{
           briefing_date: new Date().toISOString().split('T')[0],
           summary_html: noEmailHtml,
-          summary_text: "No new inbound emails in the last 24 hours.",
+          summary_text: "No inbound emails found in the last 30 days." + syncNote,
           email_count: 0,
           email_sent: false,
           actions: [],
@@ -187,7 +390,7 @@ Deno.serve(async (req: Request) => {
         .single();
 
       return new Response(
-        JSON.stringify({ success: true, briefing, message: "No new emails to summarise" }),
+        JSON.stringify({ success: true, briefing, message: "No new emails to summarise" + syncNote, syncResult }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -197,7 +400,7 @@ Deno.serve(async (req: Request) => {
     const openaiKey = Deno.env.get("OPENAI_API_KEY");
     if (!openaiKey) throw new Error("OPENAI_API_KEY is not configured");
 
-    const prompt = buildPrompt(inboundEmails);
+    const prompt = buildPrompt(inboundEmails, windowLabel);
 
     const openaiResp = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
@@ -243,7 +446,7 @@ Deno.serve(async (req: Request) => {
           ${summaryHtml}
         </div>
         <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;">
-        <p style="font-size: 12px; color: #9ca3af; text-align: center;">Generated by MediWaste AI Assistant · ${inboundEmails.length} emails analysed</p>
+        <p style="font-size: 12px; color: #9ca3af; text-align: center;">Generated by MediWaste AI Assistant · ${inboundEmails.length} emails analysed (${windowLabel})${syncNote}</p>
       </div>
     </div>`;
 
@@ -299,6 +502,8 @@ Deno.serve(async (req: Request) => {
         emailCount: inboundEmails.length,
         counts,
         emailSent,
+        syncResult,
+        windowUsed: windowLabel,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
