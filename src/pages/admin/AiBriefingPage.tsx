@@ -106,7 +106,7 @@ export default function AiBriefingPage() {
             Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ maxEmails: 20 }),
+          body: JSON.stringify({ maxEmails: 100 }),
         }
       );
       const result = await resp.json();
@@ -115,8 +115,8 @@ export default function AiBriefingPage() {
       queryClient.invalidateQueries({ queryKey: ['quote-training-examples'] });
       toast.success(
         result.trained > 0
-          ? `Analysed ${result.foundInGmail} sent quotes — ${result.trained} new examples learned`
-          : `Found ${result.foundInGmail || 0} sent quotes — all already trained (or none found)`
+          ? `Analysed ${result.found} latest sent quotes — ${result.trained} new examples learned`
+          : `Found ${result.found || 0} sent quotes — all already trained`
       );
     } catch (err: any) {
       toast.error(err.message || 'Failed to train agent');
@@ -298,7 +298,7 @@ export default function AiBriefingPage() {
             <div className="border-t border-gray-100">
               <div className="px-5 py-4 bg-blue-50 border-b border-blue-100">
                 <p className="text-sm text-blue-800 mb-3">
-                  The AI quote agent learns from quotes you've already sent. Click "Train from Gmail" to scan your Gmail sent folder for emails with "quote" in the subject — the agent will analyse each one to learn your pricing, style, and tone.
+                  The AI quote agent learns from quotes you've already sent. Click "Train from Sent Quotes" to analyse your latest 100 sent quote emails — the agent will study each one to learn your pricing, style, and tone. Only quotes sent from MediWaste email addresses are used.
                 </p>
                 <button
                   onClick={handleTrain}
@@ -306,7 +306,7 @@ export default function AiBriefingPage() {
                   className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-60 text-sm font-medium"
                 >
                   <GraduationCap className="w-4 h-4" />
-                  {training ? 'Training...' : 'Train from Gmail'}
+                  {training ? 'Analysing latest quotes...' : 'Train from Sent Quotes'}
                 </button>
               </div>
 
@@ -318,7 +318,7 @@ export default function AiBriefingPage() {
                 ) : trainingExamples.length === 0 ? (
                   <div className="text-center py-8">
                     <GraduationCap className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-                    <p className="text-sm text-gray-500">No training examples yet. Click "Train from Gmail" to get started.</p>
+                    <p className="text-sm text-gray-500">No training examples yet. Click "Train from Sent Quotes" to get started.</p>
                   </div>
                 ) : (
                   <div className="space-y-3">
