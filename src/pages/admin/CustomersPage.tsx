@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../lib/supabase';
 import { Plus, Search, FileEdit as Edit2, Trash2, Eye } from 'lucide-react';
 import { useToastContext } from '../../contexts/ToastContext';
@@ -23,6 +24,7 @@ interface Customer {
 export default function CustomersPage() {
   const navigate = useNavigate();
   const { toast } = useToastContext();
+  const qc = useQueryClient();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -109,6 +111,7 @@ export default function CustomersPage() {
       setEditingCustomer(null);
       resetForm();
       fetchCustomers();
+      qc.invalidateQueries({ queryKey: ['customers-list'] });
     } catch (error) {
       console.error('Error saving customer:', error);
       toast.error('Failed to save customer');
@@ -127,6 +130,7 @@ export default function CustomersPage() {
       if (error) throw error;
       toast.success('Customer deleted');
       fetchCustomers();
+      qc.invalidateQueries({ queryKey: ['customers-list'] });
     } catch (error) {
       console.error('Error deleting customer:', error);
       toast.error('Failed to delete customer');

@@ -334,6 +334,7 @@ export default function CustomerProfilePage() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['customer', id] });
+      qc.invalidateQueries({ queryKey: ['customers-list'] });
       toast.success('Customer updated');
       setShowEditModal(false);
     },
