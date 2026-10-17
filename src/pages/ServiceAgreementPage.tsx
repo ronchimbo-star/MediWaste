@@ -30,6 +30,8 @@ interface ServiceAgreement {
   bin_rental: boolean;
   start_date: string;
   end_date: string;
+  effective_date: string | null;
+  current_version: number;
   annual_value: number;
   status: string;
   accepted_at: string | null;
@@ -293,7 +295,10 @@ export default function ServiceAgreementPage() {
                   className="h-12 mb-4"
                 />
                 <p className="text-sm text-gray-600">Agreement No: {agreement.agreement_number}</p>
-                <p className="text-sm text-gray-600">Date: {new Date(agreement.created_at).toLocaleDateString()}</p>
+                <p className="text-sm text-gray-600">Date: {agreement.effective_date ? new Date(agreement.effective_date).toLocaleDateString() : new Date(agreement.created_at).toLocaleDateString()}</p>
+                {agreement.current_version > 1 && (
+                  <p className="text-sm text-blue-600">Version {agreement.current_version}</p>
+                )}
               </div>
             </div>
 
@@ -450,7 +455,7 @@ export default function ServiceAgreementPage() {
                   <div>
                     <p className="font-semibold text-gray-900 mb-4">For and on behalf of {companyName}:</p>
                     <p className="mb-2">Signature: <span className="italic font-semibold">{contactName}</span></p>
-                    <p className="mb-2">Date: {new Date(agreement.created_at).toLocaleDateString()}</p>
+                    <p className="mb-2">Date: {agreement.effective_date ? new Date(agreement.effective_date).toLocaleDateString() : new Date(agreement.created_at).toLocaleDateString()}</p>
                     <p>{contactName}, {contactPosition}</p>
                   </div>
                 </div>

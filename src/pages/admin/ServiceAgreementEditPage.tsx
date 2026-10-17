@@ -1,11 +1,36 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/useAuth';
 import { useSiteSettings } from '../../hooks/useSiteSettings';
-import { Save, Send, ExternalLink, Plus, Trash2, Eye, X, Building2 } from 'lucide-react';
+import { Save, Send, ExternalLink, Plus, Trash2, Eye, X, Building2, History, ChevronDown, ChevronUp } from 'lucide-react';
 import { useToastContext } from '../../contexts/ToastContext';
 import AdminLayout from '../../components/admin/AdminLayout';
+
+interface VersionSnapshot {
+  client_name: string;
+  client_address: string;
+  contact_name: string;
+  contact_email: string;
+  collection_frequency: string;
+  containers: string;
+  waste_types: string[];
+  waste_items: { description: string; frequency: string }[];
+  annual_value: number;
+  start_date: string | null;
+  end_date: string | null;
+  initial_term_months: number;
+  payment_terms_days: number;
+  status: string;
+}
+
+interface AgreementVersion {
+  id: string;
+  version_number: number;
+  snapshot: VersionSnapshot;
+  sent_to_client_at: string | null;
+  created_at: string;
+}
 
 interface WasteItem {
   description: string;
@@ -38,6 +63,7 @@ interface AgreementForm {
   payment_terms_days: number;
   bin_rental: boolean;
   start_date: string;
+  effective_date: string;
   annual_value: string;
   status: string;
   notes: string;
@@ -67,6 +93,10 @@ export default function ServiceAgreementEditPage() {
   const [secureToken, setSecureToken] = useState('');
   const [agreementNumber, setAgreementNumber] = useState('');
   const [showPreview, setShowPreview] = useState(false);
+  const [versions, setVersions] = useState<AgreementVersion[]>([]);
+  const [showVersionHistory, setShowVersionHistory] = useState(false);
+  const [expandedVersion, setExpandedVersion] = useState<number | null>(null);
+  const [currentVersionNum, setCurrentVersionNum] = useState(1);
 
   const [form, setForm] = useState<AgreementForm>({
     client_name: '',
@@ -83,6 +113,7 @@ export default function ServiceAgreementEditPage() {
     payment_terms_days: 14,
     bin_rental: false,
     start_date: '',
+    effective_date: new Date().toISOString().split('T')[0],
     annual_value: '',
     status: 'draft',
     notes: '',
@@ -112,6 +143,7 @@ export default function ServiceAgreementEditPage() {
   useEffect(() => {
     if (!authLoading && user && id && id !== 'create') {
       fetchAgreement();
+      fetchVersions();
     }
   }, [id, user, authLoading]);
 
@@ -144,6 +176,7 @@ export default function ServiceAgreementEditPage() {
           payment_terms_days: data.payment_terms_days,
           bin_rental: data.bin_rental,
           start_date: data.start_date || '',
+          effective_date: data.effective_date || new Date().toISOString().split('T')[0],
           annual_value: data.annual_value?.toString() || '',
           status: data.status,
           notes: data.notes || '',
@@ -160,12 +193,62 @@ export default function ServiceAgreementEditPage() {
         });
         setSecureToken(data.secure_token);
         setAgreementNumber(data.agreement_number);
+        setCurrentVersionNum(data.current_version || 1);
       }
     } catch (err: any) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchVersions = async () => {
+    if (!id || id === 'create') return;
+    try {
+      const { data, error } = await supabase
+        .from('service_agreement_versions')
+        .select('*')
+        .eq('agreement_id', id)
+        .order('version_number', { ascending: false });
+      if (error) throw error;
+      setVersions(data || []);
+    } catch (err: any) {
+      console.error('Error fetching versions:', err);
+    }
+  };
+
+  const createVersionSnapshot = async (agreementId: string, versionNum: number, wasSent: boolean) => {
+    const snapshot: VersionSnapshot = {
+      client_name: form.client_name,
+      client_address: form.client_address,
+      contact_name: form.contact_name,
+      contact_email: form.contact_email,
+      collection_frequency: form.collection_frequency,
+      containers: form.containers,
+      waste_types: form.waste_types,
+      waste_items: form.waste_items,
+      annual_value: parseFloat(form.annual_value) || 0,
+      start_date: form.start_date || null,
+      end_date: null,
+      initial_term_months: form.initial_term_months,
+      payment_terms_days: form.payment_terms_days,
+      status: wasSent ? 'sent' : form.status,
+    };
+
+    if (form.start_date) {
+      const sd = new Date(form.start_date);
+      const ed = new Date(sd);
+      ed.setMonth(ed.getMonth() + form.initial_term_months);
+      snapshot.end_date = ed.toISOString().split('T')[0];
+    }
+
+    const { error } = await supabase.from('service_agreement_versions').insert({
+      agreement_id: agreementId,
+      version_number: versionNum,
+      snapshot,
+      sent_to_client_at: wasSent ? new Date().toISOString() : null,
+    });
+    if (error) console.error('Error saving version snapshot:', error);
   };
 
   const generateAgreementNumber = () => {
@@ -241,6 +324,7 @@ export default function ServiceAgreementEditPage() {
             payment_terms_days: form.payment_terms_days,
             bin_rental: form.bin_rental,
             start_date: form.start_date,
+            effective_date: form.effective_date || null,
             annual_value: parseFloat(form.annual_value) || 0,
             status: statusToUse,
             notes: form.notes,
@@ -289,6 +373,7 @@ export default function ServiceAgreementEditPage() {
           payment_terms_days: form.payment_terms_days,
           bin_rental: form.bin_rental,
           start_date: form.start_date,
+          effective_date: form.effective_date || null,
           annual_value: parseFloat(form.annual_value) || 0,
           agreement_number: newAgreementNumber,
           secure_token: newSecureToken,
@@ -310,6 +395,16 @@ export default function ServiceAgreementEditPage() {
         savedId = data.id;
         savedToken = data.secure_token;
         savedAgreementNumber = data.agreement_number;
+      }
+
+      // Save version snapshot
+      if (savedId) {
+        const wasSent = statusToUse === 'sent';
+        const newVersionNum = (id && id !== 'create') ? currentVersionNum + 1 : 1;
+        await createVersionSnapshot(savedId, newVersionNum, wasSent);
+        if (id && id !== 'create') {
+          await supabase.from('service_agreements').update({ current_version: newVersionNum }).eq('id', savedId);
+        }
       }
 
       if (statusToUse === 'sent' && savedId) {
@@ -649,6 +744,20 @@ export default function ServiceAgreementEditPage() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Effective Date
+                    <span className="text-gray-400 font-normal ml-2">Date the agreement is dated</span>
+                  </label>
+                  <input
+                    type="date"
+                    value={form.effective_date}
+                    onChange={(e) => setForm({ ...form, effective_date: e.target.value })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Set this to the date the agreement should be dated, even if you're creating it later.</p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Annual Value (£)
                   </label>
                   <input
@@ -838,6 +947,119 @@ export default function ServiceAgreementEditPage() {
                 placeholder="Internal notes (not visible to client)"
               />
             </div>
+
+            {/* Version History */}
+            {id && id !== 'create' && (
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <History className="w-5 h-5 text-gray-700" />
+                    <h2 className="text-xl font-bold text-gray-900">Version History</h2>
+                    <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-gray-100 text-gray-600">
+                      {versions.length} version{versions.length !== 1 ? 's' : ''}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowVersionHistory(!showVersionHistory)}
+                    className="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900"
+                  >
+                    {showVersionHistory ? 'Hide' : 'Show'} details
+                    {showVersionHistory ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  </button>
+                </div>
+
+                {versions.length === 0 ? (
+                  <p className="text-sm text-gray-500 italic">No previous versions. The first version snapshot will be created when you save.</p>
+                ) : (
+                  <div className="border border-gray-200 rounded-lg overflow-hidden">
+                    <table className="w-full text-sm">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-4 py-2 text-left font-medium text-gray-600">Version</th>
+                          <th className="px-4 py-2 text-left font-medium text-gray-600">Date</th>
+                          <th className="px-4 py-2 text-left font-medium text-gray-600">Status</th>
+                          <th className="px-4 py-2 text-left font-medium text-gray-600">Client</th>
+                          <th className="px-4 py-2 text-left font-medium text-gray-600">Annual Value</th>
+                          {showVersionHistory && <th className="px-4 py-2 text-left font-medium text-gray-600">Details</th>}
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {versions.map((v) => {
+                          const snap = v.snapshot;
+                          const isLatest = v.version_number === currentVersionNum;
+                          const isExpanded = expandedVersion === v.version_number;
+                          return (
+                            <React.Fragment key={v.id}>
+                              <tr className={isLatest ? 'bg-blue-50' : 'hover:bg-gray-50'}>
+                                <td className="px-4 py-3">
+                                  <button
+                                    type="button"
+                                    onClick={() => showVersionHistory && setExpandedVersion(isExpanded ? null : v.version_number)}
+                                    className="font-medium text-gray-900"
+                                  >
+                                    v{v.version_number}
+                                    {isLatest && <span className="ml-2 text-xs text-blue-600 font-normal">(current)</span>}
+                                  </button>
+                                </td>
+                                <td className="px-4 py-3 text-gray-600">
+                                  {new Date(v.created_at).toLocaleDateString('en-GB')}
+                                  {v.sent_to_client_at && (
+                                    <span className="block text-xs text-blue-600">Sent {new Date(v.sent_to_client_at).toLocaleDateString('en-GB')}</span>
+                                  )}
+                                </td>
+                                <td className="px-4 py-3">
+                                  <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${
+                                    snap.status === 'sent' ? 'bg-blue-100 text-blue-700' :
+                                    snap.status === 'accepted' ? 'bg-green-100 text-green-700' :
+                                    snap.status === 'declined' ? 'bg-red-100 text-red-700' :
+                                    'bg-gray-100 text-gray-700'
+                                  }`}>
+                                    {snap.status}
+                                  </span>
+                                </td>
+                                <td className="px-4 py-3 text-gray-700">{snap.client_name}</td>
+                                <td className="px-4 py-3 text-gray-700">£{snap.annual_value?.toFixed(2) || '0.00'}</td>
+                                {showVersionHistory && (
+                                  <td className="px-4 py-3 text-gray-400">
+                                    {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                                  </td>
+                                )}
+                              </tr>
+                              {showVersionHistory && isExpanded && (
+                                <tr className="bg-gray-50">
+                                  <td colSpan={6} className="px-4 py-4">
+                                    <div className="grid grid-cols-2 gap-4 text-sm">
+                                      <div><span className="font-medium text-gray-600">Contact:</span> {snap.contact_name} ({snap.contact_email})</div>
+                                      <div><span className="font-medium text-gray-600">Frequency:</span> {snap.collection_frequency}</div>
+                                      <div><span className="font-medium text-gray-600">Start Date:</span> {snap.start_date ? new Date(snap.start_date).toLocaleDateString('en-GB') : '—'}</div>
+                                      <div><span className="font-medium text-gray-600">End Date:</span> {snap.end_date ? new Date(snap.end_date).toLocaleDateString('en-GB') : '—'}</div>
+                                      <div><span className="font-medium text-gray-600">Term:</span> {snap.initial_term_months} months</div>
+                                      <div><span className="font-medium text-gray-600">Payment Terms:</span> {snap.payment_terms_days} days</div>
+                                      <div className="col-span-2"><span className="font-medium text-gray-600">Waste Types:</span> {snap.waste_types?.join(', ') || '—'}</div>
+                                      {snap.waste_items && snap.waste_items.length > 0 && (
+                                        <div className="col-span-2">
+                                          <span className="font-medium text-gray-600">Waste Items:</span>
+                                          <ul className="list-disc pl-5 mt-1">
+                                            {snap.waste_items.map((item, i) => (
+                                              <li key={i}>{item.description} — {item.frequency}</li>
+                                            ))}
+                                          </ul>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </td>
+                                </tr>
+                              )}
+                            </React.Fragment>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -868,7 +1090,7 @@ export default function ServiceAgreementEditPage() {
                       className="h-12 mb-4"
                     />
                     <p className="text-sm text-gray-600">Agreement No: {agreementNumber || 'SLA-XXXX-XXXX'}</p>
-                    <p className="text-sm text-gray-600">Date: {new Date().toLocaleDateString()}</p>
+                    <p className="text-sm text-gray-600">Date: {form.effective_date ? new Date(form.effective_date).toLocaleDateString('en-GB') : new Date().toLocaleDateString()}</p>
                   </div>
                 </div>
 

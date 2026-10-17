@@ -17,6 +17,8 @@ interface ServiceAgreement {
   status: string;
   start_date: string;
   end_date: string;
+  effective_date: string | null;
+  current_version: number;
   secure_token: string;
   created_at: string;
   accepted_at: string | null;
@@ -330,8 +332,15 @@ export default function ServiceAgreementsPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">
-                          {new Date(agreement.created_at).toLocaleDateString()}
+                          {agreement.effective_date
+                            ? new Date(agreement.effective_date).toLocaleDateString()
+                            : new Date(agreement.created_at).toLocaleDateString()}
                         </div>
+                        {agreement.current_version > 1 && (
+                          <div className="text-xs text-blue-600">
+                            v{agreement.current_version}
+                          </div>
+                        )}
                         {agreement.accepted_at && (
                           <div className="text-xs text-green-600">
                             Accepted {new Date(agreement.accepted_at).toLocaleDateString()}
