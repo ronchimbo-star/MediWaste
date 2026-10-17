@@ -38,6 +38,7 @@ import {
   DollarSign,
   CreditCard,
   Lock,
+  AlertTriangle,
 } from 'lucide-react';
 
 interface AdminLayoutProps {
@@ -149,6 +150,7 @@ export default function AdminLayout({ children, pageTitle, breadcrumbs }: AdminL
         { label: 'Pending Payments', path: '/admin/finance/pending-payments', icon: <DollarSign size={18} /> },
         { label: 'Payment Settings', path: '/admin/settings/payment-details', icon: <CreditCard size={18} /> },
         { label: 'Waste Transfer Notes', path: '/admin/waste-transfer-notes', icon: <ListChecks size={18} /> },
+        { label: 'Hazardous Waste Consignment Notes', path: '/admin/hw-consignment-notes', icon: <AlertTriangle size={18} /> },
         { label: 'Certificates', path: '/admin/certificates', icon: <Award size={18} /> },
         { label: 'Waste Audits', path: '/admin/waste-audits', icon: <ClipboardCheck size={18} /> },
       ],

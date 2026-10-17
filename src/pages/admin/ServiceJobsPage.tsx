@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
-import { Plus, Calendar as CalendarIcon, User, MapPin, X, FileEdit as Edit2, Trash2, Truck, Clock, CheckCircle, AlertCircle, ChevronDown, ChevronUp, Package, Download, FileText, Camera } from 'lucide-react';
+import { Plus, Calendar as CalendarIcon, User, MapPin, X, FileEdit as Edit2, Trash2, Truck, Clock, CheckCircle, AlertCircle, ChevronDown, ChevronUp, Package, Download, FileText, Camera, AlertTriangle } from 'lucide-react';
 import { useToastContext } from '../../contexts/ToastContext';
 import AdminLayout from '../../components/admin/AdminLayout';
 import PhotoUploadModal from '../../components/PhotoUploadModal';
@@ -638,6 +638,13 @@ export default function ServiceJobsPage() {
                           title="Create WTN for this job"
                         >
                           <FileText size={14} />
+                        </button>
+                        <button
+                          onClick={() => navigate('/admin/hw-consignment-notes', { state: { prefill: { job_id: job.id, customer_id: job.customer_id, job_number: job.job_number } } })}
+                          className="text-red-500 hover:text-red-700 p-1"
+                          title="Create HWCN for this job"
+                        >
+                          <AlertTriangle size={14} />
                         </button>
                         <button onClick={() => { if (window.confirm('Delete this job?')) deleteMutation.mutate(job.id); }} className="text-red-400 hover:text-red-600 p-1" title="Delete"><Trash2 size={14} /></button>
                       </div>

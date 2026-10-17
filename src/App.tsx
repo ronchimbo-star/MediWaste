@@ -75,6 +75,7 @@ const FinancialPinSettingsPage = lazyWithRetry(() => import('./pages/admin/Finan
 const PendingPaymentsPage = lazyWithRetry(() => import('./pages/admin/PendingPaymentsPage'));
 const PublicInvoicePage = lazyWithRetry(() => import('./pages/PublicInvoicePage'));
 const WasteTransferNotesPage = lazyWithRetry(() => import('./pages/admin/WasteTransferNotesPage'));
+const HazardousWasteConsignmentNotesPage = lazyWithRetry(() => import('./pages/admin/HazardousWasteConsignmentNotesPage'));
 const WasteCarriersPage = lazyWithRetry(() => import('./pages/admin/WasteCarriersPage'));
 const StaffDashboard = lazyWithRetry(() => import('./pages/staff/StaffDashboard'));
 const CustomerDashboard = lazyWithRetry(() => import('./pages/customer/CustomerDashboard'));
@@ -239,6 +240,7 @@ function App() {
           <Route path="/admin/settings/financial-pin" element={<ProtectedRoute><FinancialPinSettingsPage /></ProtectedRoute>} />
           <Route path="/admin/invoicing" element={<Navigate to="/admin/invoices" replace />} />
           <Route path="/admin/waste-transfer-notes" element={<ProtectedRoute><WasteTransferNotesPage /></ProtectedRoute>} />
+          <Route path="/admin/hw-consignment-notes" element={<ProtectedRoute><HazardousWasteConsignmentNotesPage /></ProtectedRoute>} />
           <Route path="/admin/waste-carriers" element={<ProtectedRoute><WasteCarriersPage /></ProtectedRoute>} />
           <Route path="/admin/service-agreements" element={<ProtectedRoute><ServiceAgreementsPage /></ProtectedRoute>} />
           <Route path="/admin/service-agreements/create" element={<ProtectedRoute><ServiceAgreementEditPage /></ProtectedRoute>} />
