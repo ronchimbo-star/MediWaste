@@ -296,9 +296,6 @@ export default function ServiceAgreementPage() {
                 />
                 <p className="text-sm text-gray-600">Agreement No: {agreement.agreement_number}</p>
                 <p className="text-sm text-gray-600">Date: {agreement.effective_date ? new Date(agreement.effective_date).toLocaleDateString() : new Date(agreement.created_at).toLocaleDateString()}</p>
-                {agreement.current_version > 1 && (
-                  <p className="text-sm text-blue-600">Version {agreement.current_version}</p>
-                )}
               </div>
             </div>
 
