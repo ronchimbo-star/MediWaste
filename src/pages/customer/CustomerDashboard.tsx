@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/useAuth';
-import { Calendar, FileText, DollarSign, Package, Truck, ShieldCheck, Recycle, FlaskConical, Syringe, Pill, Leaf } from 'lucide-react';
+import { Calendar, FileText, DollarSign, Package, Truck, ShieldCheck, Recycle, FlaskConical, Syringe, Pill, Leaf, ChevronRight, AlertTriangle, CheckCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useToastContext } from '../../contexts/ToastContext';
 import CollectionRequestModal from '../../components/CollectionRequestModal';
@@ -240,15 +240,14 @@ export default function CustomerDashboard() {
                 <h3 className="text-lg font-semibold mb-1">Request a Collection</h3>
                 <p className="text-sm opacity-90">Schedule an additional or urgent collection</p>
               </button>
-              <button
-                onClick={() => toast.info('Document viewing coming soon')}
-                className="bg-blue-600 text-white rounded-lg p-6 hover:bg-blue-700 transition-colors text-left"
-              >
-                <FileText className="w-8 h-8 mb-2" />
-                <h3 className="text-lg font-semibold mb-1">View Documents</h3>
-                <p className="text-sm opacity-90">Access waste transfer notes & receipts</p>
-              </button>
+              <div className="bg-blue-600 text-white rounded-lg p-6">
+                <ShieldCheck className="w-8 h-8 mb-2" />
+                <h3 className="text-lg font-semibold mb-1">Compliance Documents</h3>
+                <p className="text-sm opacity-90">Waste transfer notes & consignment notes</p>
+              </div>
             </div>
+
+            {customerInfo && <CustomerDocumentsSection customerId={customerInfo.id} />}
 
             {customerInfo && <CustomerAuditsSection customerId={customerInfo.id} />}
           </div>
@@ -345,6 +344,221 @@ function CustomerAuditsSection({ customerId }: { customerId: string }) {
             </div>
           </a>
         ))}
+      </div>
+    </div>
+  );
+}
+
+function CustomerDocumentsSection({ customerId }: { customerId: string }) {
+  const [hwcns, setHwcns] = useState<any[]>([]);
+  const [wtns, setWtns] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<'hwcn' | 'wtn'>('hwcn');
+  const [selectedDoc, setSelectedDoc] = useState<any | null>(null);
+
+  useEffect(() => {
+    const fetchDocs = async () => {
+      const [hwcnRes, wtnRes] = await Promise.all([
+        supabase
+          .from('mw_hw_consignment_notes')
+          .select(`
+            id, hwcn_number, issue_date, collection_date, status,
+            consignee_return_status, consignee_return_date, consignee_return_reference,
+            consignee_return_document_url, consignee_name,
+            carrier:mw_waste_carriers(name),
+            mw_hwcn_line_items(waste_description, quantity, quantity_unit)
+          `)
+          .eq('customer_id', customerId)
+          .order('issue_date', { ascending: false }),
+        supabase
+          .from('mw_waste_transfer_notes')
+          .select(`
+            id, wtn_number, issue_date, collection_date,
+            carrier:mw_waste_carriers(name),
+            mw_wtn_line_items(waste_description, quantity, quantity_unit)
+          `)
+          .eq('customer_id', customerId)
+          .order('issue_date', { ascending: false }),
+      ]);
+      setHwcns(hwcnRes.data || []);
+      setWtns(wtnRes.data || []);
+      setLoading(false);
+    };
+    fetchDocs();
+  }, [customerId]);
+
+  if (loading) return null;
+  if (hwcns.length === 0 && wtns.length === 0) return null;
+
+  const docs = activeTab === 'hwcn' ? hwcns : wtns;
+
+  return (
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mt-4">
+      <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+        <FileText className="w-5 h-5 text-blue-600" />
+        Compliance Documents
+      </h2>
+
+      <div className="flex gap-2 mb-4 border-b border-gray-200">
+        <button
+          onClick={() => { setActiveTab('hwcn'); setSelectedDoc(null); }}
+          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+            activeTab === 'hwcn' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          Consignment Notes ({hwcns.length})
+        </button>
+        <button
+          onClick={() => { setActiveTab('wtn'); setSelectedDoc(null); }}
+          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+            activeTab === 'wtn' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          Transfer Notes ({wtns.length})
+        </button>
+      </div>
+
+      {selectedDoc ? (
+        <DocumentDetail doc={selectedDoc} type={activeTab} onClose={() => setSelectedDoc(null)} />
+      ) : docs.length === 0 ? (
+        <p className="text-gray-500 text-center py-6 text-sm">No {activeTab === 'hwcn' ? 'consignment' : 'transfer'} notes yet</p>
+      ) : (
+        <div className="space-y-2">
+          {docs.map((doc) => (
+            <button
+              key={doc.id}
+              onClick={() => setSelectedDoc(doc)}
+              className="w-full flex items-center justify-between border border-gray-200 rounded-lg p-3 hover:bg-blue-50 hover:border-blue-200 transition-colors text-left"
+            >
+              <div className="flex items-center gap-3">
+                <div className="flex-shrink-0">
+                  {activeTab === 'hwcn' ? (
+                    <AlertTriangle className="w-5 h-5 text-red-500" />
+                  ) : (
+                    <FileText className="w-5 h-5 text-blue-500" />
+                  )}
+                </div>
+                <div>
+                  <p className="font-medium text-gray-900 text-sm">
+                    {activeTab === 'hwcn' ? doc.hwcn_number : doc.wtn_number}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {new Date(doc.issue_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                    {doc.carrier?.name && ` — ${doc.carrier.name}`}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                {activeTab === 'hwcn' && (
+                  doc.consignee_return_status === 'received' ? (
+                    <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                      <CheckCircle size={12} /> Returned
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700">
+                      <AlertTriangle size={12} /> Pending
+                    </span>
+                  )
+                )}
+                <ChevronRight className="w-4 h-4 text-gray-400" />
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function DocumentDetail({ doc, type, onClose }: { doc: any; type: 'hwcn' | 'wtn'; onClose: () => void }) {
+  const lineItems = type === 'hwcn' ? doc.mw_hwcn_line_items : doc.mw_wtn_line_items;
+  const docNumber = type === 'hwcn' ? doc.hwcn_number : doc.wtn_number;
+
+  return (
+    <div>
+      <button onClick={onClose} className="text-sm text-blue-600 hover:text-blue-800 mb-3 flex items-center gap-1">
+        &larr; Back to list
+      </button>
+      <div className="border border-gray-200 rounded-lg p-4">
+        <div className="flex justify-between items-start mb-4">
+          <div>
+            <h3 className="text-lg font-bold text-gray-900">{docNumber}</h3>
+            <p className="text-sm text-gray-500">
+              Issued: {new Date(doc.issue_date).toLocaleDateString('en-GB')}
+              {doc.collection_date && ` | Collected: ${new Date(doc.collection_date).toLocaleDateString('en-GB')}`}
+            </p>
+          </div>
+          {type === 'hwcn' && (
+            doc.consignee_return_status === 'received' ? (
+              <span className="flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                <CheckCircle size={14} /> Consignee Return Received
+              </span>
+            ) : (
+              <span className="flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-700">
+                <AlertTriangle size={14} /> Awaiting Consignee Return
+              </span>
+            )
+          )}
+        </div>
+
+        {doc.carrier?.name && (
+          <p className="text-sm text-gray-600 mb-2">Carrier: {doc.carrier.name}</p>
+        )}
+
+        {type === 'hwcn' && doc.consignee_name && (
+          <p className="text-sm text-gray-600 mb-2">Receiving Site: {doc.consignee_name}</p>
+        )}
+
+        {type === 'hwcn' && doc.consignee_return_status === 'received' && (
+          <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-3">
+            <p className="text-sm font-medium text-green-800 mb-1">Consignee Return Details</p>
+            <p className="text-xs text-green-700">
+              Received: {doc.consignee_return_date ? new Date(doc.consignee_return_date).toLocaleDateString('en-GB') : '—'}
+              {doc.consignee_return_reference && ` | Ref: ${doc.consignee_return_reference}`}
+            </p>
+            {doc.consignee_return_document_url && (
+              <a
+                href={doc.consignee_return_document_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 mt-2 text-xs text-blue-600 hover:text-blue-800 font-medium"
+              >
+                <FileText size={12} /> View Return Document
+              </a>
+            )}
+          </div>
+        )}
+
+        {lineItems && lineItems.length > 0 && (
+          <div className="mt-3">
+            <p className="text-sm font-medium text-gray-700 mb-2">Waste Items</p>
+            <table className="w-full text-sm border-collapse">
+              <thead>
+                <tr className="bg-gray-50">
+                  <th className="border border-gray-200 px-3 py-1.5 text-left font-medium text-gray-600">Description</th>
+                  <th className="border border-gray-200 px-3 py-1.5 text-right font-medium text-gray-600">Quantity</th>
+                </tr>
+              </thead>
+              <tbody>
+                {lineItems.map((item: any, i: number) => (
+                  <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                    <td className="border border-gray-200 px-3 py-1.5 text-gray-700">{item.waste_description || '—'}</td>
+                    <td className="border border-gray-200 px-3 py-1.5 text-right text-gray-700">{item.quantity} {item.quantity_unit}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        <div className="mt-4 pt-3 border-t border-gray-100">
+          <button
+            onClick={() => window.print()}
+            className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900"
+          >
+            <FileText size={14} /> Print / Save as PDF
+          </button>
+        </div>
       </div>
     </div>
   );

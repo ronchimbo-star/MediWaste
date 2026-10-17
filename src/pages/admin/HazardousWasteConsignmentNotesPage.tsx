@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
-import { Plus, Download, Eye, X, Pencil, Camera, CheckSquare, Square, AlertTriangle } from 'lucide-react';
+import { Plus, Download, Eye, X, Pencil, Camera, CheckSquare, Square, AlertTriangle, CheckCircle, Upload } from 'lucide-react';
 import { useToastContext } from '../../contexts/ToastContext';
 import AdminLayout from '../../components/admin/AdminLayout';
 import PhotoUploadModal from '../../components/PhotoUploadModal';
@@ -82,6 +82,8 @@ interface ConsignmentNote {
   producer_signature_date: string | null;
   consignee_return_status: string;
   consignee_return_date: string | null;
+  consignee_return_reference: string | null;
+  consignee_return_document_url: string | null;
   status: string;
   notes: string | null;
   mw_hwcn_line_items?: HwcnLineItem[];
@@ -201,6 +203,16 @@ export default function HazardousWasteConsignmentNotesPage() {
   const [jobPhotos, setJobPhotos] = useState<JobPhoto[]>([]);
   const [selectedPhotoIds, setSelectedPhotoIds] = useState<Set<string>>(new Set());
   const [showPhotoUpload, setShowPhotoUpload] = useState(false);
+  const [showReturnModal, setShowReturnModal] = useState(false);
+  const [returnHwcn, setReturnHwcn] = useState<ConsignmentNote | null>(null);
+  const [returnForm, setReturnForm] = useState({
+    return_date: todayStr(),
+    reference: '',
+    received_by: '',
+    document_file: null as File | null,
+  });
+  const [returnLoading, setReturnLoading] = useState(false);
+  const [returnPreviewUrl, setReturnPreviewUrl] = useState<string | null>(null);
 
   useEffect(() => { fetchHwcns(); }, []);
 
@@ -648,6 +660,19 @@ export default function HazardousWasteConsignmentNotesPage() {
                       <div className="flex items-center gap-2">
                         <button onClick={() => { setSelectedHwcn(hwcn); setShowModal(true); }} className="text-blue-600 hover:text-blue-900" title="View"><Eye className="w-4 h-4" /></button>
                         <button onClick={() => openEditModal(hwcn)} className="text-orange-500 hover:text-orange-700" title="Edit"><Pencil className="w-4 h-4" /></button>
+                        {hwcn.consignee_return_status !== 'received' && (
+                          <button onClick={() => {
+                            setReturnHwcn(hwcn);
+                            setReturnForm({
+                              return_date: todayStr(),
+                              reference: hwcn.consignee_return_reference || '',
+                              received_by: hwcn.consignee_received_by || '',
+                              document_file: null,
+                            });
+                            setReturnPreviewUrl(hwcn.consignee_return_document_url || null);
+                            setShowReturnModal(true);
+                          }} className="text-green-600 hover:text-green-900" title="Mark Consignee Return"><CheckCircle className="w-4 h-4" /></button>
+                        )}
                         <button onClick={() => { setSelectedHwcn(hwcn); setShowModal(true); }} className="text-green-600 hover:text-green-900" title="Print / Download"><Download className="w-4 h-4" /></button>
                       </div>
                     </td>
@@ -865,6 +890,69 @@ export default function HazardousWasteConsignmentNotesPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {showReturnModal && returnHwcn && (
+        <ConsigneeReturnModal
+          hwcn={returnHwcn}
+          returnForm={returnForm}
+          setReturnForm={setReturnForm}
+          returnPreviewUrl={returnPreviewUrl}
+          setReturnPreviewUrl={setReturnPreviewUrl}
+          loading={returnLoading}
+          onSubmit={async () => {
+            setReturnLoading(true);
+            try {
+              let documentUrl = returnHwcn.consignee_return_document_url || null;
+
+              if (returnForm.document_file) {
+                const file = returnForm.document_file;
+                const ext = file.name.split('.').pop() || 'jpg';
+                const fileName = `consignee-returns/${returnHwcn.hwcn_number}-${Date.now()}.${ext}`;
+                const { error: uploadError } = await supabase.storage
+                  .from('hwcn-documents')
+                  .upload(fileName, file, { upsert: true });
+                if (uploadError) throw uploadError;
+                const { data: urlData } = supabase.storage
+                  .from('hwcn-documents')
+                  .getPublicUrl(fileName);
+                documentUrl = urlData.publicUrl;
+              }
+
+              const { error: updateError } = await supabase
+                .from('mw_hw_consignment_notes')
+                .update({
+                  consignee_return_status: 'received',
+                  consignee_return_date: returnForm.return_date,
+                  consignee_return_reference: returnForm.reference || null,
+                  consignee_return_document_url: documentUrl,
+                  consignee_received_by: returnForm.received_by || null,
+                  consignee_received_date: returnForm.return_date,
+                  status: 'consignee_returned',
+                })
+                .eq('id', returnHwcn.id);
+
+              if (updateError) throw updateError;
+
+              toast.success('Consignee return recorded');
+              setShowReturnModal(false);
+              setReturnHwcn(null);
+              setReturnForm({ return_date: todayStr(), reference: '', received_by: '', document_file: null });
+              setReturnPreviewUrl(null);
+              fetchHwcns();
+            } catch (err: any) {
+              toast.error('Failed to record return: ' + err.message);
+            } finally {
+              setReturnLoading(false);
+            }
+          }}
+          onClose={() => {
+            setShowReturnModal(false);
+            setReturnHwcn(null);
+            setReturnForm({ return_date: todayStr(), reference: '', received_by: '', document_file: null });
+            setReturnPreviewUrl(null);
+          }}
+        />
       )}
 
       {showPhotoUpload && currentJobId && (
@@ -1119,6 +1207,7 @@ function HwcnViewModal({ hwcn, onClose }: HwcnViewModalProps) {
                       <>
                         <p className="text-sm">{hwcn.consignee_received_by || hwcn.consignee_name || 'Received'}</p>
                         {hwcn.consignee_return_date && <p className="text-xs text-gray-500 mt-1">{new Date(hwcn.consignee_return_date).toLocaleDateString('en-GB')}</p>}
+                        {hwcn.consignee_return_reference && <p className="text-xs text-gray-500">Ref: {hwcn.consignee_return_reference}</p>}
                       </>
                     ) : (
                       <p className="text-sm text-gray-400 italic">Awaiting return</p>
@@ -1160,6 +1249,108 @@ function HwcnViewModal({ hwcn, onClose }: HwcnViewModalProps) {
               {savingPdf ? 'Saving...' : 'Print / Save PDF'}
             </button>
           </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+interface ConsigneeReturnModalProps {
+  hwcn: ConsignmentNote;
+  returnForm: { return_date: string; reference: string; received_by: string; document_file: File | null };
+  setReturnForm: React.Dispatch<React.SetStateAction<{ return_date: string; reference: string; received_by: string; document_file: File | null }>>;
+  returnPreviewUrl: string | null;
+  setReturnPreviewUrl: React.Dispatch<React.SetStateAction<string | null>>;
+  loading: boolean;
+  onSubmit: () => void;
+  onClose: () => void;
+}
+
+function ConsigneeReturnModal({ hwcn, returnForm, setReturnForm, returnPreviewUrl, setReturnPreviewUrl, loading, onSubmit, onClose }: ConsigneeReturnModalProps) {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    setReturnForm(prev => ({ ...prev, document_file: file }));
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => setReturnPreviewUrl(reader.result as string);
+      reader.readAsDataURL(file);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-xl max-w-lg w-full">
+        <div className="p-5 border-b border-gray-200 flex justify-between items-center">
+          <div>
+            <h3 className="text-lg font-bold text-gray-900">Record Consignee Return</h3>
+            <p className="text-sm text-gray-500 mt-0.5">{hwcn.hwcn_number} — {hwcn.consignee_name || 'Receiving site'}</p>
+          </div>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600"><X size={20} /></button>
+        </div>
+        <div className="p-5 space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Return Date *</label>
+            <input
+              type="date"
+              value={returnForm.return_date}
+              onChange={e => setReturnForm(prev => ({ ...prev, return_date: e.target.value }))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-400 focus:border-transparent"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Reference Number</label>
+            <input
+              type="text"
+              value={returnForm.reference}
+              onChange={e => setReturnForm(prev => ({ ...prev, reference: e.target.value }))}
+              placeholder="Reference from the returned consignee copy"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-400 focus:border-transparent"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Received By</label>
+            <input
+              type="text"
+              value={returnForm.received_by}
+              onChange={e => setReturnForm(prev => ({ ...prev, received_by: e.target.value }))}
+              placeholder="Name of person who signed at the receiving site"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-400 focus:border-transparent"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Upload Consignee Return Document</label>
+            <p className="text-xs text-gray-500 mb-2">Upload a scan or photo of the returned consignee copy (optional)</p>
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
+              {returnPreviewUrl ? (
+                <div className="relative">
+                  <img src={returnPreviewUrl} alt="Return document preview" className="w-full max-h-48 object-contain rounded-lg" />
+                  <button
+                    onClick={() => { setReturnForm(prev => ({ ...prev, document_file: null })); setReturnPreviewUrl(null); }}
+                    className="absolute top-2 right-2 bg-white rounded-full p-1 shadow hover:bg-gray-100"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+              ) : (
+                <label className="flex flex-col items-center justify-center cursor-pointer py-4">
+                  <Upload className="w-8 h-8 text-gray-400 mb-2" />
+                  <span className="text-sm text-gray-600">Click to upload scan/photo</span>
+                  <input type="file" accept="image/*,.pdf" onChange={handleFileChange} className="hidden" />
+                </label>
+              )}
+            </div>
+          </div>
+        </div>
+        <div className="p-5 border-t border-gray-100 flex justify-end gap-3">
+          <button onClick={onClose} className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm hover:bg-gray-50">Cancel</button>
+          <button
+            onClick={onSubmit}
+            disabled={loading || !returnForm.return_date}
+            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 disabled:opacity-50"
+          >
+            <CheckCircle className="w-4 h-4" />
+            {loading ? 'Saving...' : 'Mark as Received'}
+          </button>
         </div>
       </div>
     </div>
