@@ -1,0 +1,1 @@
+ALTER TABLE mw_staff ALTER COLUMN user_id DROP NOT NULL;

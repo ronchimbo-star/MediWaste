@@ -1,0 +1,479 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@keyframes toastSlideIn {
+  from { transform: translateX(110%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(110%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.article-content {
+  @apply text-gray-800 leading-relaxed;
+}
+
+.article-content h2 {
+  @apply text-3xl font-bold text-gray-900 mt-12 mb-6;
+}
+
+.article-content h3 {
+  @apply text-2xl font-bold text-gray-900 mt-10 mb-4;
+}
+
+.article-content h4 {
+  @apply text-xl font-semibold text-gray-900 mt-8 mb-3;
+}
+
+.article-content h5 {
+  @apply text-lg font-semibold text-gray-900 mt-6 mb-3;
+}
+
+.article-content p {
+  @apply mb-6 text-base leading-relaxed;
+}
+
+.article-content ul {
+  @apply mb-6 pl-6 space-y-2;
+}
+
+.article-content ul li {
+  @apply list-disc text-base leading-relaxed;
+}
+
+.article-content ol {
+  @apply mb-6 pl-6 space-y-2;
+}
+
+.article-content ol li {
+  @apply list-decimal text-base leading-relaxed;
+}
+
+.article-content a {
+  @apply text-red-600 hover:text-red-700 underline;
+}
+
+.article-content strong {
+  @apply font-semibold text-gray-900;
+}
+
+.article-content em {
+  @apply italic;
+}
+
+.article-content blockquote {
+  @apply border-l-4 border-gray-300 pl-4 py-2 my-6 italic text-gray-700;
+}
+
+.article-content table {
+  @apply w-full border-collapse my-8 shadow-sm;
+}
+
+.article-content table thead {
+  @apply bg-gray-100;
+}
+
+.article-content table th {
+  @apply border border-gray-300 px-4 py-3 text-left font-semibold text-gray-900;
+}
+
+.article-content table td {
+  @apply border border-gray-300 px-4 py-3;
+}
+
+.article-content table tbody tr:nth-child(even) {
+  @apply bg-gray-50;
+}
+
+.article-content table tbody tr:hover {
+  @apply bg-gray-100;
+}
+
+.article-content .info-box,
+.article-content .highlight-box,
+.article-content .warning-box,
+.article-content .success-box,
+.article-content .note-box {
+  @apply p-6 rounded-lg my-8 border-l-4;
+}
+
+.article-content .info-box {
+  @apply bg-blue-50 border-blue-500;
+}
+
+.article-content .highlight-box {
+  @apply bg-purple-50 border-purple-500;
+}
+
+.article-content .warning-box {
+  @apply bg-red-50 border-red-500;
+}
+
+.article-content .success-box {
+  @apply bg-green-50 border-green-500;
+}
+
+.article-content .note-box {
+  @apply bg-yellow-50 border-yellow-500;
+}
+
+.article-content .info-box h3,
+.article-content .highlight-box h3,
+.article-content .warning-box h3,
+.article-content .success-box h3,
+.article-content .note-box h3 {
+  @apply text-xl font-bold mt-0 mb-3;
+}
+
+.article-content .info-box p:last-child,
+.article-content .highlight-box p:last-child,
+.article-content .warning-box p:last-child,
+.article-content .success-box p:last-child,
+.article-content .note-box p:last-child {
+  @apply mb-0;
+}
+
+.article-content .cta-box {
+  @apply bg-gradient-to-br from-red-500 to-red-600 text-white p-8 rounded-lg my-8 shadow-lg;
+}
+
+.article-content .cta-box h3 {
+  @apply text-white text-2xl font-bold mb-4 mt-0;
+}
+
+.article-content .cta-box p {
+  @apply text-white mb-4;
+}
+
+.article-content .cta-box ul {
+  @apply text-white mb-4;
+}
+
+.article-content .cta-box li {
+  @apply text-white;
+}
+
+.article-content .cta-box a,
+.article-content .cta-box button {
+  @apply inline-block bg-white text-red-600 hover:bg-gray-100 px-6 py-3 rounded-full font-semibold transition-colors no-underline;
+}
+
+.article-content hr {
+  @apply my-8 border-t border-gray-300;
+}
+
+.article-content code {
+  @apply bg-gray-100 px-2 py-1 rounded text-sm font-mono text-red-600;
+}
+
+.article-content pre {
+  @apply bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto my-6;
+}
+
+.article-content pre code {
+  @apply bg-transparent text-gray-100 p-0;
+}
+
+.article-content img {
+  @apply max-w-full h-auto rounded-lg shadow-md my-8;
+}
+
+.article-content figure {
+  @apply my-8;
+}
+
+.article-content figcaption {
+  @apply text-sm text-gray-600 mt-2 text-center italic;
+}
+
+/* ===== Colour-Coded Article Styles ===== */
+.article-content .regulatory-card {
+  @apply bg-red-600 text-white p-6 rounded-lg my-8;
+}
+
+.article-content .regulatory-card p {
+  @apply text-white mb-4;
+}
+
+.article-content .regulatory-card p:last-child {
+  @apply mb-0;
+}
+
+.article-content .regulatory-card strong {
+  @apply text-white font-semibold;
+}
+
+.article-content .regulatory-card a {
+  @apply text-white underline;
+}
+
+.article-content .colour-table {
+  @apply w-full border-collapse my-8 shadow-sm overflow-hidden rounded-lg;
+}
+
+.article-content .colour-table th {
+  @apply border border-gray-200 px-4 py-3 text-left font-semibold text-gray-900 bg-gray-50;
+}
+
+.article-content .colour-table td {
+  @apply border border-gray-200 px-4 py-3;
+}
+
+.article-content .colour-table .row-orange {
+  background-color: rgba(249, 115, 22, 0.12);
+}
+
+.article-content .colour-table .row-yellow {
+  background-color: rgba(234, 179, 8, 0.12);
+}
+
+.article-content .colour-table .row-tiger {
+  background: repeating-linear-gradient(45deg, rgba(234, 179, 8, 0.10), rgba(234, 179, 8, 0.10) 10px, rgba(30, 41, 59, 0.06) 10px, rgba(30, 41, 59, 0.06) 20px);
+}
+
+.article-content .colour-table .row-purple {
+  background-color: rgba(147, 51, 234, 0.12);
+}
+
+.article-content .colour-table .row-blue {
+  background-color: rgba(59, 130, 246, 0.12);
+}
+
+.article-content .colour-table .row-red {
+  background-color: rgba(220, 38, 38, 0.12);
+}
+
+.article-content .colour-badge {
+  @apply inline-flex items-center gap-2;
+}
+
+.article-content .colour-badge::before {
+  content: '';
+  @apply inline-block w-4 h-4 rounded-full;
+  flex-shrink: 0;
+}
+
+.article-content .colour-badge.orange::before {
+  background-color: #f97316;
+}
+
+.article-content .colour-badge.yellow::before {
+  background-color: #eab308;
+}
+
+.article-content .colour-badge.tiger::before {
+  background: repeating-linear-gradient(45deg, #eab308, #eab308 4px, #1e293b 4px, #1e293b 8px);
+}
+
+.article-content .colour-badge.purple::before {
+  background-color: #9333ea;
+}
+
+.article-content .colour-badge.blue::before {
+  background-color: #3b82f6;
+}
+
+.article-content .colour-badge.red::before {
+  background-color: #dc2626;
+}
+
+.article-content .section-badge {
+  @apply inline-flex items-center gap-3 mb-2;
+}
+
+.article-content .section-badge .badge-dot {
+  @apply inline-block w-5 h-5 rounded-full flex-shrink-0;
+}
+
+.article-content .section-badge.orange .badge-dot {
+  background-color: #f97316;
+}
+
+.article-content .section-badge.yellow .badge-dot {
+  background-color: #eab308;
+}
+
+.article-content .section-badge.tiger .badge-dot {
+  background: repeating-linear-gradient(45deg, #eab308, #eab308 4px, #1e293b 4px, #1e293b 8px);
+}
+
+.article-content .section-badge.purple .badge-dot {
+  background-color: #9333ea;
+}
+
+.article-content .section-badge.blue .badge-dot {
+  background-color: #3b82f6;
+}
+
+.article-content .section-badge.red .badge-dot {
+  background-color: #dc2626;
+}
+
+.article-content .tips-card {
+  @apply bg-blue-50 border-l-4 border-blue-500 p-6 rounded-lg my-8;
+}
+
+.article-content .tips-card h2 {
+  @apply mt-0;
+}
+
+.article-content .tips-card h3 {
+  @apply text-lg font-semibold text-gray-900 mt-6 mb-2;
+}
+
+.article-content .tips-card p {
+  @apply mb-4;
+}
+
+.article-content .tips-card p:last-child {
+  @apply mb-0;
+}
+
+/* ===== Admin Responsive Table System ===== */
+/* admin-table-wrap provides horizontal scrolling for wide tables on mobile */
+.admin-table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.admin-table {
+  min-width: 100%;
+}
+
+/* On mobile, ensure all admin tables can scroll horizontally */
+@media (max-width: 767px) {
+  .overflow-x-auto {
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+
+  .overflow-x-auto::-webkit-scrollbar {
+    height: 4px;
+  }
+
+  .overflow-x-auto::-webkit-scrollbar-thumb {
+    @apply bg-gray-300 rounded-full;
+  }
+
+  /* Reduce table cell padding on mobile for all admin tables */
+  table thead th {
+    @apply px-3 py-2 text-xs;
+    white-space: nowrap;
+  }
+
+  table tbody td {
+    @apply px-3 py-2 text-sm;
+    white-space: nowrap;
+  }
+
+  /* Allow action button columns to wrap */
+  table tbody td:last-child {
+    white-space: normal;
+  }
+
+  table tbody td:last-child > div {
+    @apply flex-wrap;
+  }
+
+  /* Hide less critical columns on mobile (add 'col-hide-mobile' class to th and td) */
+  .col-hide-mobile {
+    display: none;
+  }
+}
+
+/* Admin page responsive padding */
+@media (max-width: 767px) {
+  .admin-page {
+    @apply p-3;
+  }
+
+  .admin-page h1 {
+    @apply text-lg;
+  }
+
+  .admin-page .admin-subtitle {
+    @apply text-sm;
+  }
+
+  /* Stack filter bars vertically on mobile */
+  .admin-filters {
+    @apply flex-col gap-3;
+  }
+
+  /* Make stat cards 2-column on mobile */
+  .admin-stats {
+    @apply grid-cols-2 gap-2;
+  }
+
+  .admin-stats > div {
+    @apply p-3;
+  }
+
+  .admin-stats .stat-value {
+    @apply text-xl;
+  }
+
+  .admin-stats .stat-label {
+    @apply text-xs;
+  }
+
+  /* Full-width buttons on mobile */
+  .admin-btn-row {
+    @apply flex-col gap-2;
+  }
+
+  .admin-btn-row > button,
+  .admin-btn-row > a {
+    @apply w-full justify-center;
+  }
+}
+
+/* Modal responsive */
+@media (max-width: 767px) {
+  .admin-modal-content {
+    @apply m-0 w-full h-full max-h-full rounded-none;
+  }
+
+  .admin-modal-body {
+    @apply p-4 max-h-[calc(100vh-120px)];
+  }
+
+  .admin-modal-form-grid {
+    @apply grid-cols-1;
+  }
+}
+
+/* Form responsive */
+@media (max-width: 767px) {
+  .admin-form-grid {
+    @apply grid-cols-1;
+  }
+}
