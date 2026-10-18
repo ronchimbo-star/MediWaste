@@ -1,12 +1,12 @@
 import { useState, useRef } from 'react';
 import { supabase } from '../lib/supabase';
-import { Camera, ChevronLeft, X, CheckCircle, Upload, Loader2, CalendarDays, Briefcase, AlertCircle } from 'lucide-react';
+import { Camera, ChevronLeft, X, CheckCircle, Upload, Loader2, CalendarDays, Briefcase, AlertCircle, MessageSquare, Copy, Check, Phone, User } from 'lucide-react';
 
 const DRIVER_PIN = '1281';
 const MAX_WIDTH = 1200;
 const JPEG_QUALITY = 0.82;
 
-type Screen = 'pin' | 'jobs' | 'upload' | 'success';
+type Screen = 'pin' | 'jobs' | 'upload' | 'message' | 'success';
 
 interface Job {
   id: string;
@@ -14,6 +14,12 @@ interface Job {
   service_type: string;
   scheduled_date: string;
   status: string;
+  customer?: {
+    company_name: string | null;
+    contact_name: string | null;
+    phone: string | null;
+    mobile: string | null;
+  } | null;
 }
 
 interface SelectedFile {
@@ -73,6 +79,9 @@ export default function DriverUploadPage() {
   const [uploadedCount, setUploadedCount] = useState(0);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [compressing, setCompressing] = useState(false);
+  const [greeting, setGreeting] = useState<'Morning' | 'Afternoon'>('Morning');
+  const [etaTime, setEtaTime] = useState('');
+  const [copied, setCopied] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handlePinDigit = (digit: string) => {
@@ -108,14 +117,21 @@ export default function DriverUploadPage() {
 
       const { data, error } = await supabase
         .from('mw_service_jobs')
-        .select('id, job_number, service_type, scheduled_date, status')
+        .select(`
+          id, job_number, service_type, scheduled_date, status,
+          customer:customer_id ( company_name, contact_name, phone, mobile )
+        `)
         .in('status', ['scheduled', 'in_progress', 'completed'])
         .gte('scheduled_date', from)
         .lte('scheduled_date', to)
         .order('scheduled_date', { ascending: false });
 
       if (error) throw error;
-      setJobs((data || []) as Job[]);
+      const flat = (data || []).map((j: any) => ({
+        ...j,
+        customer: Array.isArray(j.customer) ? j.customer[0] ?? null : j.customer,
+      }));
+      setJobs(flat as Job[]);
     } catch {
       setJobs([]);
     } finally {
@@ -216,10 +232,11 @@ export default function DriverUploadPage() {
     <div className="min-h-screen bg-gray-950 flex flex-col">
       {/* Header */}
       <header className="bg-gray-950 border-b border-gray-800 px-4 py-3 flex items-center gap-3">
-        {(screen === 'upload' || screen === 'jobs') && (
+        {(screen === 'upload' || screen === 'jobs' || screen === 'message') && (
           <button
             onClick={() => {
               if (screen === 'upload') setScreen('jobs');
+              else if (screen === 'message') setScreen('upload');
               else { setScreen('pin'); setPin(''); }
             }}
             className="text-gray-400 hover:text-white p-1 -ml-1"
@@ -230,7 +247,7 @@ export default function DriverUploadPage() {
         <div className="flex items-center gap-2 flex-1">
           <img src="/new-mediwaste-logoV1.svg" alt="MediWaste" className="h-6 object-contain" style={{ filter: 'brightness(0) invert(1)' }} />
         </div>
-        {screen !== 'pin' && screen !== 'success' && (
+        {screen !== 'pin' && screen !== 'success' && screen !== 'message' && (
           <span className="text-xs text-gray-500 font-medium uppercase tracking-wide">Driver Upload</span>
         )}
       </header>
@@ -316,7 +333,10 @@ export default function DriverUploadPage() {
               </div>
             ) : (
               <div className="flex-1 overflow-y-auto px-4 pb-6 space-y-2">
-                {jobs.map(job => (
+                {jobs.map(job => {
+                  const contactName = job.customer?.contact_name || job.customer?.company_name || '—';
+                  const contactNumber = job.customer?.mobile || job.customer?.phone || null;
+                  return (
                   <button
                     key={job.id}
                     onClick={() => selectJob(job)}
@@ -326,6 +346,18 @@ export default function DriverUploadPage() {
                       <div className="flex-1 min-w-0">
                         <p className="font-bold text-white text-base">{job.job_number}</p>
                         <p className="text-gray-400 text-sm mt-0.5">{serviceLabel(job.service_type)}</p>
+                        <div className="mt-2 space-y-1">
+                          <div className="flex items-center gap-1.5 text-gray-300 text-sm">
+                            <User size={13} className="text-gray-500" />
+                            <span className="truncate">{contactName}</span>
+                          </div>
+                          {contactNumber && (
+                            <div className="flex items-center gap-1.5 text-gray-300 text-sm">
+                              <Phone size={13} className="text-gray-500" />
+                              <span>{contactNumber}</span>
+                            </div>
+                          )}
+                        </div>
                       </div>
                       <div className="text-right flex-shrink-0">
                         <div className="flex items-center gap-1.5 text-gray-400 text-sm">
@@ -344,7 +376,8 @@ export default function DriverUploadPage() {
                       </div>
                     </div>
                   </button>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
@@ -357,6 +390,22 @@ export default function DriverUploadPage() {
               <p className="text-xs text-gray-500 uppercase tracking-wide font-medium mb-0.5">Job</p>
               <h2 className="text-lg font-bold text-white">{selectedJob.job_number}</h2>
               <p className="text-gray-400 text-sm">{serviceLabel(selectedJob.service_type)} · {formatDate(selectedJob.scheduled_date)}</p>
+              {selectedJob.customer && (
+                <div className="mt-2 space-y-1">
+                  <div className="flex items-center gap-1.5 text-gray-300 text-sm">
+                    <User size={13} className="text-gray-500" />
+                    <span>{selectedJob.customer.contact_name || selectedJob.customer.company_name || '—'}</span>
+                  </div>
+                  {(selectedJob.customer.mobile || selectedJob.customer.phone) && (
+                    <div className="flex items-center gap-1.5 text-gray-300 text-sm">
+                      <Phone size={13} className="text-gray-500" />
+                      <a href={`tel:${selectedJob.customer.mobile || selectedJob.customer.phone}`} className="text-red-400 hover:text-red-300">
+                        {selectedJob.customer.mobile || selectedJob.customer.phone}
+                      </a>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="flex-1 overflow-y-auto px-4 pt-4 pb-4">
@@ -369,6 +418,17 @@ export default function DriverUploadPage() {
                 onChange={handleFileSelect}
                 className="hidden"
               />
+
+              <button
+                onClick={() => { setGreeting(new Date().getHours() < 12 ? 'Morning' : 'Afternoon'); setCopied(false); setScreen('message'); }}
+                className="w-full bg-gray-900 border border-gray-800 hover:border-red-600 rounded-2xl p-4 flex items-center gap-3 transition-colors mb-4"
+              >
+                <MessageSquare className="w-6 h-6 text-red-500" />
+                <div className="text-left flex-1">
+                  <p className="text-white font-medium text-sm">Customer Message</p>
+                  <p className="text-gray-500 text-xs">Draft a message to copy and send</p>
+                </div>
+              </button>
 
               <button
                 onClick={() => fileInputRef.current?.click()}
@@ -469,6 +529,111 @@ export default function DriverUploadPage() {
                 </button>
               </div>
             )}
+          </div>
+        )}
+
+        {/* ─── MESSAGE DRAFT SCREEN ─── */}
+        {screen === 'message' && selectedJob && (
+          <div className="flex-1 flex flex-col">
+            <div className="px-4 pt-5 pb-3 border-b border-gray-800">
+              <p className="text-xs text-gray-500 uppercase tracking-wide font-medium mb-0.5">Message Draft</p>
+              <h2 className="text-lg font-bold text-white">{selectedJob.job_number}</h2>
+              {selectedJob.customer && (
+                <p className="text-gray-400 text-sm">
+                  {selectedJob.customer.contact_name || selectedJob.customer.company_name || '—'}
+                  {(selectedJob.customer.mobile || selectedJob.customer.phone) && (
+                    <span className="ml-2 text-red-400">{selectedJob.customer.mobile || selectedJob.customer.phone}</span>
+                  )}
+                </p>
+              )}
+            </div>
+
+            <div className="flex-1 overflow-y-auto px-4 pt-4 pb-4 space-y-4">
+              <div>
+                <label className="text-gray-400 text-sm font-medium block mb-2">Greeting</label>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setGreeting('Morning')}
+                    className={`flex-1 py-3 rounded-xl font-medium text-sm transition-colors ${
+                      greeting === 'Morning'
+                        ? 'bg-red-600 text-white'
+                        : 'bg-gray-900 text-gray-400 border border-gray-800'
+                    }`}
+                  >
+                    Good Morning
+                  </button>
+                  <button
+                    onClick={() => setGreeting('Afternoon')}
+                    className={`flex-1 py-3 rounded-xl font-medium text-sm transition-colors ${
+                      greeting === 'Afternoon'
+                        ? 'bg-red-600 text-white'
+                        : 'bg-gray-900 text-gray-400 border border-gray-800'
+                    }`}
+                  >
+                    Good Afternoon
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-gray-400 text-sm font-medium block mb-2">Your ETA (optional)</label>
+                <input
+                  type="time"
+                  value={etaTime}
+                  onChange={e => setEtaTime(e.target.value)}
+                  className="w-full bg-gray-900 border border-gray-800 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-red-600"
+                />
+              </div>
+
+              <div>
+                <label className="text-gray-400 text-sm font-medium block mb-2">Message Preview</label>
+                <div className="bg-gray-900 border border-gray-800 rounded-2xl p-4">
+                  <p className="text-gray-200 text-sm leading-relaxed whitespace-pre-wrap">
+                    {(() => {
+                      const name = selectedJob.customer?.contact_name || selectedJob.customer?.company_name || 'there';
+                      const eta = etaTime ? `My current ETA is ${etaTime}.` : 'My current ETA is [enter time].';
+                      return `Good ${greeting} ${name}, this is your MediWaste Driver for your clinical waste collection. I'm now working in your area. ${eta} Many thanks.`;
+                    })()}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="px-4 pb-6 pt-3 border-t border-gray-800 bg-gray-950 space-y-3">
+              <button
+                onClick={async () => {
+                  const name = selectedJob.customer?.contact_name || selectedJob.customer?.company_name || 'there';
+                  const eta = etaTime ? `My current ETA is ${etaTime}.` : 'My current ETA is [enter time].';
+                  const msg = `Good ${greeting} ${name}, this is your MediWaste Driver for your clinical waste collection. I'm now working in your area. ${eta} Many thanks.`;
+                  try {
+                    await navigator.clipboard.writeText(msg);
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 2000);
+                  } catch {
+                    setCopied(false);
+                  }
+                }}
+                className="w-full bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-semibold py-4 rounded-2xl flex items-center justify-center gap-2 transition-colors"
+              >
+                {copied ? (
+                  <>
+                    <Check className="w-5 h-5" />
+                    Copied to Clipboard
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-5 h-5" />
+                    Copy Message
+                  </>
+                )}
+              </button>
+              <button
+                onClick={() => setScreen('upload')}
+                className="w-full bg-gray-800 hover:bg-gray-700 text-gray-300 font-semibold py-3 rounded-2xl transition-colors"
+              >
+                Back to Upload
+              </button>
+            </div>
           </div>
         )}
 

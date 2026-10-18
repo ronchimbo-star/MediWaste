@@ -116,6 +116,7 @@ Deno.serve(async (req: Request) => {
     const emailPayload: any = {
       from: "MediWaste <hello@mediwaste.co.uk>",
       to: [customer.email],
+      cc: ["hello@mediwaste.co.uk"],
       subject,
       html,
       reply_to: "hello@mediwaste.co.uk",
