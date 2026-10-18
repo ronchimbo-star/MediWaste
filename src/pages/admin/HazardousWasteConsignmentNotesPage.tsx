@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
-import { Plus, Download, Eye, X, Pencil, Camera, CheckSquare, Square, AlertTriangle, CheckCircle, Upload } from 'lucide-react';
+import { Plus, Download, Eye, X, Pencil, Camera, CheckSquare, Square, AlertTriangle, CheckCircle, Upload, Mail, Send, Clock } from 'lucide-react';
 import { useToastContext } from '../../contexts/ToastContext';
 import AdminLayout from '../../components/admin/AdminLayout';
 import PhotoUploadModal from '../../components/PhotoUploadModal';
@@ -213,6 +213,9 @@ export default function HazardousWasteConsignmentNotesPage() {
   });
   const [returnLoading, setReturnLoading] = useState(false);
   const [returnPreviewUrl, setReturnPreviewUrl] = useState<string | null>(null);
+  const [notifyHwcn, setNotifyHwcn] = useState<ConsignmentNote | null>(null);
+  const [notifyMessage, setNotifyMessage] = useState('');
+  const [notifySending, setNotifySending] = useState(false);
 
   useEffect(() => { fetchHwcns(); }, []);
 
@@ -674,6 +677,15 @@ export default function HazardousWasteConsignmentNotesPage() {
                           }} className="text-green-600 hover:text-green-900" title="Mark Consignee Return"><CheckCircle className="w-4 h-4" /></button>
                         )}
                         <button onClick={() => { setSelectedHwcn(hwcn); setShowModal(true); }} className="text-green-600 hover:text-green-900" title="Print / Download"><Download className="w-4 h-4" /></button>
+                        {hwcn.customer.email && (
+                          <button
+                            onClick={() => { setNotifyHwcn(hwcn); setNotifyMessage(`Your hazardous waste consignment note (${hwcn.hwcn_number}) has been generated and is now available to view in your compliance portal.`); }}
+                            className="text-blue-600 hover:text-blue-900"
+                            title="Notify Customer by Email"
+                          >
+                            <Mail className="w-4 h-4" />
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -887,6 +899,55 @@ export default function HazardousWasteConsignmentNotesPage() {
                 className="px-4 py-2 bg-red-500 text-white rounded-lg text-sm hover:bg-red-600 disabled:opacity-50">
                 {createLoading ? (editingHwcn ? 'Saving...' : 'Creating...') : (editingHwcn ? 'Save Changes' : 'Create HWCN')}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {notifyHwcn && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl max-w-md w-full shadow-2xl">
+            <div className="p-6">
+              <div className="flex items-start gap-4 mb-4">
+                <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
+                  <Mail size={20} className="text-blue-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900">Notify Customer</h3>
+                  <p className="text-sm text-gray-500 mt-1">Send email to <span className="font-medium text-gray-700">{notifyHwcn.customer.email}</span></p>
+                </div>
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Message</label>
+                <textarea value={notifyMessage} onChange={e => setNotifyMessage(e.target.value)} rows={4} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none" />
+              </div>
+              <p className="text-xs text-gray-400 mb-4">A link to the customer's compliance portal will be included automatically.</p>
+              <div className="flex justify-end gap-3">
+                <button onClick={() => setNotifyHwcn(null)} disabled={notifySending} className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm hover:bg-gray-50 transition-colors disabled:opacity-50">Cancel</button>
+                <button
+                  onClick={async () => {
+                    setNotifySending(true);
+                    try {
+                      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-document-notification`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}` },
+                        body: JSON.stringify({ documentType: 'hwcn', documentId: notifyHwcn.id, customMessage: notifyMessage }),
+                      });
+                      if (!res.ok) { const e = await res.json(); throw new Error(e.error || 'Failed to send'); }
+                      toast.success(`Notification sent to ${notifyHwcn.customer.email}`);
+                      setNotifyHwcn(null);
+                    } catch (err: any) {
+                      toast.error(err.message || 'Failed to send notification');
+                    } finally {
+                      setNotifySending(false);
+                    }
+                  }}
+                  disabled={notifySending}
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors disabled:opacity-50"
+                >
+                  {notifySending ? <><Clock size={14} className="animate-spin" /> Sending...</> : <><Send size={14} /> Send Notification</>}
+                </button>
+              </div>
             </div>
           </div>
         </div>

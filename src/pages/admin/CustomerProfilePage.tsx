@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../lib/supabase';
 import { useToastContext } from '../../contexts/ToastContext';
-import { Plus, FileEdit as Edit2, Trash2, CheckCircle, Phone, Mail, MapPin, Building, X, ChevronDown, ChevronUp, Bell } from 'lucide-react';
+import { Plus, FileEdit as Edit2, Trash2, CheckCircle, Phone, Mail, MapPin, Building, X, ChevronDown, ChevronUp, Bell, Inbox, Send as SendIcon, RefreshCw } from 'lucide-react';
 import AdminLayout from '../../components/admin/AdminLayout';
 import NotesPanel from '../../components/admin/NotesPanel';
 
@@ -84,7 +84,7 @@ export default function CustomerProfilePage() {
   const qc = useQueryClient();
   const { toast } = useToastContext();
 
-  const [activeTab, setActiveTab] = useState<'overview' | 'services' | 'payments' | 'reminders' | 'notes'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'services' | 'payments' | 'reminders' | 'correspondence' | 'notes'>('overview');
   const [showServiceModal, setShowServiceModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showReminderModal, setShowReminderModal] = useState(false);
@@ -481,7 +481,7 @@ export default function CustomerProfilePage() {
         </div>
 
         <div className="flex gap-1 mb-6 bg-white rounded-xl border border-gray-200 p-1 w-fit">
-          {(['overview', 'services', 'payments', 'reminders', 'notes'] as const).map(tab => (
+          {(['overview', 'services', 'payments', 'reminders', 'correspondence', 'notes'] as const).map(tab => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -708,6 +708,10 @@ export default function CustomerProfilePage() {
 
         {activeTab === 'notes' && (
           <NotesPanel customerId={id} title={`Notes for ${customer.company_name || customer.contact_name}`} />
+        )}
+
+        {activeTab === 'correspondence' && (
+          <CorrespondenceTab customerId={id!} customerEmail={customer.email || ''} />
         )}
       </div>
 
@@ -948,5 +952,127 @@ export default function CustomerProfilePage() {
       )}
       </div>
     </AdminLayout>
+  );
+}
+
+function CorrespondenceTab({ customerId, customerEmail }: { customerId: string; customerEmail: string }) {
+  const [emails, setEmails] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [syncing, setSyncing] = useState(false);
+  const [selectedEmail, setSelectedEmail] = useState<any | null>(null);
+
+  const fetchEmails = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('mw_emails')
+        .select('id, from_email, from_name, to_email, subject, body_plain, body_html, direction, status, has_attachments, received_at, gmail_thread_id')
+        .eq('customer_id', customerId)
+        .order('received_at', { ascending: false });
+      if (error) throw error;
+      setEmails(data || []);
+    } catch (err) {
+      console.error('Error fetching emails:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { fetchEmails(); }, [customerId]);
+
+  const handleSync = async () => {
+    setSyncing(true);
+    try {
+      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sync-gmail`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}` },
+        body: JSON.stringify({ maxResults: 100 }),
+      });
+      if (!res.ok) throw new Error('Sync failed');
+      await res.json();
+      await fetchEmails();
+    } catch (err: any) {
+      console.error('Sync error:', err);
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  const inbound = emails.filter(e => e.direction === 'inbound').length;
+  const outbound = emails.filter(e => e.direction === 'outbound').length;
+
+  return (
+    <div>
+      <div className="flex justify-between items-center mb-4">
+        <div>
+          <h2 className="text-lg font-semibold text-gray-900">Correspondence ({emails.length})</h2>
+          <p className="text-sm text-gray-500">{inbound} received · {outbound} sent</p>
+        </div>
+        <button
+          onClick={handleSync}
+          disabled={syncing}
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm disabled:opacity-50"
+        >
+          <RefreshCw size={16} className={syncing ? 'animate-spin' : ''} />
+          {syncing ? 'Syncing...' : 'Sync Gmail Now'}
+        </button>
+      </div>
+
+      {loading ? (
+        <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
+          <p className="text-gray-500">Loading correspondence...</p>
+        </div>
+      ) : emails.length === 0 ? (
+        <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
+          <Inbox size={32} className="text-gray-300 mx-auto mb-3" />
+          <p className="text-gray-500">No email correspondence found for this customer.</p>
+          <p className="text-sm text-gray-400 mt-1">Emails sent to or received from {customerEmail || 'this customer'} will appear here after Gmail sync.</p>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {emails.map(email => (
+            <div
+              key={email.id}
+              className="bg-white rounded-xl border border-gray-200 p-4 hover:border-gray-300 transition-colors cursor-pointer"
+              onClick={() => setSelectedEmail(selectedEmail?.id === email.id ? null : email)}
+            >
+              <div className="flex items-start justify-between">
+                <div className="flex items-start gap-3 flex-1 min-w-0">
+                  {email.direction === 'inbound' ? (
+                    <Inbox size={18} className="text-blue-500 flex-shrink-0 mt-0.5" />
+                  ) : (
+                    <SendIcon size={18} className="text-green-500 flex-shrink-0 mt-0.5" />
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium text-gray-900 truncate">{email.subject || '(No subject)'}</p>
+                      {email.has_attachments && (
+                        <span className="text-xs text-gray-400">📎</span>
+                      )}
+                    </div>
+                    <p className="text-sm text-gray-500 truncate">
+                      {email.direction === 'inbound' ? `From ${email.from_name || email.from_email}` : `To ${email.to_email}`}
+                    </p>
+                  </div>
+                </div>
+                <span className="text-xs text-gray-400 flex-shrink-0 ml-3">
+                  {email.received_at ? new Date(email.received_at).toLocaleDateString('en-GB') : ''}
+                </span>
+              </div>
+              {selectedEmail?.id === email.id && (
+                <div className="mt-3 pt-3 border-t border-gray-100">
+                  <div className="text-xs text-gray-400 mb-2">
+                    {email.direction === 'inbound' ? 'Received' : 'Sent'} {email.received_at ? new Date(email.received_at).toLocaleString('en-GB') : ''}
+                  </div>
+                  <div className="text-sm text-gray-700 whitespace-pre-line max-h-80 overflow-y-auto">
+                    {email.body_plain || '(No plain text body — HTML email)'}
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }

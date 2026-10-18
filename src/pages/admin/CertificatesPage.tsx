@@ -5,7 +5,7 @@ import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/useAuth';
 import AdminLayout from '../../components/admin/AdminLayout';
 import { useToastContext } from '../../contexts/ToastContext';
-import { Plus, Award, Search, Eye, FileEdit as Edit, ExternalLink, CheckCircle, XCircle, Clock, AlertTriangle, Pause, Play, Archive, Trash2 } from 'lucide-react';
+import { Plus, Award, Search, Eye, FileEdit as Edit, ExternalLink, CheckCircle, XCircle, Clock, AlertTriangle, Pause, Play, Archive, Trash2, Mail, Send } from 'lucide-react';
 
 interface Certificate {
   id: string;
@@ -60,6 +60,8 @@ type ConfirmAction =
   | { type: 'delete'; cert: Certificate }
   | null;
 
+type NotifyAction = { cert: Certificate; message: string } | null;
+
 export default function CertificatesPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -70,6 +72,8 @@ export default function CertificatesPage() {
   const [confirmAction, setConfirmAction] = useState<ConfirmAction>(null);
   const [reason, setReason] = useState('');
   const [acting, setActing] = useState(false);
+  const [notifyAction, setNotifyAction] = useState<NotifyAction>(null);
+  const [notifySending, setNotifySending] = useState(false);
 
   const { data: certificates = [], isLoading } = useQuery({
     queryKey: ['admin-certificates'],
@@ -362,6 +366,15 @@ export default function CertificatesPage() {
                               <Trash2 size={15} />
                             </button>
                           )}
+                          {cert.mw_customers?.email && (
+                            <button
+                              onClick={() => setNotifyAction({ cert, message: `Your waste disposal certificate (${cert.certificate_number}) has been generated and is now available to view in your compliance portal.` })}
+                              className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                              title="Notify Customer by Email"
+                            >
+                              <Mail size={15} />
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -372,6 +385,63 @@ export default function CertificatesPage() {
           )}
         </div>
       </div>
+
+      {/* Notify Customer Modal */}
+      {notifyAction && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl max-w-md w-full shadow-2xl">
+            <div className="p-6">
+              <div className="flex items-start gap-4 mb-4">
+                <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
+                  <Mail size={20} className="text-blue-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900">Notify Customer</h3>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Send email to <span className="font-medium text-gray-700">{notifyAction.cert.mw_customers?.email}</span>
+                  </p>
+                </div>
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Message</label>
+                <textarea
+                  value={notifyAction.message}
+                  onChange={(e) => setNotifyAction({ ...notifyAction, message: e.target.value })}
+                  rows={4}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                />
+              </div>
+              <p className="text-xs text-gray-400 mb-4">A link to the customer's compliance portal will be included automatically.</p>
+              <div className="flex justify-end gap-3">
+                <button onClick={() => setNotifyAction(null)} disabled={notifySending} className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm hover:bg-gray-50 transition-colors disabled:opacity-50">Cancel</button>
+                <button
+                  onClick={async () => {
+                    setNotifySending(true);
+                    try {
+                      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-document-notification`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}` },
+                        body: JSON.stringify({ documentType: 'certificate', documentId: notifyAction.cert.id, customMessage: notifyAction.message }),
+                      });
+                      if (!res.ok) { const e = await res.json(); throw new Error(e.error || 'Failed to send'); }
+                      toast.success(`Notification sent to ${notifyAction.cert.mw_customers?.email}`);
+                      setNotifyAction(null);
+                    } catch (err: any) {
+                      toast.error(err.message || 'Failed to send notification');
+                    } finally {
+                      setNotifySending(false);
+                    }
+                  }}
+                  disabled={notifySending}
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors disabled:opacity-50"
+                >
+                  {notifySending ? <><Clock size={14} className="animate-spin" /> Sending...</> : <><Send size={14} /> Send Notification</>}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Confirmation Modal */}
       {confirmAction && (

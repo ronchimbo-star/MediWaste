@@ -79,6 +79,9 @@ verify_jwt = false
 [functions.send-payment-receipt]
 verify_jwt = false
 
+[functions.send-document-notification]
+verify_jwt = false
+
 [functions.verify-financial-pin]
 verify_jwt = false
 

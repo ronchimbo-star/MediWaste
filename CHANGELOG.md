@@ -431,6 +431,9 @@ This file documents every feature in the current build and serves as a running c
 ### 2026-10-18
 - Created full system backup at `backups/2026-10-18_pre-change-backup/`
 - Created this `CHANGELOG.md` to document all features and track future changes
+- **Feature 1: Document Notification Emails** — Added "Notify Customer" button to Certificates, Waste Transfer Notes, and Hazardous Waste Consignment Notes admin pages. When clicked, admin sees a modal with a pre-filled message they can edit, then sends a branded email from `hello@mediwaste.co.uk` via Resend. The email includes a link to the customer's compliance portal. All notifications are logged in the new `mw_document_notifications` table with resend tracking. New edge function: `send-document-notification`.
+- **Feature 2: Customer Correspondence Tab** — Added a "Correspondence" tab to the Customer Profile page showing all emails sent to and received from that customer, pulled from the existing `mw_emails` table (populated by Gmail sync). Each email shows direction (sent/received), subject, sender, date, and expandable body. Includes a "Sync Gmail Now" button to trigger an immediate sync.
+- **Feature 2b: Weekly Gmail Sync Cron** — Scheduled a weekly Sunday 2am UTC cron job that automatically triggers the existing `sync-gmail` edge function to pull 150 latest emails and map them to customers by email address. This ensures the Correspondence tab stays up to date without manual intervention.
 
 ---
 
