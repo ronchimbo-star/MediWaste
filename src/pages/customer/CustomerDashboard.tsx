@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../hooks/useAuth';
-import { Calendar, FileText, DollarSign, Package, Truck, ShieldCheck, Recycle, FlaskConical, Syringe, Pill, Leaf, ChevronRight, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Calendar, FileText, DollarSign, Package, Truck, ShieldCheck, Recycle, FlaskConical, Syringe, Pill, Leaf, ChevronRight, AlertTriangle, CheckCircle, ScrollText, ExternalLink } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useToastContext } from '../../contexts/ToastContext';
 import CollectionRequestModal from '../../components/CollectionRequestModal';
@@ -273,6 +273,8 @@ export default function CustomerDashboard() {
                 </button>
               </div>
             </div>
+
+            {customerInfo && <CustomerAgreementsCard customerEmail={customerInfo.email} />}
 
             <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
               <p className="text-xs font-semibold text-amber-800 uppercase tracking-wide mb-1">Need help?</p>
@@ -559,6 +561,125 @@ function DocumentDetail({ doc, type, onClose }: { doc: any; type: 'hwcn' | 'wtn'
             <FileText size={14} /> Print / Save as PDF
           </button>
         </div>
+      </div>
+    </div>
+  );
+}
+
+interface Agreement {
+  id: string;
+  agreement_number: string;
+  status: string;
+  secure_token: string;
+  current_version: number;
+  start_date: string | null;
+  end_date: string | null;
+  versions: { version_number: number; created_at: string }[];
+}
+
+function CustomerAgreementsCard({ customerEmail }: { customerEmail: string }) {
+  const [agreements, setAgreements] = useState<Agreement[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchAgreements = async () => {
+      const { data, error } = await supabase
+        .from('service_agreements')
+        .select(`
+          id, agreement_number, status, secure_token, current_version, start_date, end_date,
+          versions:service_agreement_versions ( version_number, created_at )
+        `)
+        .eq('contact_email', customerEmail)
+        .order('created_at', { ascending: false });
+
+      if (!error && data) {
+        setAgreements(data as Agreement[]);
+      }
+      setLoading(false);
+    };
+    fetchAgreements();
+  }, [customerEmail]);
+
+  if (loading || agreements.length === 0) return null;
+
+  const statusColour: Record<string, string> = {
+    accepted: 'bg-green-100 text-green-700',
+    sent: 'bg-blue-100 text-blue-700',
+    draft: 'bg-gray-100 text-gray-600',
+    declined: 'bg-red-100 text-red-700',
+    expired: 'bg-orange-100 text-orange-700',
+  };
+
+  return (
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+      <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide mb-3 flex items-center gap-2">
+        <ScrollText size={15} className="text-red-500" />
+        Service Agreements
+      </h3>
+      <div className="space-y-3">
+        {agreements.map((agreement) => {
+          const sortedVersions = [...(agreement.versions || [])].sort(
+            (a, b) => b.version_number - a.version_number
+          );
+          const hasMultipleVersions = sortedVersions.length > 1;
+
+          return (
+            <div key={agreement.id} className="border border-gray-200 rounded-lg overflow-hidden">
+              <div className="px-3 py-2.5 bg-gray-50 border-b border-gray-200 flex items-center justify-between gap-2">
+                <div>
+                  <p className="text-sm font-semibold text-gray-900">{agreement.agreement_number}</p>
+                  {agreement.start_date && (
+                    <p className="text-xs text-gray-500">
+                      From {new Date(agreement.start_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                      {agreement.end_date && ` to ${new Date(agreement.end_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}`}
+                    </p>
+                  )}
+                </div>
+                <span className={`text-xs font-semibold px-2 py-0.5 rounded-full capitalize flex-shrink-0 ${statusColour[agreement.status] || 'bg-gray-100 text-gray-600'}`}>
+                  {agreement.status}
+                </span>
+              </div>
+
+              <div className="divide-y divide-gray-100">
+                {hasMultipleVersions ? (
+                  sortedVersions.map((ver, idx) => (
+                    <a
+                      key={ver.version_number}
+                      href={`/service-agreement/${agreement.secure_token}${ver.version_number !== agreement.current_version ? `?version=${ver.version_number}` : ''}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-between px-3 py-2 hover:bg-blue-50 transition-colors group"
+                    >
+                      <div className="flex items-center gap-2">
+                        <FileText size={13} className={idx === 0 ? 'text-blue-600' : 'text-gray-400'} />
+                        <span className={`text-sm ${idx === 0 ? 'font-medium text-gray-900' : 'text-gray-500'}`}>
+                          v{ver.version_number}{idx === 0 ? ' (Latest)' : ''}
+                        </span>
+                        <span className="text-xs text-gray-400">
+                          {new Date(ver.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                        </span>
+                      </div>
+                      <ExternalLink size={13} className="text-gray-400 group-hover:text-blue-600 transition-colors" />
+                    </a>
+                  ))
+                ) : (
+                  <a
+                    href={`/service-agreement/${agreement.secure_token}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-between px-3 py-2 hover:bg-blue-50 transition-colors group"
+                  >
+                    <div className="flex items-center gap-2">
+                      <FileText size={13} className="text-blue-600" />
+                      <span className="text-sm font-medium text-gray-900">View Agreement</span>
+                    </div>
+                    <ExternalLink size={13} className="text-gray-400 group-hover:text-blue-600 transition-colors" />
+                  </a>
+                )}
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
