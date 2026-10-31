@@ -31,6 +31,7 @@ const AboutPage = lazyWithRetry(() => import('./pages/AboutPage'));
 const FAQPage = lazyWithRetry(() => import('./pages/FAQPage'));
 const WasteServicesPage = lazyWithRetry(() => import('./pages/WasteServicesPage'));
 const NewsPage = lazyWithRetry(() => import('./pages/NewsPage'));
+const Glp1SharpsReturnPage = lazyWithRetry(() => import('./pages/Glp1SharpsReturnPage'));
 const NewsArticlePage = lazyWithRetry(() => import('./pages/NewsArticlePage'));
 const NewsCategoryPage = lazyWithRetry(() => import('./pages/NewsCategoryPage'));
 const ServiceAreaPage = lazyWithRetry(() => import('./pages/ServiceAreaPage'));
@@ -197,6 +198,7 @@ function App() {
           <Route path="/clinical-waste-disposal-sussex" element={<LocationServicePage />} />
           <Route path="/clinical-waste-disposal-hampshire" element={<LocationServicePage />} />
           <Route path="/news" element={<NewsPage />} />
+          <Route path="/glp1-sharps-safe-return" element={<Glp1SharpsReturnPage />} />
           <Route path="/news/category/:categorySlug" element={<NewsCategoryPage />} />
           <Route path="/news/:slug" element={<NewsArticlePage />} />
           <Route path="/quote" element={<QuotePage />} />

@@ -112,6 +112,7 @@ export default function Footer() {
               <li><Link to="/waste-services/pharmaceutical-waste" className="hover:text-white">Pharmaceutical Waste</Link></li>
               <li><Link to="/waste-services/anatomical-waste" className="hover:text-white">Anatomical Waste</Link></li>
               <li><Link to="/compliance" className="hover:text-white">Compliance</Link></li>
+              <li><Link to="/glp1-sharps-safe-return" className="hover:text-white">GLP-1 Sharps Safe Return</Link></li>
             </ul>
           </div>
 

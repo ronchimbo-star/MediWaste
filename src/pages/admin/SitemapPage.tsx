@@ -41,6 +41,7 @@ const STATIC_PAGES: Omit<SitemapEntry, 'source'>[] = [
   { url: 'https://mediwaste.co.uk/clinical-waste-disposal-hampshire', lastmod: '2026-04-10', changefreq: 'monthly', priority: '0.8' },
   { url: 'https://mediwaste.co.uk/directory-listings', lastmod: '2026-05-15', changefreq: 'weekly', priority: '0.5' },
   { url: 'https://mediwaste.co.uk/news', lastmod: '2026-04-10', changefreq: 'weekly', priority: '0.7' },
+  { url: 'https://mediwaste.co.uk/glp1-sharps-safe-return', lastmod: '2026-07-10', changefreq: 'monthly', priority: '0.8' },
   { url: 'https://mediwaste.co.uk/compliance', lastmod: '2026-04-10', changefreq: 'monthly', priority: '0.7' },
   { url: 'https://mediwaste.co.uk/privacy', lastmod: '2026-04-10', changefreq: 'yearly', priority: '0.3' },
   { url: 'https://mediwaste.co.uk/terms', lastmod: '2026-04-10', changefreq: 'yearly', priority: '0.3' },

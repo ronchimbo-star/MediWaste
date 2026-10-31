@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ClipboardList } from 'lucide-react';
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -31,13 +30,6 @@ export default function Header() {
             <Link to="/service-coverage" className="text-gray-700 hover:text-gray-900 font-medium whitespace-nowrap">Coverage</Link>
             <Link to="/news" className="text-gray-700 hover:text-gray-900 font-medium whitespace-nowrap">News</Link>
             <Link to="/contact" className="text-gray-700 hover:text-gray-900 font-medium whitespace-nowrap">Contact</Link>
-            <Link
-              to="/audit"
-              className="inline-flex items-center gap-1.5 border border-red-600 text-red-600 hover:bg-red-600 hover:text-white px-4 py-2 rounded-lg font-semibold text-sm transition-colors whitespace-nowrap"
-            >
-              <ClipboardList className="w-4 h-4" />
-              Waste Audit
-            </Link>
             <Link
               to="/quote"
               className="bg-red-600 hover:bg-red-700 text-white px-5 2xl:px-6 py-2 rounded-lg font-semibold transition-colors whitespace-nowrap"
@@ -100,14 +92,6 @@ export default function Header() {
                 className="px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg font-medium transition-colors"
               >
                 Contact
-              </Link>
-              <Link
-                to="/audit"
-                onClick={closeMobileMenu}
-                className="px-4 py-3 border border-red-600 text-red-600 hover:bg-red-600 hover:text-white rounded-lg font-semibold transition-colors flex items-center justify-center gap-2"
-              >
-                <ClipboardList className="w-5 h-5" />
-                Clinical Waste Audit Builder
               </Link>
               <Link
                 to="/quote"

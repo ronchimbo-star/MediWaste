@@ -1,0 +1,129 @@
+{
+  "projectId": "62473784",
+  "functions": {
+    "analyze-conversation": {
+      "hasChanged": false,
+      "hash": "1d1c2e01938c5837d5608ecbe1e0f203787477ff0a7aa741cd16c9c6b1999c55"
+    },
+    "audit-notification": {
+      "hasChanged": false,
+      "hash": "bf774f03ca6ea6ca8b5068dbdef6d783fb6be60d0be7a569ad1a7114e386211d"
+    },
+    "check-broken-links": {
+      "hasChanged": false,
+      "hash": "f90bc2397f04bc267e597a844a2d80e3a0d951768df0183c7bb0040bca75ee03"
+    },
+    "daily-email-briefing": {
+      "hasChanged": false,
+      "hash": "1689e9002775d5de542529f2b67cfa98b2b078f3ce40119da1d9db73f4463aee"
+    },
+    "draft-customer-setup": {
+      "hasChanged": false,
+      "hash": "691b2fdba50b3fd071895543b26cc80556ecdfe7205d2d7ef8126cb40a222ddf"
+    },
+    "draft-quote-reply": {
+      "hasChanged": false,
+      "hash": "c6bc34f2ca93116050dac935a87041925fff48685d0e870a890d496d70023bb0"
+    },
+    "fetch-markdown": {
+      "hasChanged": false,
+      "hash": "a197b6385566cb26d72f22125158f1c17dded81609f370baa06d09dfbae3e824"
+    },
+    "fix-seo-issues": {
+      "hasChanged": false,
+      "hash": "fad8147c7af622e1e4d99da9ffa1f32055b51ec9c867e53f18c4ee03c82b5c04"
+    },
+    "generate-audit-draft": {
+      "hasChanged": false,
+      "hash": "1549a555f46df775a1c3ff6eb21ae4b16a0debaad199e58bab527d1e538e41ba"
+    },
+    "generate-audit-report": {
+      "hasChanged": false,
+      "hash": "ffcc3399df40e3b721cb6832caf83e98e3973d0013e2e94ee517560677d749dd"
+    },
+    "generate-seo-content": {
+      "hasChanged": false,
+      "hash": "d16e490f9ffa88ac267c83d73806760be479bd4b0c0fbd90c2b870cee02f5844"
+    },
+    "import-seo-csv": {
+      "hasChanged": false,
+      "hash": "455881296cc52fa8d2d1c09cc4ed3940fbd7132588253ad8d63efae139bb3886"
+    },
+    "reset-financial-pin": {
+      "hasChanged": false,
+      "hash": "11a8b8c0e0559c742adff166077b6a8bce6dcbc6eb3413d0d1826d260fb9e4c5"
+    },
+    "send-audit-email": {
+      "hasChanged": false,
+      "hash": "b4c3ea491d2f77dd04a06ddf5e83938fa02bf0cecb22a08b05def14f7b282d3f"
+    },
+    "send-collection-email": {
+      "hasChanged": false,
+      "hash": "b3240959dce57326e0a605136e8d94fd017f83a29057054fe0206350b801fad3"
+    },
+    "send-contact-email": {
+      "hasChanged": false,
+      "hash": "8ab2e00c11dea06217713f4665ef2c4ce4bc57419683957cc1aad06f91b4998e"
+    },
+    "send-document-notification": {
+      "hasChanged": false,
+      "hash": "d5675b77e2fe653f979dc6e08e635bac2fc283c632345fce4b26a4104ec41065"
+    },
+    "send-invoice-email": {
+      "hasChanged": false,
+      "hash": "fa18e14630d45bbceb1a131a29de98de4ba355e2cd123502acfabb4d2f225d76"
+    },
+    "send-payment-receipt": {
+      "hasChanged": false,
+      "hash": "871faff0e8f32a931eb13259983fc687d63c52b4de1cbacf5c52cf6863aefb94"
+    },
+    "send-quote-email": {
+      "hasChanged": false,
+      "hash": "d455ccb3a23a403cae83ab78fd1392b954af52345db0079628348f3644040670"
+    },
+    "send-service-agreement-email": {
+      "hasChanged": false,
+      "hash": "06072ba2f787e50d8d09a095688505daf756821404f42ca42cab6630d72930d9"
+    },
+    "seo-sitemap": {
+      "hasChanged": false,
+      "hash": "69053029109e5ccdb9322188c2e35ea68c775430cdc2aae71a935a563eb66f81"
+    },
+    "serve-llms-txt": {
+      "hasChanged": false,
+      "hash": "70d461acadcfe9d7b1153767c9733230ecfd23db41a58ecf02336c34e482a9f6"
+    },
+    "serve-markdown": {
+      "hasChanged": false,
+      "hash": "42eff78e1be49d20a2182e54de084c2e0c77a1e01fdf81609e13813422a6f80d"
+    },
+    "set-financial-pin": {
+      "hasChanged": false,
+      "hash": "2751b0026671c89202c7b4321e5b5cbc279ede07f09ee6c59166be532117fc81"
+    },
+    "sync-gmail": {
+      "hasChanged": false,
+      "hash": "e6e752c0fd8ffa4b4bb4d8ff3a120a7795537958412b44198de8560bc788ee5a"
+    },
+    "train-quote-agent": {
+      "hasChanged": false,
+      "hash": "17284e2266d52283f9c4ccb0200923e438f50a90acdc51b3969808a1de0292f0"
+    },
+    "trigger-quote-agent": {
+      "hasChanged": false,
+      "hash": "4de0917af0dbe3f81c154aaafe6bd4623a6f3cb8a9c9cea56cfc546d79bd3fa8"
+    },
+    "update-quote-status": {
+      "hasChanged": false,
+      "hash": "1d4978a98cf989261b04bd27fe973348c45d4f59eb040a20444b74220de8c099"
+    },
+    "upload-article-content": {
+      "hasChanged": false,
+      "hash": "1ed6c17ac3b0f702e60b427e3f786f72a86d55f444db0cf7cee86384b8ef8303"
+    },
+    "verify-financial-pin": {
+      "hasChanged": false,
+      "hash": "7a3ac45b1bf0f86e753eadfce6467403415e2e00d1d959ce21aebb9d3312e4b7"
+    }
+  }
+}

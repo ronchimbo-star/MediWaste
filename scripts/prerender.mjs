@@ -1103,6 +1103,46 @@ ${EXTERNAL_LINKS}
 `,
   },
   {
+    path: '/glp1-sharps-safe-return',
+    title: 'GLP-1 Sharps Safe Return Pilot for Councils | MediWaste',
+    description: 'Community drop-off for used GLP-1 pen needles. MediWaste runs a managed 6-12 month sharps return pilot with scheduled collections and duty-of-care reporting.',
+    keywords: 'GLP-1 sharps disposal, pen needle disposal, Wegovy Mounjaro needle disposal, sharps return council pilot, community sharps bin, injection needle disposal UK',
+    canonical: `${BASE_URL}/glp1-sharps-safe-return`,
+    h1: 'GLP-1 Sharps Safe Return Network',
+    schema: {
+      '@context': 'https://schema.org',
+      '@type': 'Service',
+      name: 'GLP-1 Sharps Safe Return Network',
+      serviceType: 'Community sharps return and collection',
+      url: `${BASE_URL}/glp1-sharps-safe-return`,
+      provider: { '@type': 'LocalBusiness', name: 'MediWaste', url: BASE_URL, telephone: '+441322879713' },
+    },
+    content: `
+<p>MediWaste runs a managed community drop-off service for used GLP-1 and diabetes pen needles. Residents get a safe, convenient return point, and councils get a documented, low-risk way to keep sharps out of recycling and general waste.</p>
+<h2>Why used pen needles need a separate route</h2>
+<ul>
+<li><strong>Needle-stick risk</strong> — discarded needles put residents, recycling-centre staff and waste crews at risk of injury.</li>
+<li><strong>Recycling contamination</strong> — sharps in recycling streams disrupt sorting and cause avoidable safety incidents.</li>
+<li><strong>Inconvenient disposal</strong> — residents can wait weeks for a household collection.</li>
+</ul>
+<h2>How the pilot works</h2>
+<ol>
+<li><strong>Council approves the pilot</strong> — the council selects the pilot area, host locations and service standards.</li>
+<li><strong>MediWaste installs containers</strong> — approved, secure sharps containers with public signage.</li>
+<li><strong>Residents return sharps</strong> — used pen needles go into the nearest return point.</li>
+<li><strong>We collect and report</strong> — filled containers are collected and monthly reporting is provided.</li>
+</ol>
+<h2>Pilot scope</h2>
+<ul>
+<li>A 6-12 month pilot, with the option to extend.</li>
+<li>5-15 approved community return points, then scaling by uptake.</li>
+<li>Container supply, scheduled collections, replacements, cleaning and emergency call-outs.</li>
+<li>Duty-of-care documentation, collection logs and monthly reporting.</li>
+</ul>
+<p>The service complements existing household clinical-waste collections. To discuss a local pilot, <a href="/contact">contact MediWaste</a> or call 01322 879 713.</p>
+`,
+  },
+  {
     path: '/audit',
     title: 'Free Clinical Waste Audit Tool | Compliance | MediWaste',
     description: 'Free clinical waste audit tool for UK healthcare providers. Answer 15 questions, get an AI compliance report with risk scores and action plan. Call 01322 879 713.',

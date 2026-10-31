@@ -1,5 +1,6 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Calendar, ArrowRight } from 'lucide-react';
+import { Calendar, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import Header from '../components/Header';
@@ -20,6 +21,13 @@ interface NewsArticle {
   featured_image: string;
   published_at: string;
   tags: string[];
+}
+
+const PAGE_SIZE = 12;
+
+interface NewsArticlesPage {
+  articles: NewsArticle[];
+  total: number;
 }
 
 function ArticleSkeleton() {
@@ -49,6 +57,7 @@ function formatDate(dateString: string | null | undefined) {
 }
 
 export default function NewsPage() {
+  const [page, setPage] = useState(1);
   const { data: categories = [] } = useQuery<NewsCategory[]>({
     queryKey: ['public-news-categories'],
     queryFn: async () => {
@@ -62,20 +71,31 @@ export default function NewsPage() {
     staleTime: 10 * 60 * 1000,
   });
 
-  const { data: articles = [], isLoading } = useQuery<NewsArticle[]>({
-    queryKey: ['public-news-articles'],
+  const { data, isLoading } = useQuery<NewsArticlesPage>({
+    queryKey: ['public-news-articles', page],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const from = (page - 1) * PAGE_SIZE;
+      const to = from + PAGE_SIZE - 1;
+      const { data: rows, error, count } = await supabase
         .from('news_articles')
-        .select('id, title, slug, excerpt, featured_image, published_at, tags')
+        .select('id, title, slug, excerpt, featured_image, published_at, tags', { count: 'exact' })
         .eq('status', 'published')
-        .order('published_at', { ascending: false });
+        .order('published_at', { ascending: false })
+        .range(from, to);
       if (error) throw error;
-      return data || [];
+      return { articles: rows || [], total: count ?? 0 };
     },
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
   });
+
+  const articles = data?.articles ?? [];
+  const totalPages = Math.max(1, Math.ceil((data?.total ?? 0) / PAGE_SIZE));
+
+  const goToPage = (next: number) => {
+    setPage(next);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   return (
     <div className="min-h-screen bg-white">
@@ -173,6 +193,32 @@ export default function NewsPage() {
               </Link>
             ))}
           </div>
+        )}
+
+        {totalPages > 1 && (
+          <nav aria-label="News pagination" className="mt-12 flex items-center justify-center gap-4">
+            <button
+              type="button"
+              onClick={() => goToPage(page - 1)}
+              disabled={page <= 1}
+              className="inline-flex items-center gap-1 rounded-full border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 hover:border-red-300 hover:text-red-600 transition-colors disabled:opacity-40 disabled:pointer-events-none"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              Previous
+            </button>
+            <span className="text-sm text-gray-600">
+              Page {page} of {totalPages}
+            </span>
+            <button
+              type="button"
+              onClick={() => goToPage(page + 1)}
+              disabled={page >= totalPages}
+              className="inline-flex items-center gap-1 rounded-full border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 hover:border-red-300 hover:text-red-600 transition-colors disabled:opacity-40 disabled:pointer-events-none"
+            >
+              Next
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </nav>
         )}
       </div>
 

@@ -1,12 +1,10 @@
-import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Check, ClipboardCheck, ShieldCheck, FileText, ArrowRight, ClipboardList, Stethoscope, FlaskConical, Sparkles, Heart, Scissors, Home, PawPrint } from 'lucide-react';
+import { Check, ShieldCheck, FileText, ArrowRight } from 'lucide-react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import Testimonials from '../components/Testimonials';
 import HomepageFAQ from '../components/HomepageFAQ';
 import SEO from '../components/SEO';
-import { supabase } from '../lib/supabase';
 
 const organizationSchema = {
   '@context': 'https://schema.org',
@@ -25,46 +23,6 @@ const organizationSchema = {
 };
 
 export default function HomePage() {
-  const [auditForm, setAuditForm] = useState({ name: '', practice: '', email: '', phone: '' });
-  const [auditStatus, setAuditStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
-
-  const handleAuditSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setAuditStatus('sending');
-
-    const subject = `Free Compliance Audit Request – ${auditForm.practice}`;
-    const message = `${subject}\n\nName: ${auditForm.name}\nPractice / Business: ${auditForm.practice}\nEmail: ${auditForm.email}\nPhone: ${auditForm.phone || 'Not provided'}`;
-
-    try {
-      const { error: insertError } = await supabase.from('contact_enquiries').insert({
-        contact_name: auditForm.name,
-        email: auditForm.email,
-        phone: auditForm.phone || null,
-        subject,
-        message,
-        status: 'pending',
-      });
-
-      if (insertError) throw insertError;
-
-      // Notify admin via Resend (fire-and-forget — don't block the success state)
-      fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-contact-email`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: auditForm.name,
-          email: auditForm.email,
-          phone: auditForm.phone || undefined,
-          message,
-        }),
-      }).catch(() => {});
-
-      setAuditStatus('sent');
-    } catch {
-      setAuditStatus('error');
-    }
-  };
-
   return (
     <div className="min-h-screen bg-white">
       <SEO
@@ -144,127 +102,6 @@ export default function HomePage() {
               <FileText size={16} className="text-green-600" />
               Waste Transfer Notes within 48 hours
             </span>
-          </div>
-        </div>
-      </section>
-
-      {/* ── FREE COMPLIANCE AUDIT LEAD MAGNET ── */}
-      <section id="audit" className="py-20 bg-white scroll-mt-20">
-        <div className="container mx-auto px-4">
-          <div className="max-w-5xl mx-auto">
-            <div className="grid md:grid-cols-2 gap-12 items-start">
-
-              {/* Left: offer details */}
-              <div>
-                <div className="inline-flex items-center gap-2 bg-red-50 text-red-700 px-4 py-2 rounded-full text-sm font-semibold mb-6">
-                  <ClipboardCheck size={16} />
-                  No obligation · Takes 15 minutes
-                </div>
-                <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 leading-tight">
-                  Free Clinical Waste Compliance Audit – London &amp; South East
-                </h2>
-                <p className="text-gray-600 mb-6 leading-relaxed">
-                  Unsure whether your current waste contractor is keeping you fully compliant? We'll review your waste segregation, documentation, and disposal processes — free of charge, with no pressure to switch.
-                </p>
-                <ul className="space-y-4 mb-8">
-                  {[
-                    { label: 'Waste segregation review', desc: 'Are you using the correct colour-coded containers for each stream?' },
-                    { label: 'Documentation check', desc: 'Do you hold current waste transfer notes and consignment notes?' },
-                    { label: 'Disposal process', desc: 'Is your waste being disposed of via a licensed, approved route?' },
-                    { label: 'Cost benchmarking', desc: 'Are you paying a fair price for the service you receive?' },
-                  ].map(({ label, desc }) => (
-                    <li key={label} className="flex items-start gap-3">
-                      <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <Check size={13} className="text-green-700" />
-                      </div>
-                      <div>
-                        <span className="font-semibold text-gray-900 text-sm">{label}</span>
-                        <p className="text-sm text-gray-500">{desc}</p>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-                <p className="text-xs text-gray-400">
-                  Available to GP surgeries, dental practices, veterinary clinics, care homes, beauty &amp; aesthetics clinics, and any regulated healthcare setting across London and the South East.
-                </p>
-              </div>
-
-              {/* Right: form */}
-              <div className="bg-gray-50 rounded-2xl border border-gray-200 p-8">
-                {auditStatus === 'sent' ? (
-                  <div className="text-center py-8">
-                    <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <Check size={32} className="text-green-600" />
-                    </div>
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">Request received</h3>
-                    <p className="text-gray-600 text-sm">A member of our team will be in touch within one working day to arrange your free audit.</p>
-                  </div>
-                ) : (
-                  <>
-                    <h3 className="text-xl font-bold text-gray-900 mb-1">Book Your Free Audit</h3>
-                    <p className="text-sm text-gray-500 mb-6">We'll contact you within one working day.</p>
-                    <form onSubmit={handleAuditSubmit} className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Your name <span className="text-red-500">*</span></label>
-                        <input
-                          type="text"
-                          required
-                          value={auditForm.name}
-                          onChange={(e) => setAuditForm({ ...auditForm, name: e.target.value })}
-                          className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                          placeholder="e.g. Sarah Mitchell"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Practice / business name <span className="text-red-500">*</span></label>
-                        <input
-                          type="text"
-                          required
-                          value={auditForm.practice}
-                          onChange={(e) => setAuditForm({ ...auditForm, practice: e.target.value })}
-                          className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                          placeholder="e.g. Oakfield Dental Practice"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Email address <span className="text-red-500">*</span></label>
-                        <input
-                          type="email"
-                          required
-                          value={auditForm.email}
-                          onChange={(e) => setAuditForm({ ...auditForm, email: e.target.value })}
-                          className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                          placeholder="you@practice.com"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Phone number</label>
-                        <input
-                          type="tel"
-                          value={auditForm.phone}
-                          onChange={(e) => setAuditForm({ ...auditForm, phone: e.target.value })}
-                          className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                          placeholder="01322 000 000"
-                        />
-                      </div>
-                      {auditStatus === 'error' && (
-                        <p className="text-sm text-red-600">Something went wrong — please try again or call us on 01322 879 713.</p>
-                      )}
-                      <button
-                        type="submit"
-                        disabled={auditStatus === 'sending'}
-                        className="w-full bg-red-600 text-white py-3 rounded-lg font-semibold hover:bg-red-700 transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
-                      >
-                        {auditStatus === 'sending' ? 'Sending…' : (
-                          <>Book My Free Audit <ArrowRight size={16} /></>
-                        )}
-                      </button>
-                      <p className="text-xs text-center text-gray-400">No obligation. We will not pass your details to third parties.</p>
-                    </form>
-                  </>
-                )}
-              </div>
-            </div>
           </div>
         </div>
       </section>
@@ -463,98 +300,61 @@ export default function HomePage() {
         </div>
       </section>
 
-      <Testimonials />
-
-      {/* ── CLINICAL WASTE AUDIT BUILDER ── */}
-      <section className="py-20 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="max-w-6xl mx-auto">
-            <div className="grid lg:grid-cols-2 gap-16 items-center">
-
-              {/* Left: content */}
-              <div>
-                <div className="inline-flex items-center gap-2 bg-red-50 text-red-700 px-4 py-2 rounded-full text-sm font-semibold mb-6">
-                  <ClipboardList size={15} />
-                  Free · Takes 5 minutes · Instant AI report
-                </div>
-                <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 leading-tight">
-                  Clinical Waste Audit Builder
-                </h2>
-                <p className="text-gray-600 mb-6 leading-relaxed">
-                  Answer a few questions about your waste streams, storage, and current contractor. Our AI analyses your responses against UK regulations — HTM 07-01, Hazardous Waste Regulations 2005, and the Duty of Care — and delivers a personalised compliance report in seconds.
-                </p>
-
-                <ul className="space-y-3 mb-8">
-                  {[
-                    { icon: <ShieldCheck size={16} className="text-green-600" />, text: 'Identifies compliance gaps against UK clinical waste regulations' },
-                    { icon: <FileText size={16} className="text-green-600" />, text: 'Generates a downloadable PDF audit report you can share with your team' },
-                    { icon: <ClipboardCheck size={16} className="text-green-600" />, text: 'Gives a risk score and prioritised action plan' },
-                    { icon: <ArrowRight size={16} className="text-green-600" />, text: 'Takes under 5 minutes — no sign-up required' },
-                  ].map(({ icon, text }) => (
-                    <li key={text} className="flex items-center gap-3 text-sm text-gray-700">
-                      <span className="flex-shrink-0">{icon}</span>
-                      {text}
-                    </li>
-                  ))}
-                </ul>
-
-                <Link
-                  to="/audit"
-                  className="inline-flex items-center gap-2 bg-red-600 text-white px-8 py-3 rounded-full font-semibold hover:bg-red-700 hover:scale-105 transition-all shadow-md"
-                >
-                  <ClipboardList size={18} />
-                  Start Your Free Audit
-                </Link>
-                <p className="text-xs text-gray-400 mt-3">No account needed. Your data is kept private and never sold.</p>
-              </div>
-
-              {/* Right: who it's for + visual */}
-              <div>
-                <div className="bg-gray-50 rounded-2xl border border-gray-200 p-7">
-                  <h3 className="font-bold text-gray-900 mb-5 text-lg">Who is it for?</h3>
-                  <div className="grid grid-cols-2 gap-3">
-                    {[
-                      { icon: <Stethoscope size={16} />, label: 'GPs & Medical Practices' },
-                      { icon: <Sparkles size={16} />, label: 'Dental Practices' },
-                      { icon: <Heart size={16} />, label: 'Community Healthcare' },
-                      { icon: <Scissors size={16} />, label: 'Tattoo Studios' },
-                      { icon: <FlaskConical size={16} />, label: 'Laboratories' },
-                      { icon: <Home size={16} />, label: 'Care Homes' },
-                      { icon: <Sparkles size={16} />, label: 'Beauty & Aesthetics' },
-                      { icon: <PawPrint size={16} />, label: 'Veterinary Practices' },
-                    ].map(({ icon, label }) => (
-                      <div key={label} className="flex items-center gap-2.5 bg-white rounded-lg px-3 py-2.5 border border-gray-100 text-sm text-gray-700">
-                        <span className="text-red-500 flex-shrink-0">{icon}</span>
-                        {label}
-                      </div>
-                    ))}
+      {/* ── GLP-1 SHARPS SAFE RETURN ── */}
+      <section id="glp1-sharps-safe-return" className="py-20 bg-white scroll-mt-20">
+        <div className="container mx-auto px-4 max-w-6xl">
+          <div className="grid gap-14 lg:grid-cols-2 lg:items-center">
+            <div>
+              <p className="text-sm font-bold uppercase tracking-widest text-red-600 mb-3">Community pilot</p>
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-5 leading-tight">
+                GLP-1 Sharps Safe Return Network
+              </h2>
+              <p className="text-lg text-gray-600 mb-8 leading-relaxed">
+                A managed community drop-off service for used GLP-1 and diabetes pen needles. It gives residents a safe, convenient route for sharps and gives councils a documented, low-risk way to keep them out of recycling and general waste.
+              </p>
+              <ul className="space-y-4 mb-8">
+                {[
+                  'Prevent used GLP-1 pen needles entering household recycling or general waste',
+                  'Reduce needle-stick risk for recycling-centre and waste crews',
+                  'Give residents a convenient alternative to waiting weeks for a household collection',
+                  'Provide a managed, auditable service with duty-of-care documentation',
+                  'Start as a 6-12 month pilot in 5-15 locations, then scale by uptake',
+                ].map((point) => (
+                  <li key={point} className="flex items-start gap-3 text-gray-700">
+                    <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                    <span>{point}</span>
+                  </li>
+                ))}
+              </ul>
+              <Link
+                to="/glp1-sharps-safe-return"
+                className="inline-flex items-center gap-2 bg-red-600 text-white px-8 py-3 rounded-full font-semibold hover:bg-red-700 transition-colors"
+              >
+                Find out more about the pilot
+                <ArrowRight size={18} />
+              </Link>
+            </div>
+            <div className="bg-gray-900 rounded-3xl p-8 sm:p-10 text-white shadow-xl">
+              <p className="text-sm font-semibold text-red-300 uppercase tracking-wide mb-3">Pilot at a glance</p>
+              <dl className="space-y-5">
+                {[
+                  { label: 'Pilot length', value: '6-12 months' },
+                  { label: 'Return locations', value: '5-15 sites' },
+                  { label: 'Collections', value: 'Scheduled and on demand' },
+                  { label: 'Reporting', value: 'Monthly' },
+                ].map(({ label, value }) => (
+                  <div key={label} className="flex justify-between gap-6 border-b border-white/10 pb-4">
+                    <dt className="text-gray-400">{label}</dt>
+                    <dd className="font-semibold text-right">{value}</dd>
                   </div>
-                  <div className="mt-5 p-4 bg-red-50 rounded-xl border border-red-100">
-                    <p className="text-sm text-gray-700 leading-relaxed">
-                      <span className="font-semibold text-red-700">Any UK healthcare business</span> producing clinical, infectious, sharps, pharmaceutical, or anatomical waste — if you're regulated, this tool is for you.
-                    </p>
-                  </div>
-                </div>
-
-                {/* Mini stat strip */}
-                <div className="grid grid-cols-3 gap-3 mt-4">
-                  {[
-                    { value: '5 min', label: 'Average completion' },
-                    { value: 'Free', label: 'No cost, ever' },
-                    { value: 'AI', label: 'Powered analysis' },
-                  ].map(({ value, label }) => (
-                    <div key={label} className="bg-gray-900 rounded-xl p-4 text-center">
-                      <p className="text-xl font-bold text-white">{value}</p>
-                      <p className="text-xs text-gray-400 mt-0.5">{label}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
+                ))}
+              </dl>
             </div>
           </div>
         </div>
       </section>
+
+      <Testimonials />
 
       {/* ── FINAL CTA ── */}
       <section className="py-20 bg-red-600 text-white">

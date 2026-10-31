@@ -33,6 +33,7 @@ const STATIC_URLS = [
   { loc: "/service-areas/sussex", lastmod: "2026-05-15", changefreq: "monthly", priority: "0.8" },
   { loc: "/service-areas/hampshire", lastmod: "2026-05-15", changefreq: "monthly", priority: "0.8" },
   { loc: "/news", lastmod: "2026-05-15", changefreq: "daily", priority: "0.8" },
+  { loc: "/glp1-sharps-safe-return", lastmod: "2026-07-10", changefreq: "monthly", priority: "0.8" },
   { loc: "/directory-listings", lastmod: "2026-05-15", changefreq: "weekly", priority: "0.5" },
   { loc: "/privacy", lastmod: "2026-05-15", changefreq: "yearly", priority: "0.3" },
   { loc: "/terms", lastmod: "2026-05-15", changefreq: "yearly", priority: "0.3" },
