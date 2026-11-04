@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
+import { fetchLinkedDocumentIds } from '../../lib/documentCustomerLinks';
 import { useAuth } from '../../hooks/useAuth';
-import { Calendar, FileText, DollarSign, Package, Truck, ShieldCheck, Recycle, FlaskConical, Syringe, Pill, Leaf, ChevronRight, AlertTriangle, CheckCircle, ScrollText, ExternalLink } from 'lucide-react';
+import { Calendar, FileText, DollarSign, Package, Truck, ShieldCheck, Recycle, FlaskConical, Syringe, Pill, Leaf, ChevronRight, AlertTriangle, CheckCircle, ScrollText, ExternalLink, Award } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useToastContext } from '../../contexts/ToastContext';
 import CollectionRequestModal from '../../components/CollectionRequestModal';
@@ -247,6 +248,8 @@ export default function CustomerDashboard() {
               </div>
             </div>
 
+            {customerInfo && <CustomerCertificatesSection customerId={customerInfo.id} />}
+
             {customerInfo && <CustomerDocumentsSection customerId={customerInfo.id} />}
 
             {customerInfo && <CustomerAuditsSection customerId={customerInfo.id} />}
@@ -351,6 +354,72 @@ function CustomerAuditsSection({ customerId }: { customerId: string }) {
   );
 }
 
+function CustomerCertificatesSection({ customerId }: { customerId: string }) {
+  const navigate = useNavigate();
+  const [certs, setCerts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchCerts = async () => {
+      try {
+        const certIds = await fetchLinkedDocumentIds('certificate', [customerId]);
+        if (certIds.length > 0) {
+          const { data, error } = await supabase
+            .from('mw_certificates')
+            .select('id, certificate_number, qr_code_token, status, expiry_date')
+            .in('id', certIds)
+            .not('qr_code_token', 'is', null)
+            .order('issue_date', { ascending: false });
+          if (error) throw error;
+          setCerts(data || []);
+        }
+      } catch {
+        setCerts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCerts();
+  }, [customerId]);
+
+  if (loading || certs.length === 0) return null;
+
+  return (
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mt-4">
+      <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+        <Award className="w-5 h-5 text-blue-600" />
+        Compliance Certificate
+      </h2>
+      <div className="space-y-2">
+        {certs.map((cert) => {
+          const isActive = cert.status === 'active';
+          return (
+            <button
+              key={cert.id}
+              onClick={() => navigate(`/compliance/${cert.qr_code_token}`)}
+              className="w-full flex items-center justify-between border border-gray-200 rounded-lg p-3 hover:bg-blue-50 hover:border-blue-200 transition-colors text-left"
+            >
+              <div className="flex items-center gap-3">
+                <Award className="w-5 h-5 text-blue-500 flex-shrink-0" />
+                <div>
+                  <p className="font-medium text-gray-900 text-sm">{cert.certificate_number}</p>
+                  <p className="text-xs text-gray-500">
+                    {cert.expiry_date ? `Valid until ${new Date(cert.expiry_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}` : 'No expiry date'}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className={`px-2 py-0.5 rounded-full text-xs font-medium capitalize ${isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>{cert.status}</span>
+                <ChevronRight className="w-4 h-4 text-gray-400" />
+              </div>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function CustomerDocumentsSection({ customerId }: { customerId: string }) {
   const [hwcns, setHwcns] = useState<any[]>([]);
   const [wtns, setWtns] = useState<any[]>([]);
@@ -360,8 +429,12 @@ function CustomerDocumentsSection({ customerId }: { customerId: string }) {
 
   useEffect(() => {
     const fetchDocs = async () => {
+      const [wtnIds, hwcnIds] = await Promise.all([
+        fetchLinkedDocumentIds('wtn', [customerId]),
+        fetchLinkedDocumentIds('hwcn', [customerId]),
+      ]);
       const [hwcnRes, wtnRes] = await Promise.all([
-        supabase
+        hwcnIds.length === 0 ? Promise.resolve({ data: [] as any[] }) : supabase
           .from('mw_hw_consignment_notes')
           .select(`
             id, hwcn_number, issue_date, collection_date, status,
@@ -370,16 +443,16 @@ function CustomerDocumentsSection({ customerId }: { customerId: string }) {
             carrier:mw_waste_carriers(name),
             mw_hwcn_line_items(waste_description, quantity, quantity_unit)
           `)
-          .eq('customer_id', customerId)
+          .in('id', hwcnIds)
           .order('issue_date', { ascending: false }),
-        supabase
+        wtnIds.length === 0 ? Promise.resolve({ data: [] as any[] }) : supabase
           .from('mw_waste_transfer_notes')
           .select(`
             id, wtn_number, issue_date, collection_date,
             carrier:mw_waste_carriers(name),
             mw_wtn_line_items(waste_description, quantity, quantity_unit)
           `)
-          .eq('customer_id', customerId)
+          .in('id', wtnIds)
           .order('issue_date', { ascending: false }),
       ]);
       setHwcns(hwcnRes.data || []);

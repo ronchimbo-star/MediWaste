@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
+import SharedCustomersPicker from '../../components/documents/SharedCustomersPicker';
+import { fetchAdditionalCustomerIds, saveSharedCustomerIds } from '../../lib/documentCustomerLinks';
 import { Plus, Download, Eye, X, Pencil, Camera, CheckSquare, Square, Image as ImageIcon, Mail, Send, Clock } from 'lucide-react';
 import { useToastContext } from '../../contexts/ToastContext';
 import AdminLayout from '../../components/admin/AdminLayout';
@@ -159,6 +161,7 @@ export default function WasteTransferNotesPage() {
   const [notifyWtn, setNotifyWtn] = useState<WasteTransferNote | null>(null);
   const [notifyMessage, setNotifyMessage] = useState('');
   const [notifySending, setNotifySending] = useState(false);
+  const [sharedCustomerIds, setSharedCustomerIds] = useState<string[]>([]);
 
   useEffect(() => { fetchWTNs(); }, []);
 
@@ -253,6 +256,7 @@ export default function WasteTransferNotesPage() {
     setJobs(jobRes.data || []);
     setCarriers(carrierRes.data || []);
     setEditingWtn(null);
+    setSharedCustomerIds([]);
     setCreateForm({ ...emptyCreateForm });
     setLineItems([emptyLineItem()]);
     setJobPhotos([]);
@@ -270,6 +274,8 @@ export default function WasteTransferNotesPage() {
     setJobs(jobRes.data || []);
     setCarriers(carrierRes.data || []);
     setEditingWtn(wtn);
+
+    setSharedCustomerIds(await fetchAdditionalCustomerIds('wtn', wtn.id, wtn.customer.id));
 
     let jobId = wtn.job?.id || '';
     if (!jobId && wtn.job) {
@@ -392,6 +398,7 @@ export default function WasteTransferNotesPage() {
       if (itemsErr) throw itemsErr;
 
       await saveWtnPhotos(wtn.id);
+      await saveSharedCustomerIds('wtn', wtn.id, createForm.customer_id, sharedCustomerIds);
 
       toast.success(`WTN ${wtnNumber} created successfully`);
       setShowCreateModal(false);
@@ -442,6 +449,7 @@ export default function WasteTransferNotesPage() {
       // Replace photo attachments
       await supabase.from('mw_wtn_photos').delete().eq('wtn_id', editingWtn.id);
       await saveWtnPhotos(editingWtn.id);
+      await saveSharedCustomerIds('wtn', editingWtn.id, createForm.customer_id, sharedCustomerIds);
 
       toast.success('WTN updated successfully');
       setShowCreateModal(false);
@@ -604,6 +612,14 @@ export default function WasteTransferNotesPage() {
                   {customers.map(c => <option key={c.id} value={c.id}>{c.company_name || c.contact_name} ({c.customer_number})</option>)}
                 </select>
               </div>
+              {createForm.customer_id && (
+                <SharedCustomersPicker
+                  customers={customers}
+                  primaryCustomerId={createForm.customer_id}
+                  value={sharedCustomerIds}
+                  onChange={setSharedCustomerIds}
+                />
+              )}
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Collection Date</label>

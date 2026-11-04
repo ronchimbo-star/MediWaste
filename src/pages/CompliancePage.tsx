@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
+import { fetchLinkedDocumentIds } from '../lib/documentCustomerLinks';
 import CertificatePreview from '../components/certificates/CertificatePreview';
 import { useSiteSettings } from '../hooks/useSiteSettings';
 import { downloadCertificateAsPDF } from '../utils/certificateDownload';
@@ -82,14 +83,32 @@ export default function CompliancePage() {
     },
   });
 
-  const { data: wasteNotes = [], error: wasteNotesError } = useQuery({
-    queryKey: ['compliance-wtns', cert?.customer_id],
-    enabled: !!cert?.customer_id,
+  const { data: linkedCustomersData } = useQuery({
+    queryKey: ['compliance-linked-customers', token],
+    enabled: !!token,
     queryFn: async () => {
+      const { data, error } = await supabase.rpc('get_certificate_customer_names', { p_token: token });
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const linkedCustomers = (linkedCustomersData ?? []) as { linked_customer_id: string; linked_company_name: string }[];
+  const linkedCustomerIds = Array.from(new Set([cert?.customer_id, ...linkedCustomers.map((c) => c.linked_customer_id)].filter((id): id is string => !!id)));
+  const sharedCustomerNames = linkedCustomers
+    .filter((c) => c.linked_customer_id !== cert?.customer_id && c.linked_company_name)
+    .map((c) => c.linked_company_name);
+
+  const { data: wasteNotes = [], error: wasteNotesError } = useQuery({
+    queryKey: ['compliance-wtns', token, linkedCustomerIds],
+    enabled: linkedCustomerIds.length > 0,
+    queryFn: async () => {
+      const ids = await fetchLinkedDocumentIds('wtn', linkedCustomerIds);
+      if (ids.length === 0) return [] as WasteTransferNote[];
       const { data, error } = await supabase
         .from('mw_waste_transfer_notes')
         .select('*')
-        .eq('customer_id', cert!.customer_id)
+        .in('id', ids)
         .order('issue_date', { ascending: false })
         .limit(50);
       if (error) throw error;
@@ -98,13 +117,15 @@ export default function CompliancePage() {
   });
 
   const { data: consignmentNotes = [] } = useQuery({
-    queryKey: ['compliance-hwcns', cert?.customer_id],
-    enabled: !!cert?.customer_id,
+    queryKey: ['compliance-hwcns', token, linkedCustomerIds],
+    enabled: linkedCustomerIds.length > 0,
     queryFn: async () => {
+      const ids = await fetchLinkedDocumentIds('hwcn', linkedCustomerIds);
+      if (ids.length === 0) return [] as any[];
       const { data, error } = await supabase
         .from('mw_hw_consignment_notes')
         .select('id, hwcn_number, issue_date, collection_date, consignee_return_status, consignee_return_date, consignee_return_reference, consignee_return_document_url, consignee_name')
-        .eq('customer_id', cert!.customer_id)
+        .in('id', ids)
         .order('issue_date', { ascending: false })
         .limit(50);
       if (error) throw error;
@@ -289,6 +310,14 @@ export default function CompliancePage() {
                 </div>
                 <div className="space-y-2.5 text-sm">
                   <p className="font-semibold text-gray-900 text-base">{customer.company_name}</p>
+                  {sharedCustomerNames.length > 0 && (
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1">Also covered by this certificate</p>
+                      <ul className="space-y-0.5 text-gray-600">
+                        {sharedCustomerNames.map((name) => <li key={name}>{name}</li>)}
+                      </ul>
+                    </div>
+                  )}
                   {customer.contact_name && (
                     <p className="text-gray-600">{customer.contact_name}</p>
                   )}

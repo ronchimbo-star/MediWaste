@@ -6,6 +6,8 @@ import AdminLayout from '../../components/admin/AdminLayout';
 import CertificatePreview from '../../components/certificates/CertificatePreview';
 import { Save, Eye, Plus, Trash2, ChevronLeft } from 'lucide-react';
 import { useToastContext } from '../../contexts/ToastContext';
+import SharedCustomersPicker from '../../components/documents/SharedCustomersPicker';
+import { fetchAdditionalCustomerIds, saveSharedCustomerIds } from '../../lib/documentCustomerLinks';
 
 interface CertificateSettings {
   id: string;
@@ -41,6 +43,7 @@ export default function CertificateEditPage() {
   const { toast } = useToastContext();
   const [showPreview, setShowPreview] = useState(false);
   const [newWasteType, setNewWasteType] = useState('');
+  const [sharedCustomerIds, setSharedCustomerIds] = useState<string[]>([]);
 
   const [form, setForm] = useState<FormState>({
     customer_id: '',
@@ -90,6 +93,16 @@ export default function CertificateEditPage() {
     },
   });
 
+  const { data: existingSharedIds } = useQuery({
+    queryKey: ['certificate-shared-customers', id],
+    enabled: isEdit && !!existingCert,
+    queryFn: () => fetchAdditionalCustomerIds('certificate', id!, existingCert!.customer_id || ''),
+  });
+
+  useEffect(() => {
+    if (existingSharedIds) setSharedCustomerIds(existingSharedIds);
+  }, [existingSharedIds]);
+
   useEffect(() => {
     if (existingCert) {
       setForm({
@@ -130,6 +143,7 @@ export default function CertificateEditPage() {
         updated_at: new Date().toISOString(),
       };
 
+      let certificateId = id;
       if (isEdit) {
         const { error } = await supabase
           .from('mw_certificates')
@@ -138,15 +152,18 @@ export default function CertificateEditPage() {
         if (error) throw error;
       } else {
         const token = `${Date.now()}-${Math.random().toString(36).substring(2, 13)}`;
-        const { error } = await supabase.from('mw_certificates').insert({
+        const { data: created, error } = await supabase.from('mw_certificates').insert({
           ...payload,
           qr_code_token: token,
-        });
-        if (error) throw error;
+        }).select('id').single();
+        if (error || !created) throw error || new Error('Certificate insert failed');
+        certificateId = created.id;
       }
+      await saveSharedCustomerIds('certificate', certificateId!, form.customer_id, sharedCustomerIds);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-certificates'] });
+      queryClient.invalidateQueries({ queryKey: ['certificate-shared-customers'] });
       toast.success(isEdit ? 'Certificate updated' : 'Certificate created');
       navigate('/admin/certificates');
     },
@@ -251,6 +268,14 @@ export default function CertificateEditPage() {
                   ))}
                 </select>
               </div>
+              {form.customer_id && (
+                <SharedCustomersPicker
+                  customers={customers}
+                  primaryCustomerId={form.customer_id}
+                  value={sharedCustomerIds}
+                  onChange={setSharedCustomerIds}
+                />
+              )}
               {selectedCustomer && (
                 <div className="bg-gray-50 rounded-lg p-3 text-sm space-y-1">
                   <p className="font-medium text-gray-900">{selectedCustomer.company_name}</p>

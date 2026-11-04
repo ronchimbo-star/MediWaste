@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
+import SharedCustomersPicker from '../../components/documents/SharedCustomersPicker';
+import { fetchAdditionalCustomerIds, saveSharedCustomerIds } from '../../lib/documentCustomerLinks';
 import { Plus, Download, Eye, X, Pencil, Camera, CheckSquare, Square, AlertTriangle, CheckCircle, Upload, Mail, Send, Clock } from 'lucide-react';
 import { useToastContext } from '../../contexts/ToastContext';
 import AdminLayout from '../../components/admin/AdminLayout';
@@ -193,6 +195,7 @@ export default function HazardousWasteConsignmentNotesPage() {
   const [selectedHwcn, setSelectedHwcn] = useState<ConsignmentNote | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingHwcn, setEditingHwcn] = useState<ConsignmentNote | null>(null);
+  const [sharedCustomerIds, setSharedCustomerIds] = useState<string[]>([]);
   const [createForm, setCreateForm] = useState({ ...emptyCreateForm });
   const [lineItems, setLineItems] = useState<HwcnLineItem[]>([emptyLineItem()]);
   const [createLoading, setCreateLoading] = useState(false);
@@ -320,6 +323,7 @@ export default function HazardousWasteConsignmentNotesPage() {
     setJobs(jobRes.data || []);
     setCarriers(carrierRes.data || []);
     setEditingHwcn(null);
+    setSharedCustomerIds([]);
     setCreateForm({ ...emptyCreateForm });
     setLineItems([emptyLineItem()]);
     setJobPhotos([]);
@@ -343,6 +347,8 @@ export default function HazardousWasteConsignmentNotesPage() {
       const found = (jobRes.data || []).find((j: any) => j.job_number === hwcn.job?.job_number);
       if (found) jobId = found.id;
     }
+
+    setSharedCustomerIds(await fetchAdditionalCustomerIds('hwcn', hwcn.id, hwcn.customer.id));
 
     setCreateForm({
       customer_id: hwcn.customer.id,
@@ -471,6 +477,7 @@ export default function HazardousWasteConsignmentNotesPage() {
       if (itemsErr) throw itemsErr;
 
       await saveHwcnPhotos(hwcn.id);
+      await saveSharedCustomerIds('hwcn', hwcn.id, createForm.customer_id, sharedCustomerIds);
       toast.success(`HWCN ${hwcnNumber} created successfully`);
       setShowCreateModal(false);
       fetchHwcns();
@@ -531,6 +538,7 @@ export default function HazardousWasteConsignmentNotesPage() {
 
       await supabase.from('mw_hwcn_photos').delete().eq('hwcn_id', editingHwcn.id);
       await saveHwcnPhotos(editingHwcn.id);
+      await saveSharedCustomerIds('hwcn', editingHwcn.id, createForm.customer_id, sharedCustomerIds);
 
       toast.success('HWCN updated successfully');
       setShowCreateModal(false);
@@ -718,6 +726,14 @@ export default function HazardousWasteConsignmentNotesPage() {
                   {customers.map(c => <option key={c.id} value={c.id}>{c.company_name || c.contact_name} ({c.customer_number})</option>)}
                 </select>
               </div>
+              {createForm.customer_id && (
+                <SharedCustomersPicker
+                  customers={customers}
+                  primaryCustomerId={createForm.customer_id}
+                  value={sharedCustomerIds}
+                  onChange={setSharedCustomerIds}
+                />
+              )}
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Collection Date</label>
