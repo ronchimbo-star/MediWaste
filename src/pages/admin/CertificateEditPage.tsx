@@ -193,6 +193,9 @@ export default function CertificateEditPage() {
     certificate_number: existingCert?.certificate_number || 'CERT-PREVIEW',
     qr_code_token: existingCert?.qr_code_token || 'preview',
     customer_name: selectedCustomer?.company_name || 'Customer Name',
+    additional_customer_names: customers
+      .filter((c) => sharedCustomerIds.includes(c.id) && c.id !== form.customer_id)
+      .map((c) => c.company_name),
     issue_date: form.issue_date,
     expiry_date: form.expiry_date,
     waste_types_covered: form.waste_types_covered,

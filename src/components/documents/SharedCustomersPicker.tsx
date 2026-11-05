@@ -56,7 +56,7 @@ export default function SharedCustomersPicker({ customers, primaryCustomerId, va
           <option key={c.id} value={c.id}>{c.company_name}</option>
         ))}
       </select>
-      <p className="text-xs text-gray-500">Linked customers see this document in their own portal.</p>
+      <p className="text-xs text-gray-500">Linked customers see this document under the same link and in their own customer portal.</p>
     </div>
   );
 }

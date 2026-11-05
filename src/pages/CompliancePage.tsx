@@ -180,6 +180,7 @@ export default function CompliancePage() {
     certificate_number: cert.certificate_number,
     qr_code_token: cert.qr_code_token,
     customer_name: customer?.company_name || '—',
+    additional_customer_names: sharedCustomerNames,
     issue_date: cert.issue_date,
     expiry_date: cert.expiry_date,
     waste_types_covered: cert.waste_types_covered || [],

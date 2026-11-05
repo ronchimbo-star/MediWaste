@@ -4,6 +4,7 @@ interface CertificateData {
   certificate_number: string;
   qr_code_token: string;
   customer_name: string;
+  additional_customer_names?: string[];
   issue_date: string;
   expiry_date: string;
   waste_types_covered: string[];
@@ -154,6 +155,12 @@ export default function CertificatePreview({ data, settings, forDownload = false
           >
             {data.customer_name}
           </p>
+          {(data.additional_customer_names ?? []).map((name) => (
+            <div key={name}>
+              <p style={{ fontSize: '16px', fontWeight: 'bold', fontFamily: 'Arial, sans-serif', color: '#555', margin: '6px 0' }}>AND</p>
+              <p style={{ fontSize: '24px', fontWeight: 'bold', fontFamily: 'Arial, sans-serif', color: '#111', margin: 0 }}>{name}</p>
+            </div>
+          ))}
         </div>
 
         <div style={{ marginBottom: '18px', fontFamily: 'Arial, sans-serif', fontSize: '14px', color: '#333' }}>

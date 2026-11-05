@@ -70,6 +70,16 @@ export default function CertificatePreviewPage() {
     );
   }
 
+  const { data: linkedCustomers = [] } = useQuery({
+    queryKey: ['certificate-linked-customers', cert?.qr_code_token],
+    enabled: !!cert?.qr_code_token,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('get_certificate_customer_names', { p_token: cert!.qr_code_token });
+      if (error) throw error;
+      return (data ?? []) as { linked_customer_id: string; linked_company_name: string }[];
+    },
+  });
+
   if (!cert) {
     return (
       <AdminLayout pageTitle="Certificate Preview">
@@ -82,6 +92,9 @@ export default function CertificatePreviewPage() {
     certificate_number: cert.certificate_number,
     qr_code_token: cert.qr_code_token,
     customer_name: cert.mw_customers?.company_name || '—',
+    additional_customer_names: linkedCustomers
+      .filter((c) => c.linked_customer_id !== cert.customer_id && c.linked_company_name)
+      .map((c) => c.linked_company_name),
     issue_date: cert.issue_date,
     expiry_date: cert.expiry_date,
     waste_types_covered: cert.waste_types_covered || [],
