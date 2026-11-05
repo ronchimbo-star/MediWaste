@@ -75,7 +75,7 @@ export default function CertificatesPage() {
   const [notifyAction, setNotifyAction] = useState<NotifyAction>(null);
   const [notifySending, setNotifySending] = useState(false);
 
-  const { data: certificates = [], isLoading } = useQuery({
+  const { data: certificates = [], isLoading, error: certificatesError } = useQuery({
     queryKey: ['admin-certificates'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -259,6 +259,11 @@ export default function CertificatesPage() {
 
           {isLoading ? (
             <div className="p-12 text-center text-gray-400 text-sm">Loading certificates...</div>
+          ) : certificatesError ? (
+            <div className="p-12 text-center">
+              <p className="text-red-600 text-sm font-medium">Certificates could not be loaded.</p>
+              <p className="text-gray-500 text-xs mt-1 break-words">{certificatesError.message}</p>
+            </div>
           ) : filtered.length === 0 ? (
             <div className="p-12 text-center">
               <Award size={40} className="mx-auto text-gray-300 mb-3" />
