@@ -40,6 +40,8 @@ export async function renderElementToPDF(opts: PdfOptions): Promise<void> {
   clone.style.width = `${el.scrollWidth}px`;
   clone.style.maxWidth = 'none';
   clone.style.boxSizing = 'border-box';
+  clone.style.border = 'none';
+  clone.style.borderRadius = '0';
 
   clone.querySelectorAll('img').forEach((img) => {
     (img as HTMLImageElement).style.maxWidth = '100%';

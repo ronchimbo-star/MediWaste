@@ -367,14 +367,6 @@ export default function CompliancePage() {
                   <button
                     onClick={handleDownload}
                     disabled={downloading}
-                    className="flex items-center gap-1.5 text-xs border border-gray-200 bg-white hover:bg-gray-50 text-gray-600 px-2.5 py-1.5 rounded-lg transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-                  >
-                    {downloading ? <Loader size={12} className="animate-spin" /> : <Download size={12} />}
-                    PNG
-                  </button>
-                  <button
-                    onClick={handleDownload}
-                    disabled={downloading}
                     className="flex items-center gap-1.5 text-xs bg-red-600 hover:bg-red-700 text-white px-2.5 py-1.5 rounded-lg transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                   >
                     {downloading ? <Loader size={12} className="animate-spin" /> : <Download size={12} />}

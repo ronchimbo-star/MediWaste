@@ -4,8 +4,8 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../../lib/supabase';
 import AdminLayout from '../../components/admin/AdminLayout';
 import CertificatePreview from '../../components/certificates/CertificatePreview';
-import { FileEdit as Edit, ChevronLeft, ExternalLink, Loader, Image, FileText } from 'lucide-react';
-import { downloadCertificateAsPDF, downloadCertificateAsPNG, imageToDataUrl } from '../../utils/certificateDownload';
+import { FileEdit as Edit, ChevronLeft, ExternalLink, Loader, FileText } from 'lucide-react';
+import { downloadCertificateAsPDF, imageToDataUrl } from '../../utils/certificateDownload';
 
 export default function CertificatePreviewPage() {
   const { id } = useParams<{ id: string }>();
@@ -15,7 +15,7 @@ export default function CertificatePreviewPage() {
   const [signatureDataUrl, setSignatureDataUrl] = useState<string>('');
   const [whiteLogoDataUrl, setWhiteLogoDataUrl] = useState<string>('');
   const [imagesReady, setImagesReady] = useState(false);
-  const [downloading, setDownloading] = useState<'png' | 'pdf' | null>(null);
+  const [downloading, setDownloading] = useState<'pdf' | null>(null);
 
   const { data: cert, isLoading: certLoading } = useQuery({
     queryKey: ['certificate', id],
@@ -104,15 +104,6 @@ export default function CertificatePreviewPage() {
     certification_statement: cert.certification_statement || settings?.default_certification_statement || '',
   };
 
-  const handleDownloadPNG = async () => {
-    setDownloading('png');
-    try {
-      await downloadCertificateAsPNG(cert.certificate_number);
-    } finally {
-      setDownloading(null);
-    }
-  };
-
   const handleDownloadPDF = async () => {
     setDownloading('pdf');
     try {
@@ -164,14 +155,6 @@ export default function CertificatePreviewPage() {
             >
               {downloading === 'pdf' ? <Loader size={15} className="animate-spin" /> : <FileText size={15} />}
               {downloading === 'pdf' ? 'Preparing...' : 'PDF'}
-            </button>
-            <button
-              onClick={handleDownloadPNG}
-              disabled={!!downloading || !imagesReady}
-              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {downloading === 'png' ? <Loader size={15} className="animate-spin" /> : <Image size={15} />}
-              {downloading === 'png' ? 'Preparing...' : 'Download PNG'}
             </button>
           </div>
         </div>

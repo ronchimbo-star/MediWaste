@@ -92,11 +92,3 @@ export async function downloadCertificateAsPDF(certNumber: string): Promise<void
   pdf.addImage(imgData, 'PNG', 0, y, w, h);
   pdf.save(`certificate-${certNumber}.pdf`);
 }
-
-export async function downloadCertificateAsPNG(certNumber: string): Promise<void> {
-  const canvas = await renderToCanvas(3);
-  const link = document.createElement('a');
-  link.download = `certificate-${certNumber}.png`;
-  link.href = canvas.toDataURL('image/png');
-  link.click();
-}
