@@ -49,6 +49,10 @@
       "hasChanged": false,
       "hash": "455881296cc52fa8d2d1c09cc4ed3940fbd7132588253ad8d63efae139bb3886"
     },
+    "process-email-queue": {
+      "hasChanged": false,
+      "hash": "2275c47bf53c6f6bbf0488b4fe3c62fb94603ebabbdd4d24868e9e5537120db8"
+    },
     "reset-financial-pin": {
       "hasChanged": false,
       "hash": "11a8b8c0e0559c742adff166077b6a8bce6dcbc6eb3413d0d1826d260fb9e4c5"
@@ -125,9 +129,9 @@
       "hasChanged": false,
       "hash": "7a3ac45b1bf0f86e753eadfce6467403415e2e00d1d959ce21aebb9d3312e4b7"
     },
-    "process-email-queue": {
+    "calculate-quote": {
       "hasChanged": false,
-      "hash": "2275c47bf53c6f6bbf0488b4fe3c62fb94603ebabbdd4d24868e9e5537120db8"
+      "hash": "7f6cf0f7e6d58c3aa5a22584cb24dd8d2cd782df4ad78a76fecce6a7137d09a8"
     }
   }
 }

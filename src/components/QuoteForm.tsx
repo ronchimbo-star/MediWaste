@@ -9,10 +9,33 @@ interface Product {
   size: string;
 }
 
+type PriceNotice = { kind: 'priced'; totalPence: number } | { kind: 'message'; message: string };
+
+async function fetchPriceNotice(postcode: string, serviceLabel: string, quoteRequestId: string): Promise<PriceNotice | null> {
+  try {
+    const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/calculate-quote`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ postcode, serviceLabel, quoteRequestId }),
+    });
+    const data = await response.json();
+    if (data?.status === 'priced' && Number.isInteger(data.totalPence)) {
+      return { kind: 'priced', totalPence: data.totalPence };
+    }
+    if (typeof data?.message === 'string') return { kind: 'message', message: data.message };
+    if (typeof data?.error === 'string') return { kind: 'message', message: data.error };
+    return null;
+  } catch (err) {
+    console.error('Price estimate failed:', err);
+    return null;
+  }
+}
+
 export default function QuoteForm() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
+  const [priceNotice, setPriceNotice] = useState<PriceNotice | null>(null);
 
   const [formData, setFormData] = useState({
     businessName: '',
@@ -82,9 +105,12 @@ export default function QuoteForm() {
     e.preventDefault();
     setLoading(true);
     setError('');
+    setPriceNotice(null);
 
     try {
+      const quoteRequestId = crypto.randomUUID();
       const submissionData = {
+        id: quoteRequestId,
         business_name: formData.businessName,
         contact_name: formData.contactName,
         email: formData.email,
@@ -120,6 +146,9 @@ export default function QuoteForm() {
         console.error('Failed to send email notification:', emailErr);
       }
 
+      const notice = await fetchPriceNotice(formData.postcode, formData.serviceType, quoteRequestId);
+      setPriceNotice(notice);
+
       window.scrollTo({ top: 0, behavior: 'smooth' });
       setSuccess(true);
       setFormData({
@@ -150,8 +179,21 @@ export default function QuoteForm() {
           <p className="text-gray-600 mb-6">
             Thank you for your quote request. Our team will review your requirements and get back to you within 24 hours with a personalized quote.
           </p>
+          {priceNotice?.kind === 'priced' && (
+            <div className="mb-6 rounded-lg border border-gray-200 bg-gray-50 p-4">
+              <p className="text-sm text-gray-600">Estimated price</p>
+              <p className="text-2xl font-bold text-gray-900">£{(priceNotice.totalPence / 100).toFixed(2)}</p>
+              <p className="mt-1 text-sm text-gray-500">We will confirm the final price with you before any collection is booked.</p>
+            </div>
+          )}
+          {priceNotice?.kind === 'message' && (
+            <p className="mb-6 text-gray-600">{priceNotice.message}</p>
+          )}
           <button
-            onClick={() => setSuccess(false)}
+            onClick={() => {
+              setSuccess(false);
+              setPriceNotice(null);
+            }}
             className="text-red-600 hover:text-red-700 font-semibold"
           >
             Submit Another Quote Request
