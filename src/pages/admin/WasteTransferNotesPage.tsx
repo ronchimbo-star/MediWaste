@@ -204,7 +204,7 @@ export default function WasteTransferNotesPage() {
         .select(`
           *,
           job:mw_service_jobs(id, job_number, service_type),
-          customer:mw_customers!inner(${CUSTOMER_SELECT}),
+          customer:mw_customers!mw_waste_transfer_notes_customer_id_fkey!inner(${CUSTOMER_SELECT}),
           carrier:mw_waste_carriers(id, name, address, registration_number, registration_type, registration_valid_until),
           mw_wtn_line_items(*),
           mw_wtn_photos(id, photo_id, job_photo:mw_job_photos(id, photo_url, caption))

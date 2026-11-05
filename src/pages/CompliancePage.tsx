@@ -585,7 +585,7 @@ function HwcnDetailModal({ hwcnId, onClose }: HwcnDetailModalProps) {
           *,
           job:mw_service_jobs(id, job_number, service_type),
           carrier:mw_waste_carriers(id, name, address, registration_number, registration_type, registration_valid_until),
-          customer:mw_customers!inner(id, customer_number, company_name, contact_name, collection_address, postcode),
+          customer:mw_customers!mw_hw_consignment_notes_customer_id_fkey!inner(id, customer_number, company_name, contact_name, collection_address, postcode),
           mw_hwcn_line_items(*),
           mw_hwcn_photos(id, photo_id, job_photo:mw_job_photos(id, photo_url, caption))
         `)
@@ -889,7 +889,7 @@ function WtnDetailModal({ wtnId, onClose }: WtnDetailModalProps) {
           *,
           job:mw_service_jobs(id, job_number, service_type),
           carrier:mw_waste_carriers(id, name, address, registration_number, registration_type, registration_valid_until),
-          customer:mw_customers!inner(id, customer_number, company_name, contact_name, collection_address, billing_address, postcode),
+          customer:mw_customers!mw_waste_transfer_notes_customer_id_fkey!inner(id, customer_number, company_name, contact_name, collection_address, billing_address, postcode),
           mw_wtn_line_items(*),
           mw_wtn_photos(id, photo_id, job_photo:mw_job_photos(id, photo_url, caption))
         `)
