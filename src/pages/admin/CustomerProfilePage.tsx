@@ -6,6 +6,7 @@ import { useToastContext } from '../../contexts/ToastContext';
 import { Plus, FileEdit as Edit2, Trash2, CheckCircle, Phone, Mail, MapPin, Building, X, ChevronDown, ChevronUp, Bell, Inbox, Send as SendIcon, RefreshCw } from 'lucide-react';
 import AdminLayout from '../../components/admin/AdminLayout';
 import NotesPanel from '../../components/admin/NotesPanel';
+import V2AccessToggle from '../../components/admin/V2AccessToggle';
 
 type ServiceStatus = 'active' | 'paused' | 'cancelled';
 type PaymentStatus = 'pending' | 'paid' | 'overdue' | 'cancelled';
@@ -443,6 +444,7 @@ export default function CustomerProfilePage() {
         </div>
 
       <div className="container mx-auto px-4 py-6">
+        <V2AccessToggle customerId={customer.id} enabled={customer.v2_enabled === true} />
         <div className="mb-6">
           <div className="flex items-start gap-4">
             <div className="w-14 h-14 bg-orange-100 rounded-xl flex items-center justify-center flex-shrink-0">

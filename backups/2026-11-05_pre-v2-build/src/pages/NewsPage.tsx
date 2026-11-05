@@ -1,0 +1,228 @@
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { Calendar, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '../lib/supabase';
+import Header from '../components/Header';
+import Footer from '../components/Footer';
+import SEO from '../components/SEO';
+
+interface NewsCategory {
+  id: string;
+  slug: string;
+  name: string;
+}
+
+interface NewsArticle {
+  id: string;
+  title: string;
+  slug: string;
+  excerpt: string;
+  featured_image: string;
+  published_at: string;
+  tags: string[];
+}
+
+const PAGE_SIZE = 12;
+
+interface NewsArticlesPage {
+  articles: NewsArticle[];
+  total: number;
+}
+
+function ArticleSkeleton() {
+  return (
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden animate-pulse">
+      <div className="aspect-video bg-gray-200" />
+      <div className="p-6">
+        <div className="h-4 bg-gray-200 rounded w-1/3 mb-3" />
+        <div className="h-6 bg-gray-200 rounded w-full mb-2" />
+        <div className="h-6 bg-gray-200 rounded w-4/5 mb-4" />
+        <div className="h-4 bg-gray-200 rounded w-full mb-2" />
+        <div className="h-4 bg-gray-200 rounded w-3/4" />
+      </div>
+    </div>
+  );
+}
+
+function formatDate(dateString: string | null | undefined) {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return '';
+  return date.toLocaleDateString('en-GB', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+}
+
+export default function NewsPage() {
+  const [page, setPage] = useState(1);
+  const { data: categories = [] } = useQuery<NewsCategory[]>({
+    queryKey: ['public-news-categories'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('news_categories')
+        .select('id, slug, name')
+        .order('name', { ascending: true });
+      if (error) throw error;
+      return data || [];
+    },
+    staleTime: 10 * 60 * 1000,
+  });
+
+  const { data, isLoading } = useQuery<NewsArticlesPage>({
+    queryKey: ['public-news-articles', page],
+    queryFn: async () => {
+      const from = (page - 1) * PAGE_SIZE;
+      const to = from + PAGE_SIZE - 1;
+      const { data: rows, error, count } = await supabase
+        .from('news_articles')
+        .select('id, title, slug, excerpt, featured_image, published_at, tags', { count: 'exact' })
+        .eq('status', 'published')
+        .order('published_at', { ascending: false })
+        .range(from, to);
+      if (error) throw error;
+      return { articles: rows || [], total: count ?? 0 };
+    },
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+  });
+
+  const articles = data?.articles ?? [];
+  const totalPages = Math.max(1, Math.ceil((data?.total ?? 0) / PAGE_SIZE));
+
+  const goToPage = (next: number) => {
+    setPage(next);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  return (
+    <div className="min-h-screen bg-white">
+      <SEO
+        title="News & Updates | MediWaste Clinical Waste Disposal"
+        description="Stay updated with the latest news, regulations, and insights on clinical waste management from MediWaste. Expert guidance for healthcare facilities."
+        canonical="https://mediwaste.co.uk/news/"
+        schema={{
+          '@context': 'https://schema.org',
+          '@type': 'Blog',
+          name: 'MediWaste News & Updates',
+          url: 'https://mediwaste.co.uk/news',
+          publisher: {
+            '@type': 'Organization',
+            name: 'MediWaste',
+            url: 'https://mediwaste.co.uk'
+          },
+          description: 'Latest news, regulations and insights on clinical waste management from MediWaste.'
+        }}
+      />
+      <Header />
+
+      <div className="bg-red-600 text-white py-16">
+        <div className="container mx-auto px-4 text-center">
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">News & Updates</h1>
+          <p className="text-lg opacity-95 max-w-2xl mx-auto">
+            Stay informed about the latest in clinical waste management, regulations, and industry insights.
+          </p>
+        </div>
+      </div>
+
+      <div className="container mx-auto px-4 py-16">
+        {categories.length > 0 && (
+          <nav aria-label="News categories" className="mb-10 flex flex-wrap gap-3">
+            {categories.map((category) => (
+              <Link key={category.id} to={`/news/category/${category.slug}/`} className="rounded-full border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 hover:border-red-300 hover:text-red-600 transition-colors">
+                {category.name}
+              </Link>
+            ))}
+          </nav>
+        )}
+        {isLoading ? (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {Array.from({ length: 6 }).map((_, i) => <ArticleSkeleton key={i} />)}
+          </div>
+        ) : articles.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-gray-600 text-lg">No articles available at the moment. Check back soon!</p>
+          </div>
+        ) : (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {articles.map((article) => (
+              <Link
+                key={article.id}
+                to={`/news/${article.slug}`}
+                className="group bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow"
+              >
+                {article.featured_image && (
+                  <div className="aspect-video overflow-hidden">
+                    <img
+                      src={article.featured_image}
+                      alt={article.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </div>
+                )}
+                <div className="p-6">
+                  <div className="flex items-center gap-2 text-sm text-gray-500 mb-3">
+                    {formatDate(article.published_at) && (
+                      <>
+                        <Calendar className="w-4 h-4" />
+                        <span>{formatDate(article.published_at)}</span>
+                      </>
+                    )}
+                    {article.tags && article.tags.length > 0 && (
+                      <>
+                        <span>•</span>
+                        <span className="text-red-600 font-medium">{article.tags[0]}</span>
+                      </>
+                    )}
+                  </div>
+                  <h2 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-red-600 transition-colors">
+                    {article.title}
+                  </h2>
+                  <p className="text-gray-600 mb-4 line-clamp-3">
+                    {article.excerpt}
+                  </p>
+                  <div className="flex items-center text-red-600 font-semibold">
+                    Read More
+                    <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
+
+        {totalPages > 1 && (
+          <nav aria-label="News pagination" className="mt-12 flex items-center justify-center gap-4">
+            <button
+              type="button"
+              onClick={() => goToPage(page - 1)}
+              disabled={page <= 1}
+              className="inline-flex items-center gap-1 rounded-full border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 hover:border-red-300 hover:text-red-600 transition-colors disabled:opacity-40 disabled:pointer-events-none"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              Previous
+            </button>
+            <span className="text-sm text-gray-600">
+              Page {page} of {totalPages}
+            </span>
+            <button
+              type="button"
+              onClick={() => goToPage(page + 1)}
+              disabled={page >= totalPages}
+              className="inline-flex items-center gap-1 rounded-full border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 hover:border-red-300 hover:text-red-600 transition-colors disabled:opacity-40 disabled:pointer-events-none"
+            >
+              Next
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </nav>
+        )}
+      </div>
+
+      <Footer />
+    </div>
+  );
+}

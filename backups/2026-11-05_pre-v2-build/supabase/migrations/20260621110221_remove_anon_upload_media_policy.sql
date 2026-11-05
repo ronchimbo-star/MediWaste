@@ -1,0 +1,1 @@
+DROP POLICY IF EXISTS "anon_can_insert_media" ON storage.objects;

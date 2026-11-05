@@ -1,0 +1,92 @@
+import { Helmet } from 'react-helmet-async';
+import { useSiteSettings } from '../hooks/useSiteSettings';
+
+interface SEOProps {
+  title?: string;
+  description?: string;
+  canonical: string;
+  schema?: object | object[];
+  image?: string;
+  ogImage?: string;
+  keywords?: string;
+  noindex?: boolean;
+  type?: string;
+  markdownSlug?: string;
+}
+
+const DEFAULT_OG_IMAGE = 'https://mediwaste.co.uk/Medical-Waste-Hero.jpg';
+
+function truncateDescription(desc: string): string {
+  if (desc.length <= 160) return desc;
+  const truncated = desc.slice(0, 159);
+  const lastSpace = truncated.lastIndexOf(' ');
+  return (lastSpace > 120 ? truncated.slice(0, lastSpace) : truncated) + '\u2026';
+}
+
+function withTrailingSlash(url: string): string {
+  if (!url) return url;
+  if (url.endsWith('/')) return url;
+  if (/\.[a-z0-9]+$/i.test(url.split('?')[0])) return url;
+  return url + '/';
+}
+
+export default function SEO({
+  title,
+  description,
+  canonical,
+  schema,
+  image,
+  ogImage,
+  keywords,
+  noindex,
+  type = 'website',
+  markdownSlug,
+}: SEOProps) {
+  const { settings } = useSiteSettings();
+
+  const resolvedTitle = title || settings?.site_title || 'MediWaste';
+  const resolvedDescription = description || settings?.default_meta_description || '';
+  const resolvedKeywords = keywords || settings?.default_meta_keywords || '';
+  const resolvedImage = ogImage || image || DEFAULT_OG_IMAGE;
+  const safeDescription = resolvedDescription ? truncateDescription(resolvedDescription) : '';
+  const canon = withTrailingSlash(canonical);
+  const schemas = schema ? (Array.isArray(schema) ? schema : [schema]) : [];
+
+  return (
+    <Helmet>
+      <title data-rh="true">{resolvedTitle}</title>
+      {safeDescription && <meta name="description" content={safeDescription} />}
+      {resolvedKeywords && <meta name="keywords" content={resolvedKeywords} />}
+      {noindex ? (
+        <meta name="robots" content="noindex,nofollow" />
+      ) : (
+        <meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1" />
+      )}
+      <link rel="canonical" href={canon} />
+      <link rel="alternate" type="text/markdown" href="https://mediwaste.co.uk/llms.txt" />
+      {markdownSlug && <link rel="alternate" type="text/markdown" href={`https://mediwaste.co.uk/llms/${markdownSlug}`} title={resolvedTitle} />}
+
+      <meta property="og:site_name" content="MediWaste" />
+      <meta property="og:type" content={type} />
+      <meta property="og:url" content={canon} />
+      <meta property="og:title" content={resolvedTitle} />
+      {safeDescription && <meta property="og:description" content={safeDescription} />}
+      <meta property="og:image" content={resolvedImage} />
+      <meta property="og:image:width" content="1200" />
+      <meta property="og:image:height" content="630" />
+      <meta property="og:locale" content="en_GB" />
+
+      <meta name="twitter:card" content="summary_large_image" />
+      <meta name="twitter:site" content="@mediwaste" />
+      <meta name="twitter:title" content={resolvedTitle} />
+      {safeDescription && <meta name="twitter:description" content={safeDescription} />}
+      <meta name="twitter:image" content={resolvedImage} />
+
+      {schemas.map((s, i) => (
+        <script key={i} type="application/ld+json">
+          {JSON.stringify(s)}
+        </script>
+      ))}
+    </Helmet>
+  );
+}

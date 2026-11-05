@@ -88,6 +88,8 @@ const AiQuoteDraftsPage = lazyWithRetry(() => import('./pages/admin/AiQuoteDraft
 const AiCustomerDraftsPage = lazyWithRetry(() => import('./pages/admin/AiCustomerDraftsPage'));
 const WasteAuditsPage = lazyWithRetry(() => import('./pages/admin/WasteAuditsPage'));
 const WasteAuditEditPage = lazyWithRetry(() => import('./pages/admin/WasteAuditEditPage'));
+const AuditLogPage = lazyWithRetry(() => import('./pages/admin/AuditLogPage'));
+const EmailQueuePage = lazyWithRetry(() => import('./pages/admin/EmailQueuePage'));
 const PublicAuditView = lazyWithRetry(() => import('./pages/PublicAuditView'));
 const CertificatesPage = lazyWithRetry(() => import('./pages/admin/CertificatesPage'));
 const CertificateEditPage = lazyWithRetry(() => import('./pages/admin/CertificateEditPage'));
@@ -252,6 +254,8 @@ function App() {
           <Route path="/admin/ai-quote-drafts" element={<ProtectedRoute><AiQuoteDraftsPage /></ProtectedRoute>} />
           <Route path="/admin/ai-customer-setup" element={<ProtectedRoute><AiCustomerDraftsPage /></ProtectedRoute>} />
           <Route path="/admin/waste-audits" element={<ProtectedRoute><WasteAuditsPage /></ProtectedRoute>} />
+          <Route path="/admin/audit-log" element={<ProtectedRoute><AuditLogPage /></ProtectedRoute>} />
+          <Route path="/admin/email-queue" element={<ProtectedRoute><EmailQueuePage /></ProtectedRoute>} />
           <Route path="/admin/waste-audits/:id/edit" element={<ProtectedRoute><WasteAuditEditPage /></ProtectedRoute>} />
           <Route path="/admin/certificates" element={<ProtectedRoute><CertificatesPage /></ProtectedRoute>} />
           <Route path="/admin/certificates/create" element={<ProtectedRoute><CertificateEditPage /></ProtectedRoute>} />

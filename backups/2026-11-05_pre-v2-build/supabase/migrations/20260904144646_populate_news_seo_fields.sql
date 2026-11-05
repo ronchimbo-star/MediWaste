@@ -1,0 +1,75 @@
+-- Populate NULL seo_title and seo_description for all published news articles.
+-- seo_title: concise version of the article title, under 60 chars where possible.
+-- seo_description: trimmed version of the excerpt, under 160 chars.
+-- These fields are used by the prerender script and the React SEO component.
+
+UPDATE news_articles SET
+  seo_title = CASE
+    WHEN slug = 'what-size-sharps-bin-do-i-need-guide-for-aesthetic-tattoo-acupuncture' THEN 'Sharps Bin Size Guide | Aesthetic & Tattoo Clinics'
+    WHEN slug = 'pay-as-you-go-vs-monthly-clinical-waste-contracts-which-plan-is-right-for-you' THEN 'Pay-As-You-Go vs Monthly Waste Contracts'
+    WHEN slug = 'clinical-waste-colour-coding-guide-orange-yellow-purple-blue-bins' THEN 'Clinical Waste Colour Coding Guide | MediWaste'
+    WHEN slug = 'new-clinic-waste-compliance-guide-mediwaste' THEN 'New Clinic Waste Compliance Guide | MediWaste'
+    WHEN slug = 'clinical-waste-collection-for-nursing-homes' THEN 'Clinical Waste Collection for Nursing Homes'
+    WHEN slug = 'sustainable-dental-waste-management-reducing-orange-bag-usage' THEN 'Sustainable Dental Waste Management Tips'
+    WHEN slug = 'dental-waste-storage-on-site-cqc-requirements' THEN 'Dental Waste Storage: CQC Requirements'
+    WHEN slug = 'clinical-waste-segregation-common-mistakes-and-how-to-avoid-them' THEN 'Clinical Waste Segregation: Common Mistakes'
+    WHEN slug = 'healthcare-waste-management-aligning-with-nhs-net-zero-targets' THEN 'Healthcare Waste & NHS Net Zero Targets'
+    WHEN slug = 'new-tool-announcement-the-mediwaste-free-clinical-waste-audit' THEN 'Free Clinical Waste Audit Tool | MediWaste'
+    WHEN slug = 'clinical-waste-audit-the-complete-uk-guide-for-healthcare-facilities-mediwaste' THEN 'Clinical Waste Audit: Complete UK Guide'
+    WHEN slug = 'clinical-laboratory-waste-management' THEN 'Clinical Laboratory Waste Management'
+    WHEN slug = 'gp-clinical-waste-collection-contracts-what-to-negotiate' THEN 'GP Waste Collection Contracts: What to Negotiate'
+    WHEN slug = 'managing-pharmaceutical-waste-in-dental-practices-local-anaesthetics' THEN 'Pharmaceutical Waste in Dental Practices'
+    WHEN slug = 'how-often-should-dental-practices-schedule-clinical-waste-collection' THEN 'Dental Waste Collection Frequency Guide'
+    WHEN slug = 'pharmaceutical-waste-how-manufacturers-can-cut-disposal-costs' THEN 'Cutting Pharma Waste Disposal Costs'
+    WHEN slug = 'disposal-of-out-of-date-medicines-from-gp-cabinets' THEN 'Disposing of Out-of-Date Medicines | GP'
+    WHEN slug = 'cost-effective-clinical-waste-collection-for-rural-gp-practices' THEN 'Cost-Effective Waste Collection for Rural GPs'
+    WHEN slug = 'reducing-dental-clinical-waste-volume-practical-tips' THEN 'Reducing Dental Clinical Waste Volume'
+    WHEN slug = 'understanding-orange-clinical-waste-bags-for-dental-surgeries' THEN 'Orange Clinical Waste Bags for Dental'
+    WHEN slug = 'cost-effective-dental-waste-management-small-clinics' THEN 'Cost-Effective Dental Waste Management'
+    WHEN slug = 'sharps-disposal-dental-practices-best-practices-safety' THEN 'Sharps Disposal in Dental Practices'
+    WHEN slug = 'dental-amalgam-waste-disposal-legal-requirements-uk-dentists' THEN 'Dental Amalgam Disposal: UK Legal Requirements'
+    WHEN slug = 'healthcare-waste-compliance-uk-medical-facilities' THEN 'Healthcare Waste Compliance: UK Guide'
+    WHEN slug = 'medical-waste-management-best-practices-healthcare' THEN 'Medical Waste Management Best Practices'
+    WHEN slug = 'sharps-disposal-regulations-uk-compliance-guide' THEN 'Sharps Disposal Regulations: UK Guide'
+    WHEN slug = 'what-is-clinical-waste-complete-guide' THEN 'What is Clinical Waste? Complete Guide'
+    WHEN slug = 'safe-clinical-waste-storage-before-collection-guide' THEN 'Safe Clinical Waste Storage Guide'
+    WHEN slug = 'choosing-medical-waste-company-small-clinic-guide' THEN 'Choosing a Medical Waste Company | Guide'
+    WHEN slug = 'beauty-aesthetic-clinics-clinical-waste-management-guide' THEN 'Beauty Clinic Clinical Waste Guide'
+    ELSE seo_title
+  END,
+  seo_description = CASE
+    WHEN slug = 'what-size-sharps-bin-do-i-need-guide-for-aesthetic-tattoo-acupuncture' THEN 'Guide to sharps bin sizes from 0.2L to 24L for aesthetics, tattoo and acupuncture clinics. Stay compliant and save money with the right container.'
+    WHEN slug = 'pay-as-you-go-vs-monthly-clinical-waste-contracts-which-plan-is-right-for-you' THEN 'Pay-as-you-go or monthly contract? We compare costs and flexibility to help small clinics choose the right clinical waste collection plan.'
+    WHEN slug = 'clinical-waste-colour-coding-guide-orange-yellow-purple-blue-bins' THEN 'Simple guide to clinical waste colour coding. Learn what goes in orange, yellow, purple and blue bins for compliant segregation.'
+    WHEN slug = 'new-clinic-waste-compliance-guide-mediwaste' THEN 'Complete compliance guide for new clinics: colour coding, collection options and CQC inspection preparation. Start compliant from day one.'
+    WHEN slug = 'clinical-waste-collection-for-nursing-homes' THEN 'Clinical waste collection for nursing homes. Practical guidance on segregation, storage and compliant disposal for residential care settings.'
+    WHEN slug = 'sustainable-dental-waste-management-reducing-orange-bag-usage' THEN 'Practical strategies for dental practices to reduce orange bag waste, lower costs and improve sustainability without compromising compliance.'
+    WHEN slug = 'dental-waste-storage-on-site-cqc-requirements' THEN 'CQC requirements for on-site dental waste storage. Learn how to store sharps, amalgam and infectious waste compliantly between collections.'
+    WHEN slug = 'clinical-waste-segregation-common-mistakes-and-how-to-avoid-them' THEN 'Common clinical waste segregation mistakes and how to avoid them. Practical tips for correct colour-coded container use in healthcare settings.'
+    WHEN slug = 'healthcare-waste-management-aligning-with-nhs-net-zero-targets' THEN 'How healthcare facilities can align waste management with NHS Net Zero targets. Practical steps to reduce carbon footprint and stay compliant.'
+    WHEN slug = 'new-tool-announcement-the-mediwaste-free-clinical-waste-audit' THEN 'MediWaste launches a free clinical waste audit tool. Answer 15 questions and get an AI-generated compliance report with a prioritised action plan.'
+    WHEN slug = 'clinical-waste-audit-the-complete-uk-guide-for-healthcare-facilities-mediwaste' THEN 'Complete UK guide to clinical waste audits for healthcare facilities. Learn what to check, how to prepare and how to stay inspection-ready.'
+    WHEN slug = 'clinical-laboratory-waste-management' THEN 'Clinical laboratory waste management guide. Segregation, storage and compliant disposal of lab waste streams including cultures and specimens.'
+    WHEN slug = 'gp-clinical-waste-collection-contracts-what-to-negotiate' THEN 'What to negotiate in GP clinical waste collection contracts. Key terms on frequency, pricing, containers and documentation to secure the best deal.'
+    WHEN slug = 'managing-pharmaceutical-waste-in-dental-practices-local-anaesthetics' THEN 'Managing pharmaceutical waste in dental practices. Safe disposal of local anaesthetics, controlled drugs and expired medicines compliantly.'
+    WHEN slug = 'how-often-should-dental-practices-schedule-clinical-waste-collection' THEN 'How often should dental practices schedule waste collection? Guidance on frequency based on waste volume and regulatory requirements.'
+    WHEN slug = 'pharmaceutical-waste-how-manufacturers-can-cut-disposal-costs' THEN 'How pharmaceutical manufacturers can cut waste disposal costs through segregation, volume reduction and efficient collection scheduling.'
+    WHEN slug = 'disposal-of-out-of-date-medicines-from-gp-cabinets' THEN 'Safe disposal of out-of-date medicines from GP cabinets. Learn the regulations, process and documentation required for compliant medicine disposal.'
+    WHEN slug = 'cost-effective-clinical-waste-collection-for-rural-gp-practices' THEN 'Cost-effective clinical waste collection for rural GP practices. Tips on scheduling, shared routes and reducing costs without compromising compliance.'
+    WHEN slug = 'reducing-dental-clinical-waste-volume-practical-tips' THEN 'Practical tips for reducing dental clinical waste volume. Strategies to minimise waste, save money and maintain compliance in dental practices.'
+    WHEN slug = 'understanding-orange-clinical-waste-bags-for-dental-surgeries' THEN 'Understanding orange clinical waste bags for dental surgeries. What goes in them, how to use them correctly and stay compliant with regulations.'
+    WHEN slug = 'cost-effective-dental-waste-management-small-clinics' THEN 'Cost-effective dental waste management for small clinics. Practical advice on containers, scheduling and reducing costs for solo practitioners.'
+    WHEN slug = 'sharps-disposal-dental-practices-best-practices-safety' THEN 'Sharps disposal best practices for dental practices. Safety guidance on correct bins, handling and compliant disposal of dental sharps waste.'
+    WHEN slug = 'dental-amalgam-waste-disposal-legal-requirements-uk-dentists' THEN 'Dental amalgam waste disposal legal requirements for UK dentists. Mercury recovery, storage and compliant disposal of amalgam waste.'
+    WHEN slug = 'healthcare-waste-compliance-uk-medical-facilities' THEN 'Essential healthcare waste compliance guide for UK medical facilities. Regulations, documentation and best practice for compliant waste disposal.'
+    WHEN slug = 'medical-waste-management-best-practices-healthcare' THEN 'Medical waste management best practices for healthcare providers. Comprehensive guide to segregation, storage, collection and compliant disposal.'
+    WHEN slug = 'sharps-disposal-regulations-uk-compliance-guide' THEN 'Complete UK compliance guide to sharps disposal regulations. Legal requirements, colour-coded bins and best practice for healthcare facilities.'
+    WHEN slug = 'what-is-clinical-waste-complete-guide' THEN 'What is clinical waste? Complete guide covering definitions, categories, colour coding and compliant disposal for healthcare facilities in the UK.'
+    WHEN slug = 'safe-clinical-waste-storage-before-collection-guide' THEN 'How to store clinical waste safely before collection. UK guide covering segregation, secure storage and regulatory requirements for clinics.'
+    WHEN slug = 'choosing-medical-waste-company-small-clinic-guide' THEN 'How to choose the right medical waste company for your small clinic. Key questions on licensing, pricing, documentation and service flexibility.'
+    WHEN slug = 'beauty-aesthetic-clinics-clinical-waste-management-guide' THEN 'Clinical waste management guide for beauty and aesthetic clinics. Legal requirements, sharps disposal and compliant waste collection explained.'
+    ELSE seo_description
+  END
+WHERE status = 'published'
+  AND (seo_title IS NULL OR seo_title = '')
+  AND (seo_description IS NULL OR seo_description = '');

@@ -39,6 +39,8 @@ import {
   CreditCard,
   Lock,
   AlertTriangle,
+  History,
+  Send,
 } from 'lucide-react';
 
 interface AdminLayoutProps {
@@ -177,6 +179,8 @@ export default function AdminLayout({ children, pageTitle, breadcrumbs }: AdminL
         { label: 'Staff', path: '/admin/staff', icon: <UserCheck size={18} /> },
         { label: 'News', path: '/admin/news', icon: <Newspaper size={18} /> },
         { label: 'Sitemap & Robots', path: '/admin/sitemap', icon: <Globe size={18} /> },
+        { label: 'Audit Log', path: '/admin/audit-log', icon: <History size={18} /> },
+        { label: 'Email Queue', path: '/admin/email-queue', icon: <Send size={18} /> },
         { label: 'Backup', path: '/admin/backup', icon: <HardDrive size={18} /> },
         { label: 'Markdown for Agents', path: '/admin/markdown-for-agents', icon: <Zap size={18} /> },
         { label: 'Settings', path: '/admin/settings', icon: <Settings size={18} /> },

@@ -124,6 +124,10 @@
     "verify-financial-pin": {
       "hasChanged": false,
       "hash": "7a3ac45b1bf0f86e753eadfce6467403415e2e00d1d959ce21aebb9d3312e4b7"
+    },
+    "process-email-queue": {
+      "hasChanged": false,
+      "hash": "2275c47bf53c6f6bbf0488b4fe3c62fb94603ebabbdd4d24868e9e5537120db8"
     }
   }
 }
