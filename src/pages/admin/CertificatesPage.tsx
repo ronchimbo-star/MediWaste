@@ -82,7 +82,7 @@ export default function CertificatesPage() {
         .from('mw_certificates')
         .select(`
           *,
-          mw_customers (company_name, contact_name, email)
+          mw_customers!mw_certificates_customer_id_fkey (company_name, contact_name, email)
         `)
         .order('created_at', { ascending: false });
       if (error) throw error;

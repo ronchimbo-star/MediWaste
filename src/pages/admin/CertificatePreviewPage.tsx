@@ -22,7 +22,7 @@ export default function CertificatePreviewPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('mw_certificates')
-        .select(`*, mw_customers(company_name, contact_name, billing_address, collection_address, postcode, phone, email)`)
+        .select(`*, mw_customers!mw_certificates_customer_id_fkey(company_name, contact_name, billing_address, collection_address, postcode, phone, email)`)
         .eq('id', id)
         .single();
       if (error) throw error;

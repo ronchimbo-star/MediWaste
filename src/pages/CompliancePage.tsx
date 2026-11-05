@@ -63,7 +63,7 @@ export default function CompliancePage() {
         .from('mw_certificates')
         .select(`
           *,
-          mw_customers (
+          mw_customers!mw_certificates_customer_id_fkey (
             id, company_name, contact_name, email, phone, mobile,
             billing_address, collection_address, postcode
           )
