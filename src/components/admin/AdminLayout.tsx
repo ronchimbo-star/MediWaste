@@ -150,6 +150,8 @@ export default function AdminLayout({ children, pageTitle, breadcrumbs }: AdminL
       items: [
         { label: 'Invoicing', path: '/admin/invoices', icon: <Receipt size={18} /> },
         { label: 'Pending Payments', path: '/admin/finance/pending-payments', icon: <DollarSign size={18} /> },
+        { label: 'Price Breakdown Log', path: '/admin/price-log', icon: <ListChecks size={18} /> },
+        { label: 'Edit Prices', path: '/admin/edit-prices', icon: <DollarSign size={18} /> },
         { label: 'Payment Settings', path: '/admin/settings/payment-details', icon: <CreditCard size={18} /> },
         { label: 'Waste Transfer Notes', path: '/admin/waste-transfer-notes', icon: <ListChecks size={18} /> },
         { label: 'Hazardous Waste Consignment Notes', path: '/admin/hw-consignment-notes', icon: <AlertTriangle size={18} /> },

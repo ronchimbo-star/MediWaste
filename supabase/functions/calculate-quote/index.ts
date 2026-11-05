@@ -14,6 +14,7 @@ const jsonResponse = (body: unknown, status = 200) =>
 
 const BASE_POSTCODE = "DA82HA";
 const EARTH_RADIUS_MILES = 3958.8;
+const VAT_RATE = 0.2;
 const UK_POSTCODE_PATTERN = /^(GIR0AA|[A-PR-UWYZ][A-HK-Y]?[0-9][0-9A-HJKMNPR-Y]?[0-9][ABD-HJLNP-UW-Z]{2})$/;
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -49,7 +50,8 @@ Deno.serve(async (req: Request) => {
   try {
     const body = await req.json().catch(() => null);
     const rawPostcode = typeof body?.postcode === "string" ? body.postcode : "";
-    const serviceLabel = typeof body?.serviceLabel === "string" ? body.serviceLabel : "";
+    const frequency = typeof body?.frequency === "string" ? body.frequency : "";
+    const serviceType = typeof body?.serviceType === "string" ? body.serviceType.slice(0, 100) : "";
     const quoteRequestId = typeof body?.quoteRequestId === "string" ? body.quoteRequestId : null;
 
     const compactPostcode = rawPostcode.replace(/\s+/g, "").toUpperCase();
@@ -65,22 +67,22 @@ Deno.serve(async (req: Request) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    const [{ data: servicePrice, error: serviceError }, { data: bands, error: bandsError }] =
+    const [{ data: feeRow, error: feeError }, { data: bands, error: bandsError }] =
       await Promise.all([
         supabase
-          .from("pricing_service_prices")
-          .select("service_label, base_pence, is_placeholder")
-          .eq("service_label", serviceLabel)
+          .from("pricing_frequency_fees")
+          .select("frequency, base_pence, is_placeholder")
+          .eq("frequency", frequency)
           .maybeSingle(),
         supabase
           .from("pricing_distance_bands")
           .select("max_miles, surcharge_pence, is_placeholder")
           .order("sort_order", { ascending: true }),
       ]);
-    if (serviceError) throw serviceError;
+    if (feeError) throw feeError;
     if (bandsError) throw bandsError;
-    if (!servicePrice) {
-      return jsonResponse({ error: "Please choose a service from the list." }, 400);
+    if (!feeRow) {
+      return jsonResponse({ error: "Please choose how often you need collections." }, 400);
     }
     if (!bands || bands.length === 0) throw new Error("No distance bands configured");
 
@@ -94,33 +96,32 @@ Deno.serve(async (req: Request) => {
     if (!baseCoords) throw new Error("Base postcode could not be geocoded");
 
     const distanceMiles = straightLineMiles(baseCoords, customerCoords);
-    const band = bands.find((b) => distanceMiles <= Number(b.max_miles));
+    const band = bands.find((b) => b.max_miles === null || distanceMiles <= Number(b.max_miles));
+    if (!band) throw new Error("No distance band matches");
 
-    const isPlaceholder = servicePrice.is_placeholder || (band?.is_placeholder ?? true);
-    const basePence = servicePrice.base_pence;
-    const surchargePence = band ? band.surcharge_pence : null;
-    const totalPence =
-      basePence !== null && surchargePence !== null ? basePence + surchargePence : null;
+    const basePence = feeRow.base_pence;
+    const surchargePence = band.surcharge_pence;
+    const subtotalPence = basePence + surchargePence;
+    const vatPence = Math.round(subtotalPence * VAT_RATE);
+    const totalPence = subtotalPence + vatPence;
+    const isPlaceholder = feeRow.is_placeholder || band.is_placeholder;
 
     const { error: insertError } = await supabase.from("quote_price_quotes").insert({
       quote_request_id: quoteRequestId,
-      service_label: serviceLabel,
+      service_label: serviceType || "Not specified",
+      frequency,
       postcode: compactPostcode,
       distance_miles: Math.round(distanceMiles * 100) / 100,
       base_pence: basePence,
       surcharge_pence: surchargePence,
+      subtotal_pence: subtotalPence,
+      vat_pence: vatPence,
       total_pence: totalPence,
       is_placeholder: isPlaceholder,
     });
     if (insertError) throw insertError;
 
-    if (!band) {
-      return jsonResponse({
-        status: "outside_area",
-        message: "This postcode is outside our standard service area. Please send your request and we will confirm whether we can collect.",
-      });
-    }
-    if (totalPence === null || isPlaceholder) {
+    if (isPlaceholder) {
       return jsonResponse({
         status: "manual",
         message: "We will confirm your price when we review your request.",

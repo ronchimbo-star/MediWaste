@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Plus, X } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { COLLECTION_FREQUENCIES, formatPence } from '../lib/pricing';
 
 interface Product {
   id: string;
@@ -11,12 +12,12 @@ interface Product {
 
 type PriceNotice = { kind: 'priced'; totalPence: number } | { kind: 'message'; message: string };
 
-async function fetchPriceNotice(postcode: string, serviceLabel: string, quoteRequestId: string): Promise<PriceNotice | null> {
+async function fetchPriceNotice(postcode: string, frequency: string, serviceType: string, quoteRequestId: string): Promise<PriceNotice | null> {
   try {
     const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/calculate-quote`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ postcode, serviceLabel, quoteRequestId }),
+      body: JSON.stringify({ postcode, frequency, serviceType, quoteRequestId }),
     });
     const data = await response.json();
     if (data?.status === 'priced' && Number.isInteger(data.totalPence)) {
@@ -146,7 +147,7 @@ export default function QuoteForm() {
         console.error('Failed to send email notification:', emailErr);
       }
 
-      const notice = await fetchPriceNotice(formData.postcode, formData.serviceType, quoteRequestId);
+      const notice = await fetchPriceNotice(formData.postcode, formData.frequency, formData.serviceType, quoteRequestId);
       setPriceNotice(notice);
 
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -181,8 +182,8 @@ export default function QuoteForm() {
           </p>
           {priceNotice?.kind === 'priced' && (
             <div className="mb-6 rounded-lg border border-gray-200 bg-gray-50 p-4">
-              <p className="text-sm text-gray-600">Estimated price</p>
-              <p className="text-2xl font-bold text-gray-900">£{(priceNotice.totalPence / 100).toFixed(2)}</p>
+              <p className="text-sm text-gray-600">Estimated price per collection (incl. VAT)</p>
+              <p className="text-2xl font-bold text-gray-900">{formatPence(priceNotice.totalPence)}</p>
               <p className="mt-1 text-sm text-gray-500">We will confirm the final price with you before any collection is booked.</p>
             </div>
           )}
@@ -390,14 +391,9 @@ export default function QuoteForm() {
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
           >
             <option value="">Select frequency</option>
-            <option value="weekly">Weekly</option>
-            <option value="fortnightly">Fortnightly</option>
-            <option value="monthly">Monthly</option>
-            <option value="2-months">Every 2 Months</option>
-            <option value="3-months">Every 3 Months</option>
-            <option value="6-months">Every 6 Months</option>
-            <option value="yearly">Yearly</option>
-            <option value="ad-hoc">Ad-hoc / On-demand</option>
+            {COLLECTION_FREQUENCIES.map((frequency) => (
+              <option key={frequency} value={frequency}>{frequency}</option>
+            ))}
           </select>
         </div>
 
