@@ -10,7 +10,7 @@ const organizationSchema = {
   '@context': 'https://schema.org',
   '@type': 'LocalBusiness',
   name: 'MediWaste',
-  description: 'Clinical waste compliance and disposal services for GP surgeries, dental practices, and healthcare providers across London and the South East.',
+  description: 'Clinical waste compliance and disposal services for GP surgeries, dental practices, and healthcare providers across London, the South East and East of England.',
   url: 'https://mediwaste.co.uk',
   telephone: '+441322879713',
   email: 'hello@mediwaste.co.uk',
@@ -18,7 +18,7 @@ const organizationSchema = {
     '@type': 'PostalAddress',
     addressCountry: 'GB'
   },
-  areaServed: ['London', 'Kent', 'Essex', 'Surrey', 'Sussex', 'Hampshire'],
+  areaServed: ['London', 'Kent', 'Essex', 'Surrey', 'Sussex', 'Hampshire', 'Berkshire', 'Reading', 'Oxfordshire', 'Suffolk', 'Ipswich', 'Cambridgeshire', 'Bedfordshire'],
   sameAs: []
 };
 
@@ -26,8 +26,8 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-white">
       <SEO
-        title="Clinical Waste Collection London & SE | MediWaste"
-        description="Compliant clinical waste disposal for GP surgeries, dental practices and care homes across London and the South East. Registered waste carrier."
+        title="Clinical Waste Collection London, SE & East | MediWaste"
+        description="Compliant clinical waste disposal for GP surgeries, dental practices and aesthetic clinics across London, the South East and East of England. Free quote."
         canonical="https://mediwaste.co.uk/"
         schema={organizationSchema}
       />
@@ -50,9 +50,9 @@ export default function HomePage() {
 
         <div className="container mx-auto px-4 py-16 md:py-24 relative z-10">
           <div className="max-w-2xl">
-            <p className="text-sm uppercase tracking-wider mb-4 text-red-400 font-semibold">London &amp; South East Specialist</p>
+            <p className="text-sm uppercase tracking-wider mb-4 text-red-400 font-semibold">London, South East &amp; East of England</p>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight text-white drop-shadow-lg">
-              Clinical Waste Compliance for London &amp; South East Practices
+              Clinical Waste Collection for Practices Across London, the South East and East of England
             </h1>
             <p className="text-lg md:text-xl mb-6 text-gray-100 leading-relaxed drop-shadow">
               We help dental practices, GP surgeries, veterinary clinics, tattoo artists, beauty and aesthetics clinics stay compliant with current clinical waste regulations. Registered waste carrier. Full documentation provided.
@@ -386,7 +386,7 @@ export default function HomePage() {
       <section className="py-20 bg-white">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-900 mb-4">Service Coverage</h2>
-          <p className="text-center text-gray-600 mb-12">Clinical waste collection across London and the South East</p>
+          <p className="text-center text-gray-600 mb-12">Clinical waste collection across London, the South East and East of England</p>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
             {[
               { to: '/service-areas/kent', label: 'Kent', towns: ['Canterbury', 'Maidstone', 'Ashford', 'Dartford', 'Sevenoaks', 'Tonbridge', 'Gravesend'] },
@@ -395,6 +395,13 @@ export default function HomePage() {
               { to: '/service-areas/essex', label: 'Essex', towns: ['Chelmsford', 'Colchester', 'Basildon', 'Southend', 'Harlow', 'Brentwood'] },
               { to: '/service-areas/surrey', label: 'Surrey', towns: ['Guildford', 'Woking', 'Epsom', 'Reigate', 'Staines', 'Redhill'] },
               { to: '/service-areas/hampshire', label: 'Hampshire', towns: ['Southampton', 'Portsmouth', 'Winchester', 'Basingstoke', 'Eastleigh', 'Fareham'] },
+              { to: '/service-areas/berkshire', label: 'Berkshire', towns: ['Reading', 'Slough', 'Bracknell', 'Maidenhead', 'Newbury', 'Wokingham'] },
+              { to: '/service-areas/suffolk', label: 'Suffolk', towns: ['Ipswich', 'Bury St Edmunds', 'Felixstowe', 'Lowestoft', 'Sudbury', 'Stowmarket'] },
+              { to: '/service-areas/cambridgeshire', label: 'Cambridgeshire', towns: ['Cambridge', 'Peterborough', 'Ely', 'Huntingdon', 'St Ives', 'St Neots'] },
+              { to: '/service-areas/bedfordshire', label: 'Bedfordshire', towns: ['Bedford', 'Luton', 'Dunstable', 'Leighton Buzzard', 'Biggleswade', 'Sandy'] },
+              { to: '/service-areas/oxfordshire', label: 'Oxfordshire', towns: ['Oxford', 'Banbury', 'Witney', 'Abingdon', 'Bicester', 'Didcot'] },
+              { to: '/service-areas/reading', label: 'Reading', towns: ['Caversham', 'Earley', 'Woodley', 'Tilehurst', 'Theale', 'Thatcham'] },
+              { to: '/service-areas/ipswich', label: 'Ipswich', towns: ['Kesgrave', 'Woodbridge', 'Hadleigh', 'Needham Market', 'Stowupland', 'Trimley'] },
             ].map(({ to, label, towns }) => (
               <Link key={to} to={to} className="bg-teal-50 p-6 rounded-lg hover:bg-teal-100 transition-colors border-2 border-transparent hover:border-red-600">
                 <h3 className="font-bold text-gray-900 mb-4 flex items-center justify-between">

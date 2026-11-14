@@ -204,7 +204,7 @@ function buildHtml(template, meta) {
   // Crawlable footer navigation — visible to non-JS crawlers (aHREFS, Bing)
   // so every page has incoming internal links. Hidden from JS browsers via
   // <noscript> to avoid duplicate nav with the React footer.
-  const FOOTER_NAV = `<nav style="display:none"><h2>Site Navigation</h2><ul><li><a href="/">Home</a></li><li><a href="/about">About Us</a></li><li><a href="/waste-services">Waste Services</a></li><li><a href="/waste-services/infectious-waste">Infectious Waste</a></li><li><a href="/waste-services/sharps-waste">Sharps Disposal</a></li><li><a href="/waste-services/pharmaceutical-waste">Pharmaceutical Waste</a></li><li><a href="/waste-services/cytotoxic-waste">Cytotoxic Waste</a></li><li><a href="/waste-services/dental-waste">Dental Waste</a></li><li><a href="/waste-services/anatomical-waste">Anatomical Waste</a></li><li><a href="/service-coverage">Service Coverage</a></li><li><a href="/service-areas/london">London</a></li><li><a href="/service-areas/kent">Kent</a></li><li><a href="/service-areas/essex">Essex</a></li><li><a href="/service-areas/surrey">Surrey</a></li><li><a href="/service-areas/sussex">Sussex</a></li><li><a href="/service-areas/hampshire">Hampshire</a></li><li><a href="/compliance">Compliance</a></li><li><a href="/audit">Clinical Waste Audit</a></li><li><a href="/quote">Get a Quote</a></li><li><a href="/contact">Contact Us</a></li><li><a href="/faq">FAQ</a></li><li><a href="/news">News</a></li><li><a href="/directory-listings">Directory</a></li><li><a href="/terms">Terms of Service</a></li><li><a href="/privacy">Privacy Policy</a></li><li><a href="/cookies">Cookie Policy</a></li></ul></nav>`;
+  const FOOTER_NAV = `<nav style="display:none"><h2>Site Navigation</h2><ul><li><a href="/">Home</a></li><li><a href="/about">About Us</a></li><li><a href="/waste-services">Waste Services</a></li><li><a href="/waste-services/infectious-waste">Infectious Waste</a></li><li><a href="/waste-services/sharps-waste">Sharps Disposal</a></li><li><a href="/waste-services/pharmaceutical-waste">Pharmaceutical Waste</a></li><li><a href="/waste-services/cytotoxic-waste">Cytotoxic Waste</a></li><li><a href="/waste-services/dental-waste">Dental Waste</a></li><li><a href="/waste-services/anatomical-waste">Anatomical Waste</a></li><li><a href="/service-coverage">Service Coverage</a></li><li><a href="/service-areas/london">London</a></li><li><a href="/service-areas/kent">Kent</a></li><li><a href="/service-areas/essex">Essex</a></li><li><a href="/service-areas/surrey">Surrey</a></li><li><a href="/service-areas/sussex">Sussex</a></li><li><a href="/service-areas/hampshire">Hampshire</a></li><li><a href="/service-areas/reading">Reading</a></li><li><a href="/service-areas/berkshire">Berkshire</a></li><li><a href="/service-areas/oxfordshire">Oxfordshire</a></li><li><a href="/service-areas/suffolk">Suffolk</a></li><li><a href="/service-areas/ipswich">Ipswich</a></li><li><a href="/service-areas/cambridgeshire">Cambridgeshire</a></li><li><a href="/service-areas/bedfordshire">Bedfordshire</a></li><li><a href="/compliance">Compliance</a></li><li><a href="/audit">Clinical Waste Audit</a></li><li><a href="/quote">Get a Quote</a></li><li><a href="/contact">Contact Us</a></li><li><a href="/faq">FAQ</a></li><li><a href="/news">News</a></li><li><a href="/directory-listings">Directory</a></li><li><a href="/terms">Terms of Service</a></li><li><a href="/privacy">Privacy Policy</a></li><li><a href="/cookies">Cookie Policy</a></li></ul></nav>`;
 
   // Wrap crawlable content in <noscript> so it is invisible to JS-enabled
   // browsers (preventing flash of unstyled text before CSS loads) but still
@@ -264,25 +264,25 @@ const LOCAL_BUSINESS_SCHEMA = {
   '@context': 'https://schema.org',
   '@type': 'LocalBusiness',
   name: 'MediWaste',
-  description: 'Clinical waste compliance and disposal services for GP surgeries, dental practices, and healthcare providers across London and the South East.',
+  description: 'Clinical waste compliance and disposal services for GP surgeries, dental practices, and healthcare providers across London, the South East and East of England.',
   url: BASE_URL,
   telephone: '+441322879713',
   email: 'hello@mediwaste.co.uk',
   address: { '@type': 'PostalAddress', addressCountry: 'GB' },
-  areaServed: ['London', 'Kent', 'Essex', 'Surrey', 'Sussex', 'Hampshire'],
+  areaServed: ['London', 'Kent', 'Essex', 'Surrey', 'Sussex', 'Hampshire', 'Berkshire', 'Reading', 'Oxfordshire', 'Suffolk', 'Ipswich', 'Cambridgeshire', 'Bedfordshire'],
 };
 
 const STATIC_ROUTES = [
   {
     path: '/',
     title: 'Clinical Waste Collection London & SE | MediWaste',
-    description: 'Licensed clinical waste collection for GP surgeries, dental practices and care homes in London and the South East. Free quote. Call 01322 879 713.',
+    description: 'Licensed clinical waste collection for GP surgeries, dental practices and aesthetic clinics across London, the South East and East of England. Free quote.',
     keywords: 'clinical waste collection, medical waste disposal, sharps disposal, clinical waste London, healthcare waste management, infectious waste, pharmaceutical waste disposal',
     canonical: `${BASE_URL}/`,
-    h1: 'Clinical Waste Collection London & South East',
+    h1: 'Clinical Waste Collection for Practices Across London, the South East and East of England',
     schema: LOCAL_BUSINESS_SCHEMA,
     content: `
-<p>MediWaste provides fully licensed clinical waste collection and disposal services for GP surgeries, dental practices, care homes, aesthetic clinics and beauty salons across London and the South East. We are a registered waste carrier (upper tier) with the Environment Agency, ensuring your waste is handled safely, legally and responsibly at every stage.</p>
+<p>MediWaste provides fully licensed clinical waste collection and disposal services for GP surgeries, dental practices, care homes, aesthetic clinics and beauty salons across London, the South East and East of England. We are a registered waste carrier (upper tier) with the Environment Agency, ensuring your waste is handled safely, legally and responsibly at every stage.</p>
 <h2>Why Choose MediWaste?</h2>
 <p>We understand that healthcare providers need a reliable, compliant waste partner. Our service is built on three principles: compliance, convenience and competitive pricing. We supply all containers free of charge, collect on a schedule that suits you, and provide full documentation within 48 hours of every collection.</p>
 <ul>
@@ -294,7 +294,7 @@ const STATIC_ROUTES = [
 </ul>
 ${SERVICE_LINKS}
 <h2>Areas We Serve</h2>
-<p>We provide clinical waste collection across London and the South East, including:</p>
+<p>We provide clinical waste collection across London, the South East and East of England, including:</p>
 <ul>
 <li><a href="/service-areas/london">London</a> — all 32 boroughs and the City</li>
 <li><a href="/service-areas/kent">Kent</a> — Maidstone, Canterbury, Dartford, Medway</li>
@@ -302,6 +302,11 @@ ${SERVICE_LINKS}
 <li><a href="/service-areas/surrey">Surrey</a> — Guildford, Woking, Reigate, Epsom</li>
 <li><a href="/service-areas/sussex">Sussex</a> — Brighton, Crawley, Worthing</li>
 <li><a href="/service-areas/hampshire">Hampshire</a> — Southampton, Portsmouth, Basingstoke</li>
+<li><a href="/service-areas/berkshire">Berkshire</a> — Reading, Slough, Bracknell, Maidenhead</li>
+<li><a href="/service-areas/oxfordshire">Oxfordshire</a> — Oxford, Banbury, Witney, Abingdon</li>
+<li><a href="/service-areas/suffolk">Suffolk</a> — Ipswich, Bury St Edmunds, Felixstowe</li>
+<li><a href="/service-areas/cambridgeshire">Cambridgeshire</a> — Cambridge, Peterborough, Ely</li>
+<li><a href="/service-areas/bedfordshire">Bedfordshire</a> — Bedford, Luton, Dunstable</li>
 </ul>
 <p>For a full list of locations, see our <a href="/service-coverage">service coverage page</a>.</p>
 ${PROCESS_STEPS}
@@ -330,7 +335,7 @@ ${EXTERNAL_LINKS}
     h1: 'About MediWaste',
     schema: LOCAL_BUSINESS_SCHEMA,
     content: `
-<p>MediWaste is a specialist clinical waste management company serving GP surgeries, dental practices, care homes, aesthetic clinics and beauty salons across London and the South East. We provide fully licensed collection and disposal of all clinical waste streams, with a focus on compliance, reliability and customer service.</p>
+<p>MediWaste is a specialist clinical waste management company serving GP surgeries, dental practices, care homes, aesthetic clinics and beauty salons across London, the South East and East of England. We provide fully licensed collection and disposal of all clinical waste streams, with a focus on compliance, reliability and customer service.</p>
 <h2>Our Accreditations</h2>
 <ul>
 <li><strong>Environment Agency registered waste carrier</strong> — upper tier licence</li>
@@ -362,7 +367,7 @@ ${EXTERNAL_LINKS}
 <li><strong>Pharmacies</strong> — expired medicines, controlled drugs, packaging waste</li>
 </ul>
 <h2>Our Service Area</h2>
-<p>We provide clinical waste collection across <a href="/service-areas/london">London</a>, <a href="/service-areas/kent">Kent</a>, <a href="/service-areas/essex">Essex</a>, <a href="/service-areas/surrey">Surrey</a>, <a href="/service-areas/sussex">Sussex</a> and <a href="/service-areas/hampshire">Hampshire</a>. See our full <a href="/service-coverage">service coverage area</a> for more details.</p>
+<p>We provide clinical waste collection across <a href="/service-areas/london">London</a>, <a href="/service-areas/kent">Kent</a>, <a href="/service-areas/essex">Essex</a>, <a href="/service-areas/surrey">Surrey</a>, <a href="/service-areas/sussex">Sussex</a> <a href="/service-areas/hampshire">Hampshire</a>, <a href="/service-areas/berkshire">Berkshire</a>, <a href="/service-areas/oxfordshire">Oxfordshire</a>, <a href="/service-areas/suffolk">Suffolk</a>, <a href="/service-areas/cambridgeshire">Cambridgeshire</a> and <a href="/service-areas/bedfordshire">Bedfordshire</a>. See our full <a href="/service-coverage">service coverage area</a> for more details.</p>
 ${COMPLIANCE_BOX}
 <h2>Contact Us</h2>
 <p>Ready to get started? <a href="/quote">Request a free quote</a> or call us on 01322 879 713. We can usually begin collections within 7 days of your enquiry.</p>
@@ -758,7 +763,7 @@ ${EXTERNAL_LINKS}
       ['Do you supply containers?', 'Yes, all sharps bins, yellow bags, orange bags and rigid containers are supplied free of charge as part of your service agreement.'],
       ['How often do you collect?', 'We offer flexible collection schedules including weekly, fortnightly, monthly and ad-hoc collections. We will recommend the best frequency based on your waste volume.'],
       ['What documentation do you provide?', 'We provide waste transfer notes or hazardous waste consignment notes for every collection, issued within 48 hours. Records are maintained for the statutory minimum of two years.'],
-      ['What areas do you cover?', 'We cover London, Kent, Essex, Surrey, Sussex and Hampshire. See our service coverage page for a full list of areas.'],
+      ['What areas do you cover?', 'We cover London, Kent, Essex, Surrey, Sussex, Hampshire, Berkshire, Oxfordshire, Suffolk, Cambridgeshire and Bedfordshire. See our service coverage page for a full list of areas.'],
     ]),
     content: `
 <p>Here are answers to the most common questions we receive about clinical waste collection and disposal. If you have a question that is not covered here, please <a href="/contact">contact us</a> or call 01322 879 713.</p>
@@ -783,7 +788,7 @@ ${EXTERNAL_LINKS}
 <h3>How quickly can you start collections?</h3>
 <p>We can usually begin collections within 7 days of your initial enquiry. In urgent cases, we may be able to arrange a first collection sooner.</p>
 <h3>What areas do you cover?</h3>
-<p>We cover London, Kent, Essex, Surrey, Sussex and Hampshire. See our <a href="/service-coverage">service coverage page</a> for a full list of areas.</p>
+<p>We cover London, Kent, Essex, Surrey, Sussex, Hampshire, Berkshire, Oxfordshire, Suffolk, Cambridgeshire and Bedfordshire. See our <a href="/service-coverage">service coverage page</a> for a full list of areas.</p>
 <h3>Can I switch from my current waste contractor?</h3>
 <p>Yes, we manage the entire transition process. We coordinate with your existing contractor to collect any remaining containers, deliver our own containers and begin collections with minimal disruption. Most practices switch in under 7 days.</p>
 <h3>Do you offer emergency or ad-hoc collections?</h3>
@@ -818,7 +823,7 @@ ${EXTERNAL_LINKS}
 <h2>Online Quote</h2>
 <p>The fastest way to get a tailored quote is to use our <a href="/quote">online quote form</a>. Simply tell us about your waste streams and collection requirements, and we will send you a personalised quote within one business day.</p>
 <h2>Areas We Serve</h2>
-<p>We provide clinical waste collection across London and the South East:</p>
+<p>We provide clinical waste collection across London, the South East and East of England:</p>
 <ul>
 <li><a href="/service-areas/london">London</a> — all 32 boroughs</li>
 <li><a href="/service-areas/kent">Kent</a> — Maidstone, Canterbury, Dartford, Medway</li>
@@ -826,13 +831,18 @@ ${EXTERNAL_LINKS}
 <li><a href="/service-areas/surrey">Surrey</a> — Guildford, Woking, Reigate, Epsom</li>
 <li><a href="/service-areas/sussex">Sussex</a> — Brighton, Crawley, Worthing</li>
 <li><a href="/service-areas/hampshire">Hampshire</a> — Southampton, Portsmouth, Basingstoke</li>
+<li><a href="/service-areas/berkshire">Berkshire</a> — Reading, Slough, Bracknell, Maidenhead</li>
+<li><a href="/service-areas/oxfordshire">Oxfordshire</a> — Oxford, Banbury, Witney, Abingdon</li>
+<li><a href="/service-areas/suffolk">Suffolk</a> — Ipswich, Bury St Edmunds, Felixstowe</li>
+<li><a href="/service-areas/cambridgeshire">Cambridgeshire</a> — Cambridge, Peterborough, Ely</li>
+<li><a href="/service-areas/bedfordshire">Bedfordshire</a> — Bedford, Luton, Dunstable</li>
 </ul>
 <h2>Our Services</h2>
 <p>We collect all types of clinical waste including <a href="/waste-services/infectious-waste">infectious waste</a>, <a href="/waste-services/sharps-waste">sharps</a>, <a href="/waste-services/pharmaceutical-waste">pharmaceutical waste</a>, <a href="/waste-services/cytotoxic-waste">cytotoxic waste</a>, <a href="/waste-services/dental-waste">dental waste</a> and <a href="/waste-services/anatomical-waste">anatomical waste</a>. See our full range of <a href="/waste-services">waste services</a>.</p>
 <h2>What Happens When You Call</h2>
 <p>When you contact MediWaste, our team will ask about your healthcare facility type, the waste streams you produce, your current collection frequency and your location. We use this information to recommend the right containers and collection schedule for your needs. We then provide a free, no-obligation quote within one business day.</p>
 <h2>Service Areas</h2>
-<p>We currently provide clinical waste collection across London, Kent, Essex, Surrey, Sussex and Hampshire. If you are outside these areas, please contact us as we are continually expanding our coverage. See our <a href="/service-coverage">service coverage page</a> for a full list of locations.</p>
+<p>We currently provide clinical waste collection across London, Kent, Essex, Surrey, Sussex, Hampshire, Berkshire, Oxfordshire, Suffolk, Cambridgeshire and Bedfordshire. If you are outside these areas, please contact us as we are continually expanding our coverage. See our <a href="/service-coverage">service coverage page</a> for a full list of locations.</p>
 <h2>Choosing the right contact route</h2>
 <p>Use the general enquiry form if you have a question about waste segregation, container sizes, collection schedules, documentation or the areas we cover. If you are comparing providers or need a new service, the quote form asks for the details that help us give an accurate price, including your facility type, waste streams, expected volume and preferred frequency.</p>
 <p>We work with practices of different sizes, from independent beauty and aesthetic clinics to multi-site healthcare organisations. Our team can explain the difference between infectious waste, sharps, pharmaceutical, dental, cytotoxic and anatomical waste, then recommend a practical collection arrangement.</p>
@@ -855,7 +865,7 @@ ${EXTERNAL_LINKS}
 <h3>Are you Environment Agency registered?</h3>
 <p>Yes, we are a registered upper tier waste carrier. See our <a href="/compliance">compliance page</a> for details.</p>
 <h3>What areas do you cover?</h3>
-<p>We cover London, Kent, Essex, Surrey, Sussex and Hampshire. See our <a href="/service-coverage">service coverage page</a> for a full list of areas.</p>
+<p>We cover London, Kent, Essex, Surrey, Sussex, Hampshire, Berkshire, Oxfordshire, Suffolk, Cambridgeshire and Bedfordshire. See our <a href="/service-coverage">service coverage page</a> for a full list of areas.</p>
 <h3>How much does clinical waste collection cost?</h3>
 <p>Pricing depends on waste volume, type and collection frequency. We offer free, no-obligation quotes tailored to your needs. Call 01322 879 713 for a personalised price.</p>
 ${EXTERNAL_LINKS}
@@ -1492,6 +1502,13 @@ ${EXTERNAL_LINKS}
     { slug: 'surrey', name: 'Surrey', towns: 'Guildford, Woking, Reigate, Epsom and Camberley', keywords: 'clinical waste disposal Surrey, medical waste collection Surrey, sharps disposal Surrey, healthcare waste management Surrey' },
     { slug: 'sussex', name: 'Sussex', towns: 'Brighton, Crawley, Worthing, Eastbourne and Hastings', keywords: 'clinical waste disposal Sussex, medical waste collection Sussex, sharps disposal Sussex, healthcare waste management Sussex' },
     { slug: 'hampshire', name: 'Hampshire', towns: 'Southampton, Portsmouth, Basingstoke, Winchester and Farnborough', keywords: 'clinical waste disposal Hampshire, medical waste collection Hampshire, sharps disposal Hampshire, healthcare waste management Hampshire' },
+    { slug: 'reading', name: 'Reading', towns: 'Caversham, Earley, Woodley, Tilehurst and Theale', keywords: 'clinical waste disposal Reading, medical waste collection Reading, sharps disposal Reading, healthcare waste management Reading' },
+    { slug: 'ipswich', name: 'Ipswich', towns: 'Kesgrave, Woodbridge, Felixstowe and Hadleigh', keywords: 'clinical waste disposal Ipswich, medical waste collection Ipswich, sharps disposal Ipswich, healthcare waste management Ipswich' },
+    { slug: 'berkshire', name: 'Berkshire', towns: 'Reading, Slough, Bracknell, Maidenhead, Newbury and Wokingham', keywords: 'clinical waste disposal Berkshire, medical waste collection Berkshire, sharps disposal Berkshire, healthcare waste management Berkshire' },
+    { slug: 'suffolk', name: 'Suffolk', towns: 'Ipswich, Bury St Edmunds, Lowestoft, Sudbury and Stowmarket', keywords: 'clinical waste disposal Suffolk, medical waste collection Suffolk, sharps disposal Suffolk, healthcare waste management Suffolk' },
+    { slug: 'cambridgeshire', name: 'Cambridgeshire', towns: 'Cambridge, Peterborough, Ely, Huntingdon and St Neots', keywords: 'clinical waste disposal Cambridgeshire, medical waste collection Cambridgeshire, sharps disposal Cambridgeshire, healthcare waste management Cambridgeshire' },
+    { slug: 'bedfordshire', name: 'Bedfordshire', towns: 'Bedford, Luton, Dunstable, Leighton Buzzard and Biggleswade', keywords: 'clinical waste disposal Bedfordshire, medical waste collection Bedfordshire, sharps disposal Bedfordshire, healthcare waste management Bedfordshire' },
+    { slug: 'oxfordshire', name: 'Oxfordshire', towns: 'Oxford, Banbury, Witney, Abingdon and Bicester', keywords: 'clinical waste disposal Oxfordshire, medical waste collection Oxfordshire, sharps disposal Oxfordshire, healthcare waste management Oxfordshire' },
   ].map((area) => ({
     path: `/service-areas/${area.slug}`,
     title: `Clinical Waste Disposal ${area.name} | Licensed | MediWaste`,
@@ -1626,7 +1643,7 @@ async function main() {
       return `<a href="/c/${page.url_slug}">${esc(title.replace(/\s*\|\s*MediWaste.*$/i, ''))}</a>`;
     });
     const locationLinksHtml = seoLocationLinks.length
-      ? `<section><h2>Clinical Waste Collection Locations</h2><p>Find clinical waste collection services in your area. We serve towns and cities across London and the South East.</p><div>${seoLocationLinks.join(' ')}</div></section>`
+      ? `<section><h2>Clinical Waste Collection Locations</h2><p>Find clinical waste collection services in your area. We serve towns and cities across London, the South East and East of England.</p><div>${seoLocationLinks.join(' ')}</div></section>`
       : '';
 
     for (const page of pages) {
@@ -1682,7 +1699,7 @@ async function main() {
       const staticContent = staticRoute ? (staticRoute.content || '') : '';
       writeRoute('/service-coverage', buildHtml(template, {
         title: 'Service Coverage | Clinical Waste Disposal UK | MediWaste',
-        description: 'Professional clinical waste collection and disposal services across the UK. Licensed medical waste management for London, Kent, Surrey, Sussex, Hampshire, and Essex.',
+        description: 'Clinical waste collection across London, Kent, Essex, Surrey, Sussex, Hampshire, Berkshire, Oxfordshire, Suffolk, Cambridgeshire and Bedfordshire. Get a free quote.',
         canonical: `${BASE_URL}/service-coverage`,
         h1: 'Service Coverage Areas',
         schema: LOCAL_BUSINESS_SCHEMA,

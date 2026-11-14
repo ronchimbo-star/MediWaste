@@ -167,8 +167,8 @@ export default function ServiceAreaPage() {
     return (
       <div className="min-h-screen bg-gray-50">
         <SEO
-          title="Service Coverage Areas | Clinical Waste Disposal UK | MediWaste"
-          description="Professional clinical waste collection and disposal services across the UK. Licensed medical waste management for London, Kent, Surrey, Sussex, Hampshire, and Essex."
+          title="Clinical Waste Collection Coverage Areas | MediWaste"
+          description="Clinical waste collection across London, Kent, Essex, Surrey, Sussex, Hampshire, Berkshire, Oxfordshire, Suffolk, Cambridgeshire and Bedfordshire. Get a free quote."
           canonical="https://mediwaste.co.uk/service-coverage"
         />
         <Header />
@@ -180,7 +180,7 @@ export default function ServiceAreaPage() {
                 Our Service Coverage Areas
               </h1>
               <p className="text-xl opacity-95 mb-8">
-                Professional clinical waste disposal services across the South East and beyond
+                Clinical waste collection across London, the South East and East of England
               </p>
             </div>
           </div>
@@ -226,7 +226,7 @@ export default function ServiceAreaPage() {
                   Clinical Waste Collection Locations
                 </h2>
                 <p className="text-center text-gray-600 mb-12 max-w-2xl mx-auto">
-                  Find clinical waste collection services in your area. We serve towns and cities across London and the South East.
+                  Find clinical waste collection services in your area. We serve towns and cities across London, the South East and East of England.
                 </p>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                   {seoLocations.map((loc) => (

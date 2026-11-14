@@ -34,7 +34,8 @@ All SEO pages generated via the AI content tool MUST follow these guidelines. Th
 - No jargon — write for beauticians, aesthetic practitioners, GP managers, salon owners
 - Short paragraphs (2-3 sentences max)
 - Bullet points for lists (not dense text)
-- 1,500-1,700 minimum words (not including testimonials/FAQ)
+- 1,500-1,700 minimum words for SEO pages (not including testimonials/FAQ)
+- 3,500 minimum words for area pages (every area or county coverage page, including the seven new ones; not including testimonials/FAQ)
 - Professional but accessible, direct and factual
 - Do NOT use "transform your waste management" or marketing fluff
 - Do NOT repeat "clinical waste management is a critical service" across pages

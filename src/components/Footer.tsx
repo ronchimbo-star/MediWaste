@@ -195,6 +195,34 @@ export default function Footer() {
             <Link to="/service-areas/essex" className="hover:text-white transition-colors">
               Essex
             </Link>
+            <span className="text-gray-600">|</span>
+            <Link to="/service-areas/berkshire" className="hover:text-white transition-colors">
+              Berkshire
+            </Link>
+            <span className="text-gray-600">|</span>
+            <Link to="/service-areas/reading" className="hover:text-white transition-colors">
+              Reading
+            </Link>
+            <span className="text-gray-600">|</span>
+            <Link to="/service-areas/oxfordshire" className="hover:text-white transition-colors">
+              Oxfordshire
+            </Link>
+            <span className="text-gray-600">|</span>
+            <Link to="/service-areas/suffolk" className="hover:text-white transition-colors">
+              Suffolk
+            </Link>
+            <span className="text-gray-600">|</span>
+            <Link to="/service-areas/ipswich" className="hover:text-white transition-colors">
+              Ipswich
+            </Link>
+            <span className="text-gray-600">|</span>
+            <Link to="/service-areas/cambridgeshire" className="hover:text-white transition-colors">
+              Cambridgeshire
+            </Link>
+            <span className="text-gray-600">|</span>
+            <Link to="/service-areas/bedfordshire" className="hover:text-white transition-colors">
+              Bedfordshire
+            </Link>
           </div>
 
           <p className="text-center text-sm text-gray-400">

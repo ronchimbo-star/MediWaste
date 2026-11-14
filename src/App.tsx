@@ -194,6 +194,13 @@ function App() {
           <Route path="/service-areas/surrey" element={<LocationServicePage />} />
           <Route path="/service-areas/sussex" element={<LocationServicePage />} />
           <Route path="/service-areas/hampshire" element={<LocationServicePage />} />
+          <Route path="/service-areas/reading" element={<LocationServicePage />} />
+          <Route path="/service-areas/ipswich" element={<LocationServicePage />} />
+          <Route path="/service-areas/berkshire" element={<LocationServicePage />} />
+          <Route path="/service-areas/suffolk" element={<LocationServicePage />} />
+          <Route path="/service-areas/cambridgeshire" element={<LocationServicePage />} />
+          <Route path="/service-areas/bedfordshire" element={<LocationServicePage />} />
+          <Route path="/service-areas/oxfordshire" element={<LocationServicePage />} />
           <Route path="/service-areas/:countySlug" element={<ServiceAreaPage />} />
           <Route path="/clinical-waste-disposal-london" element={<LocationServicePage />} />
           <Route path="/clinical-waste-disposal-kent" element={<LocationServicePage />} />
@@ -201,6 +208,13 @@ function App() {
           <Route path="/clinical-waste-disposal-surrey" element={<LocationServicePage />} />
           <Route path="/clinical-waste-disposal-sussex" element={<LocationServicePage />} />
           <Route path="/clinical-waste-disposal-hampshire" element={<LocationServicePage />} />
+          <Route path="/clinical-waste-disposal-reading" element={<LocationServicePage />} />
+          <Route path="/clinical-waste-disposal-ipswich" element={<LocationServicePage />} />
+          <Route path="/clinical-waste-disposal-berkshire" element={<LocationServicePage />} />
+          <Route path="/clinical-waste-disposal-suffolk" element={<LocationServicePage />} />
+          <Route path="/clinical-waste-disposal-cambridgeshire" element={<LocationServicePage />} />
+          <Route path="/clinical-waste-disposal-bedfordshire" element={<LocationServicePage />} />
+          <Route path="/clinical-waste-disposal-oxfordshire" element={<LocationServicePage />} />
           <Route path="/news" element={<NewsPage />} />
           <Route path="/glp1-sharps-safe-return" element={<Glp1SharpsReturnPage />} />
           <Route path="/news/category/:categorySlug" element={<NewsCategoryPage />} />

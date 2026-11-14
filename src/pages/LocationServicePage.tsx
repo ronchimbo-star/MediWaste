@@ -37,18 +37,8 @@ export default function LocationServicePage() {
     try {
       setLoading(true);
       let slug = location.pathname.replace(/^\/+|\/+$/g, '');
-
-      const areaMapping: Record<string, string> = {
-        'service-areas/london': 'clinical-waste-disposal-london',
-        'service-areas/kent': 'clinical-waste-disposal-kent',
-        'service-areas/essex': 'clinical-waste-disposal-essex',
-        'service-areas/surrey': 'clinical-waste-disposal-surrey',
-        'service-areas/sussex': 'clinical-waste-disposal-sussex',
-        'service-areas/hampshire': 'clinical-waste-disposal-hampshire',
-      };
-
-      if (areaMapping[slug]) {
-        slug = areaMapping[slug];
+      if (slug.startsWith('service-areas/')) {
+        slug = slug.replace('service-areas/', 'clinical-waste-disposal-');
       }
 
       const { data, error } = await supabase
@@ -159,6 +149,7 @@ export default function LocationServicePage() {
         </div>
       </section>
 
+      {!page.services_content && (
       <section className="py-16 bg-white">
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
@@ -242,6 +233,7 @@ export default function LocationServicePage() {
           </div>
         </div>
       </section>
+      )}
 
       {page.towns_covered && page.towns_covered.length > 0 && (
         <section className="py-16 bg-gray-50">
@@ -272,6 +264,20 @@ export default function LocationServicePage() {
         </section>
       )}
 
+      {page.services_content && (
+        <section className="py-16 bg-white">
+          <div className="container mx-auto px-4">
+            <div className="max-w-4xl mx-auto article-content">
+              <div dangerouslySetInnerHTML={{ __html: page.services_content }} />
+              {page.why_choose_content && <div dangerouslySetInnerHTML={{ __html: page.why_choose_content }} />}
+              {page.industries_content && <div dangerouslySetInnerHTML={{ __html: page.industries_content }} />}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {!page.services_content && (
+      <>
       <section className="py-16 bg-white">
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
@@ -380,6 +386,8 @@ export default function LocationServicePage() {
           </div>
         </div>
       </section>
+      </>
+      )}
 
       <BottomCTA
         title={`Ready for Compliant Clinical Waste Disposal in ${page.region}?`}
