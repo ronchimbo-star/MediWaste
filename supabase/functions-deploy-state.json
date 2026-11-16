@@ -53,6 +53,10 @@
       "hasChanged": false,
       "hash": "455881296cc52fa8d2d1c09cc4ed3940fbd7132588253ad8d63efae139bb3886"
     },
+    "ping-indexnow": {
+      "hasChanged": false,
+      "hash": "ef76ec4e8d3d0a5f56a461bdfd2a0f599bcbbc78e6f2293f14683ab1dcc582dc"
+    },
     "process-email-queue": {
       "hasChanged": false,
       "hash": "2275c47bf53c6f6bbf0488b4fe3c62fb94603ebabbdd4d24868e9e5537120db8"
@@ -132,10 +136,6 @@
     "verify-financial-pin": {
       "hasChanged": false,
       "hash": "7a3ac45b1bf0f86e753eadfce6467403415e2e00d1d959ce21aebb9d3312e4b7"
-    },
-    "ping-indexnow": {
-      "hasChanged": false,
-      "hash": "b38202e653c15f056b65b910fda3feb84e652bcd8ecd86393cb8d8e591ca54db"
     }
   }
 }

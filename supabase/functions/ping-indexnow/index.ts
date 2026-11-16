@@ -12,8 +12,9 @@ const BASE_URL = "https://mediwaste.co.uk";
 const INDEXNOW_KEY = "af1fdd19e8d84da1b380db2d40f43da1";
 const INDEXNOW_ENDPOINT = "https://api.indexnow.org/indexnow";
 
-// IndexNow accepts up to 10,000 URLs per POST; keep batches modest.
-const MAX_URLS_PER_BATCH = 100;
+// IndexNow accepts up to 10,000 URLs per POST; the site's full URL list is
+// only ~150, so one batch always covers every page.
+const MAX_URLS_PER_BATCH = 1000;
 
 function withTrailingSlash(path: string): string {
   if (!path || path === "/") return BASE_URL + "/";
@@ -42,13 +43,66 @@ Deno.serve(async (req: Request) => {
     );
 
     const body = await req.json().catch(() => ({}));
-    const rawPaths: string[] = Array.isArray(body?.paths) ? body.paths : [];
+    let rawPaths: string[] = Array.isArray(body?.paths) ? body.paths : [];
     const source: string = typeof body?.source === "string" ? body.source : "manual";
     const engine: string = body?.engine === "google" ? "google" : "indexnow";
 
+    if (body?.mode === "auto") {
+      // Full-site mode (used by the weekly cron): gather every published URL
+      // straight from the content tables, mirroring the sitemap.
+      const staticPaths = [
+        "/",
+        "/about/",
+        "/contact/",
+        "/quote/",
+        "/faq/",
+        "/compliance/",
+        "/audit/",
+        "/terms/",
+        "/privacy/",
+        "/cookie/",
+        "/waste-services/",
+        "/waste-services/sharps-waste/",
+        "/waste-services/infectious-waste/",
+        "/waste-services/pharmaceutical-waste/",
+        "/waste-services/anatomical-waste/",
+        "/waste-services/dental-waste/",
+        "/waste-services/cytotoxic-waste/",
+        "/service-coverage/",
+        "/news/",
+        "/directory-listings/",
+      ];
+      for (const area of [
+        "london", "kent", "essex", "surrey", "sussex", "hampshire",
+        "reading", "ipswich", "berkshire", "suffolk", "cambridgeshire",
+        "bedfordshire", "oxfordshire",
+      ]) {
+        staticPaths.push(`/service-areas/${area}/`);
+      }
+      rawPaths = [...staticPaths];
+      const { data: seoRows, error: seoErr } = await supabase
+        .from("seo_pages")
+        .select("url_slug")
+        .eq("status", "published");
+      if (seoErr) throw new Error(`Failed to load SEO pages: ${seoErr.message}`);
+      for (const row of seoRows ?? []) rawPaths.push(`/c/${row.url_slug}/`);
+      const { data: newsRows, error: newsErr } = await supabase
+        .from("news_articles")
+        .select("slug")
+        .eq("status", "published");
+      if (newsErr) throw new Error(`Failed to load news articles: ${newsErr.message}`);
+      for (const row of newsRows ?? []) rawPaths.push(`/news/${row.slug}/`);
+      const { data: locationRows, error: locErr } = await supabase
+        .from("location_service_pages")
+        .select("slug")
+        .eq("status", "published");
+      if (locErr) throw new Error(`Failed to load location pages: ${locErr.message}`);
+      for (const row of locationRows ?? []) rawPaths.push(`/clinical-waste-disposal-${row.slug}/`);
+    }
+
     if (rawPaths.length === 0) {
       return new Response(
-        JSON.stringify({ error: "Provide a `paths` array of site paths or absolute URLs." }),
+        JSON.stringify({ error: "Provide a `paths` array of site paths or absolute URLs, or use mode: \"auto\"." }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
