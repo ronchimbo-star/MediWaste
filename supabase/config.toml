@@ -96,3 +96,6 @@ verify_jwt = false
 
 [functions.calculate-quote]
 verify_jwt = false
+
+[functions.ping-indexnow]
+verify_jwt = true

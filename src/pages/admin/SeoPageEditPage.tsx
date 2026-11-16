@@ -155,9 +155,11 @@ export default function SeoPageEditPage() {
     };
 
     try {
+      let savedId = id;
       if (isNew) {
         const { data, error } = await supabase.from('seo_pages').insert(payload).select('id').single();
         if (error) throw error;
+        savedId = data.id;
         queryClient.invalidateQueries({ queryKey: ['seo-pages'] });
         navigate(`/admin/seo-pages/${data.id}/edit`, { replace: true });
         setSaveMsg('Page created successfully');
@@ -167,6 +169,21 @@ export default function SeoPageEditPage() {
         queryClient.invalidateQueries({ queryKey: ['seo-pages'] });
         queryClient.invalidateQueries({ queryKey: ['seo-page-edit', id] });
         setSaveMsg('Changes saved');
+      }
+      // Fire-and-forget: tell search engines a page went live so it gets
+      // crawled quickly instead of waiting for the next natural crawl.
+      if (form.status === 'published') {
+        fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ping-indexnow`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ paths: [`/c/${payload.url_slug}`], source: 'publish_auto' }),
+        }).catch(() => {});
+      }
+      if (isNew && savedId) {
+        // navigate() already happened for new pages; nothing else to do.
       }
     } catch (err: any) {
       setSaveMsg(`Error: ${err.message}`);

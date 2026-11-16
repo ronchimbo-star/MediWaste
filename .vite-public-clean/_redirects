@@ -10,10 +10,14 @@ https://www.mediwaste.co.uk/* https://mediwaste.co.uk/:splat 301!
 # llms/{slug} — individual markdown pages for AI agents
 /llms/:slug https://xezovslgxkhzjumtfrjn.supabase.co/functions/v1/serve-markdown/:slug 200!
 
-# Legacy WordPress assets – serve SPA so app can handle gracefully
-/wp-content/* /index.html 200
-/wp-admin/* /index.html 200
-/wp-includes/* /index.html 200
+# Legacy WordPress paths — permanent 410, NOT 200. Serving homepage content
+# at these URLs created duplicate/redirect entries in Search Console.
+/wp-content/* / 410!
+/wp-admin/* / 410!
+/wp-includes/* / 410!
+/wp-json/* / 410!
+/xmlrpc.php / 410!
+/wp-login.php / 410!
 
 # Old route redirects to current equivalents
 /healthcare-waste/sharps /waste-services/sharps-waste 301

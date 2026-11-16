@@ -107,6 +107,7 @@ const SeoPage = lazyWithRetry(() => import('./pages/SeoPage'));
 const DirectoryListingsPage = lazyWithRetry(() => import('./pages/DirectoryListingsPage'));
 const DirectoryListingsAdminPage = lazyWithRetry(() => import('./pages/admin/DirectoryListingsPage'));
 const SitemapPage = lazyWithRetry(() => import('./pages/admin/SitemapPage'));
+const IndexNowPage = lazyWithRetry(() => import('./pages/admin/IndexNowPage'));
 const AuditPage = lazyWithRetry(() => import('./pages/AuditPage'));
 const AdminAuditsPage = lazyWithRetry(() => import('./pages/admin/AdminAuditsPage'));
 const AdminAuditDetailPage = lazyWithRetry(() => import('./pages/admin/AdminAuditDetailPage'));
@@ -289,6 +290,7 @@ function App() {
           <Route path="/admin/seo-pages/broken-links" element={<ProtectedRoute><BrokenLinksPage /></ProtectedRoute>} />
           <Route path="/admin/directory-listings" element={<ProtectedRoute><DirectoryListingsAdminPage /></ProtectedRoute>} />
           <Route path="/admin/sitemap" element={<ProtectedRoute><SitemapPage /></ProtectedRoute>} />
+          <Route path="/admin/indexing" element={<ProtectedRoute><IndexNowPage /></ProtectedRoute>} />
           <Route path="/admin/audits" element={<ProtectedRoute><AdminAuditsPage /></ProtectedRoute>} />
           <Route path="/admin/audits/:id" element={<ProtectedRoute><AdminAuditDetailPage /></ProtectedRoute>} />
           <Route path="/staff/dashboard" element={<ProtectedRoute><StaffDashboard /></ProtectedRoute>} />
